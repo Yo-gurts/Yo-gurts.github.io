@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+
+
+<html lang="zh">
+
+
+<head>
+  <meta charset="utf-8" />
+    
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>
+    c++11 STL |  
+  </title>
+  <meta name="generator" content="hexo-theme-ayer">
+  
+  <link rel="shortcut icon" href="http://ww1.sinaimg.cn/large/006CByeUgy1gf5teohdtyj303k03mq2x.jpg" />
+  
+  
+<link rel="stylesheet" href="/dist/main.css">
+
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Shen-Yu/cdn/css/remixicon.min.css">
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+  
+  
+<script src="https://cdn.jsdelivr.net/npm/pace-js@1.0.2/pace.min.js"></script>
+
+  
+  
+
+  
+
+</head>
+
+</html>
+
+<body>
+  
+  <canvas width="1777" height="841" style="position: fixed; left: 0px; top: 0px; z-index: 999; pointer-events: none;"></canvas>
+  
+  <div id="app">
+    <main class="content on">
+      <section class="outer">
+  <article id="post-C11_STL" class="article article-type-post" itemscope
+  itemprop="blogPost" data-scroll-reveal>
+
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h1 class="article-title sea-center" style="border-left:0" itemprop="name">
+  c++11 STL
+</h1>
+ 
+
+    </header>
+    
+
+    
+    <div class="article-meta">
+      <a href="/2020/01/31/C11_STL/" class="article-date">
+  <time datetime="2020-01-31T02:03:49.000Z" itemprop="datePublished">2020-01-31</time>
+</a>
+      
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Program/">Program</a>
+  </div>
+
+      
+      
+<div class="word_count">
+    <span class="post-time">
+        <span class="post-meta-item-icon">
+            <i class="ri-quill-pen-line"></i>
+            <span class="post-meta-item-text"> Word count:</span>
+            <span class="post-count">1.1k</span>
+        </span>
+    </span>
+
+    <span class="post-time">
+        &nbsp; | &nbsp;
+        <span class="post-meta-item-icon">
+            <i class="ri-book-open-line"></i>
+            <span class="post-meta-item-text"> Reading time≈</span>
+            <span class="post-count">6 min</span>
+        </span>
+    </span>
+</div>
+
+      
+    </div>
+    
+
+    
+    
+    <div class="tocbot"></div>
+
+
+
+
+
+    
+
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+      
+
+      
+      <h1 id="Chapter3-New-Features"><a href="#Chapter3-New-Features" class="headerlink" title="Chapter3 New Features"></a>Chapter3 New Features</h1><ul>
+<li><p>空指针 <code>nullptr</code></p>
+</li>
+<li><p>自动处理变量类型 <code>auto</code></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> p = <span class="number">1.2</span>;</span><br><span class="line"></span><br><span class="line"><span class="built_in">vector</span>&lt;<span class="built_in">string</span>&gt; v;</span><br><span class="line"><span class="keyword">auto</span> pos = v.begin();</span><br><span class="line"></span><br><span class="line"><span class="comment">// l has the type of a lambda</span></span><br><span class="line"><span class="comment">// taking an int and returning a bool</span></span><br><span class="line"><span class="keyword">auto</span> l = [] (<span class="keyword">int</span> x) -&gt; <span class="keyword">bool</span> &#123;</span><br><span class="line">    ...,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></li>
+<li><p>统一的初始化语法 <code>{}</code></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> values[] &#123; <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span> &#125;;</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; v &#123; <span class="number">2</span>, <span class="number">3</span>, <span class="number">5</span>, <span class="number">7</span>, <span class="number">11</span>, <span class="number">13</span>, <span class="number">17</span> &#125;;</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="built_in">std</span>::<span class="built_in">string</span>&gt; cities &#123;</span><br><span class="line">    <span class="string">"Berlin"</span>, <span class="string">"New York"</span>, <span class="string">"London"</span>, <span class="string">"Braunschweig"</span>, <span class="string">"Cairo"</span>, <span class="string">"Cologne"</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> i;      <span class="comment">// i has undefined value</span></span><br><span class="line"><span class="keyword">int</span> j&#123;&#125;;    <span class="comment">// j is initialized by 0</span></span><br><span class="line"><span class="keyword">int</span>* p;     <span class="comment">// p has undefined value</span></span><br><span class="line"><span class="keyword">int</span>* q&#123;&#125;;   <span class="comment">// q is initialized by nullptr</span></span><br></pre></td></tr></table></figure></li>
+<li><p>for循环 <code>for ( decl : coll )</code></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> ( <span class="keyword">int</span> i : &#123; <span class="number">2</span>, <span class="number">3</span>, <span class="number">5</span>, <span class="number">7</span>, <span class="number">9</span>, <span class="number">13</span>, <span class="number">17</span>, <span class="number">19</span> &#125; ) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; i &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">double</span>&gt; vec;</span><br><span class="line">...</span><br><span class="line"><span class="keyword">for</span> ( <span class="keyword">auto</span>&amp; elem : vec ) &#123;</span><br><span class="line">    elem *= <span class="number">3</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>原格式字符串 <code>string str = R&quot;xx(anythinghere)xx&quot;;</code> <code>&lt;string&gt;</code></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">string</span> str = R<span class="string">"xx(123</span></span><br><span class="line"><span class="string">    456             // 想换行也只能这样换行，输入\n会原样输出</span></span><br><span class="line"><span class="string">        789)xx"</span>; </span><br><span class="line">    <span class="built_in">cout</span>&lt;&lt;str&lt;&lt;<span class="built_in">endl</span>;</span><br></pre></td></tr></table></figure></li>
+<li><p>支持用变量来定义数组长度 <code>constexpr</code> 好像不用也行</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> number;</span><br><span class="line"><span class="built_in">cin</span>&gt;&gt;number;</span><br><span class="line"><span class="keyword">int</span> a[number] = &#123;<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>&#125;;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><code>lambda</code></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> fun2=[](<span class="keyword">int</span> n) -&gt; <span class="keyword">double</span> &#123; <span class="comment">// 输入参数n, 返回类型 double</span></span><br><span class="line">    <span class="built_in">cout</span>&lt;&lt;n&lt;&lt;<span class="string">"hello lambda!"</span>&lt;&lt;<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> n*<span class="number">2</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">auto</span> fun4=[=, &amp;m] &#123; <span class="comment">// = 全部变量只读, &amp; 引用m</span></span><br><span class="line">    n*=<span class="number">3</span>;   <span class="comment">// Error, 只读变量</span></span><br><span class="line">    m*=<span class="number">4</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// mutable</span></span><br></pre></td></tr></table></figure></li>
+<li><p>自定义变量位数 <code>bitset&lt;32&gt; var32;</code></p>
+</li>
+<li><p>模板默认参数 <code>template &lt;typename T, typename container = vector&lt;T&gt;&gt;</code></p>
+</li>
+</ul>
+<h1 id="Chapter5-Utilities"><a href="#Chapter5-Utilities" class="headerlink" title="Chapter5 Utilities"></a>Chapter5 Utilities</h1><ul>
+<li>数值对 <code>pair</code> <code>&lt;utility&gt;</code><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="built_in">std</span>::pair&lt;<span class="keyword">int</span>, <span class="keyword">double</span>&gt; intdoublepair;</span><br><span class="line"><span class="keyword">using</span> mypair = <span class="built_in">std</span>::pair&lt;<span class="keyword">int</span>, <span class="keyword">double</span>&gt;;</span><br><span class="line"></span><br><span class="line">pair&lt;int, double&gt; p1(12, 13.3); // 元素类型也可以是引用</span><br><span class="line">pair&lt;int, double&gt; p2(10, 15.3);</span><br><span class="line"><span class="built_in">cout</span>&lt;&lt;p1.first&lt;&lt;<span class="string">", "</span>&lt;&lt;p1.second&lt;&lt;<span class="built_in">endl</span>;</span><br><span class="line">p1.swap(p2);</span><br><span class="line">swap(p1, p2);</span><br><span class="line"></span><br><span class="line">intdoublepair p3 = p1;</span><br><span class="line">mypair p4 = p2;</span><br><span class="line"><span class="built_in">cout</span>&lt;&lt;p3.first&lt;&lt;<span class="string">", "</span>&lt;&lt;p3.second&lt;&lt;<span class="built_in">endl</span>;</span><br><span class="line"><span class="built_in">cout</span>&lt;&lt;get&lt;<span class="number">0</span>&gt;(p3)&lt;&lt;<span class="string">", "</span>&lt;&lt;get&lt;<span class="number">1</span>&gt;(p4)&lt;&lt;<span class="built_in">endl</span>;  </span><br><span class="line"></span><br><span class="line"><span class="keyword">auto</span> p5 = make_pair(<span class="number">3</span>,<span class="number">4</span>);</span><br><span class="line"><span class="built_in">cout</span>&lt;&lt;p5.first&lt;&lt;<span class="string">", "</span>&lt;&lt;p5.second&lt;&lt;<span class="built_in">endl</span>;</span><br></pre></td></tr></table></figure></li>
+<li>数值组 <code>tuple</code>， 类似<code>pair</code>但元素可多个   <code>&lt;tuple&gt;</code><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">tuple&lt;<span class="keyword">int</span>, <span class="keyword">float</span>, <span class="keyword">double</span>, <span class="built_in">string</span>&gt; p1&#123;<span class="number">2</span>, <span class="number">3.3</span>, <span class="number">4.44</span>, <span class="string">"hello"</span>&#125;;</span><br><span class="line">tuple&lt;int, float, double, string&gt; p2(2, 3.3, 4.44, "hello");</span><br><span class="line"><span class="keyword">auto</span> p3 = make_tuple(<span class="number">2</span>, <span class="number">3.3</span>, <span class="number">4.44</span>, <span class="string">"hello"</span>);</span><br><span class="line"><span class="built_in">string</span> str = <span class="string">"hi"</span>;</span><br><span class="line">tuple&lt;int, float, double, string&amp;&gt; p4(2, 3.3, 4.44, str);</span><br><span class="line"><span class="built_in">cout</span>&lt;&lt;get&lt;<span class="number">0</span>&gt;(p1)&lt;&lt;<span class="string">", "</span>&lt;&lt;get&lt;<span class="number">3</span>&gt;(p1)&lt;&lt;<span class="built_in">endl</span>;</span><br><span class="line"><span class="built_in">cout</span>&lt;&lt;get&lt;<span class="number">0</span>&gt;(p2)&lt;&lt;<span class="string">", "</span>&lt;&lt;get&lt;<span class="number">3</span>&gt;(p2)&lt;&lt;<span class="built_in">endl</span>;</span><br><span class="line"><span class="built_in">cout</span>&lt;&lt;get&lt;<span class="number">0</span>&gt;(p3)&lt;&lt;<span class="string">", "</span>&lt;&lt;get&lt;<span class="number">3</span>&gt;(p3)&lt;&lt;<span class="built_in">endl</span>;</span><br><span class="line"><span class="built_in">cout</span>&lt;&lt;get&lt;<span class="number">0</span>&gt;(p4)&lt;&lt;<span class="string">", "</span>&lt;&lt;get&lt;<span class="number">3</span>&gt;(p4)&lt;&lt;<span class="built_in">endl</span>;</span><br><span class="line">str = <span class="string">"hello"</span>;</span><br><span class="line"><span class="built_in">cout</span>&lt;&lt;get&lt;<span class="number">0</span>&gt;(p4)&lt;&lt;<span class="string">", "</span>&lt;&lt;get&lt;<span class="number">3</span>&gt;(p4)&lt;&lt;<span class="built_in">endl</span>;</span><br><span class="line">p1.swap(p2)</span><br><span class="line">swap(p1,p2)</span><br></pre></td></tr></table></figure></li>
+<li>智能指针－－共享指针 <code>shared_ptr</code> <code>&lt;memory&gt;</code></li>
+</ul>
+<h1 id="Chapter7-Containers"><a href="#Chapter7-Containers" class="headerlink" title="Chapter7 Containers"></a>Chapter7 Containers</h1><ul>
+<li><p>容器通用初始化方法</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 以下方法各容器普遍适用, 这里以vector为例</span></span><br><span class="line"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; c1&#123;&#125;;</span><br><span class="line"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; c2&#123;<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>&#125;;</span><br><span class="line"><span class="function"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; <span class="title">c3</span><span class="params">(c2)</span></span>;</span><br><span class="line"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; c4 = c3;</span><br><span class="line"><span class="function"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; <span class="title">c5</span><span class="params">(c2.begin(), c2.begin()+<span class="number">2</span>)</span></span>;</span><br><span class="line"><span class="function"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; <span class="title">c6</span><span class="params">(<span class="number">20</span>)</span></span>;     <span class="comment">// (n)  分配空间</span></span><br><span class="line"><span class="function"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; <span class="title">c7</span><span class="params">(<span class="number">3</span>, <span class="number">100</span>)</span></span>; <span class="comment">// (n, elements)</span></span><br><span class="line"></span><br><span class="line">c1.swap(c2);    <span class="comment">// exchange elements of c1, c2;</span></span><br><span class="line">swap(c1, c2);   <span class="comment">// same with up</span></span><br><span class="line"></span><br><span class="line">c.size();       <span class="comment">// return the current size</span></span><br><span class="line">c.empty();      <span class="comment">// check if c is empty, </span></span><br><span class="line">c.begin();      <span class="comment">// return a iterator</span></span><br><span class="line">c.end();        </span><br><span class="line">c.clear();      <span class="comment">// clear all elements</span></span><br></pre></td></tr></table></figure></li>
+<li><p>vecotr <code>&lt;vector&gt;</code> <a href="http://www.cplusplus.com/reference/vector/vector/assign/" target="_blank" rel="noopener">cpluscplus.com/vector</a></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">vector</span>::assign          <span class="comment">// v.assign (7,100);  </span></span><br><span class="line">                        <span class="comment">// v.assign (c.first(), c.end());</span></span><br><span class="line">                        <span class="comment">// v.assign (&#123;1,2,3,4,6&#125;);</span></span><br><span class="line"><span class="built_in">vector</span>::at</span><br><span class="line"><span class="built_in">vector</span>::back            <span class="comment">// return the last value;</span></span><br><span class="line"><span class="built_in">vector</span>::begin           </span><br><span class="line"><span class="built_in">vector</span>::capacity        </span><br><span class="line"><span class="built_in">vector</span>::cbegin          <span class="comment">// const _ begin()</span></span><br><span class="line"><span class="built_in">vector</span>::cend</span><br><span class="line"><span class="built_in">vector</span>::clear           <span class="comment">// size = 0, but capacity will not change</span></span><br><span class="line"><span class="built_in">vector</span>::crbegin         <span class="comment">// const reverse begin()</span></span><br><span class="line"><span class="built_in">vector</span>::crend   </span><br><span class="line"><span class="built_in">vector</span>::data            <span class="comment">// returns a direct pointer to the memory array</span></span><br><span class="line"><span class="built_in">vector</span>::emplace         <span class="comment">// insert value, likely</span></span><br><span class="line"><span class="built_in">vector</span>::emplace_back    <span class="comment">// push_back, likely</span></span><br><span class="line"><span class="built_in">vector</span>::empty   </span><br><span class="line"><span class="built_in">vector</span>::end</span><br><span class="line"><span class="built_in">vector</span>::erase           <span class="comment">// (begin()+3); (begin(), end());</span></span><br><span class="line">                        <span class="comment">// size changed, capacity remains the same</span></span><br><span class="line"><span class="built_in">vector</span>::front           <span class="comment">// return the first value;</span></span><br><span class="line"><span class="built_in">vector</span>::get_allocator   <span class="comment">// p = myvector.get_allocator().allocate(5);</span></span><br><span class="line">                        <span class="comment">// myvector.get_allocator().construct(&amp;p[i],i);</span></span><br><span class="line">                        <span class="comment">// myvector.get_allocator().destroy(&amp;p[i]);</span></span><br><span class="line">                        <span class="comment">// myvector.get_allocator().deallocate(p,5);                    </span></span><br><span class="line"><span class="built_in">vector</span>::insert          <span class="comment">// myvector.insert ( begin() , 200 );</span></span><br><span class="line">                        <span class="comment">// myvector.insert ( begin() , 3, 300 );</span></span><br><span class="line">                        <span class="comment">// myvector.insert (begin()+2, anothervector.begin(), anothervector.end());</span></span><br><span class="line">                        <span class="comment">// myvector.insert (myvector.begin(), myarray, myarray+3);</span></span><br><span class="line"><span class="built_in">vector</span>::max_size</span><br><span class="line"><span class="built_in">vector</span>::<span class="keyword">operator</span>=</span><br><span class="line"><span class="built_in">vector</span>::<span class="keyword">operator</span>[]</span><br><span class="line"><span class="built_in">vector</span>::pop_back        <span class="comment">// clear last value, size - 1</span></span><br><span class="line"><span class="built_in">vector</span>::push_back</span><br><span class="line"><span class="built_in">vector</span>::rbegin          <span class="comment">// reverse begin</span></span><br><span class="line"><span class="built_in">vector</span>::rend</span><br><span class="line"><span class="built_in">vector</span>::reserve</span><br><span class="line"><span class="built_in">vector</span>::resize          <span class="comment">// resize(n);</span></span><br><span class="line">                        <span class="comment">// resize(n, 100); set default value 100</span></span><br><span class="line"><span class="built_in">vector</span>::shrink_to_fit   <span class="comment">// reduce capacity to fit size.</span></span><br><span class="line"><span class="built_in">vector</span>::size</span><br><span class="line"><span class="built_in">vector</span>::swap</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>list <code>&lt;list&gt;</code> <a href="http://www.cplusplus.com/reference/list/list/" target="_blank" rel="noopener">cplusplus.com/list</a></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">list</span>::assign        <span class="comment">// l.assign(n, elements);</span></span><br><span class="line">                    <span class="comment">// l.assign(l2.begin(), l2.end());</span></span><br><span class="line">                    <span class="comment">// l.assign(array, array+3);</span></span><br><span class="line"><span class="built_in">list</span>::back          <span class="comment">// return the last value</span></span><br><span class="line"><span class="built_in">list</span>::begin         </span><br><span class="line"><span class="built_in">list</span>::cbegin        <span class="comment">// const begin</span></span><br><span class="line"><span class="built_in">list</span>::cend</span><br><span class="line"><span class="built_in">list</span>::clear         </span><br><span class="line"><span class="built_in">list</span>::crbegin</span><br><span class="line"><span class="built_in">list</span>::crend</span><br><span class="line"><span class="built_in">list</span>::emplace</span><br><span class="line"><span class="built_in">list</span>::emplace_back  </span><br><span class="line"><span class="built_in">list</span>::emplace_front </span><br><span class="line"><span class="built_in">list</span>::empty</span><br><span class="line"><span class="built_in">list</span>::end</span><br><span class="line"><span class="built_in">list</span>::erase         </span><br><span class="line"><span class="built_in">list</span>::front</span><br><span class="line"><span class="built_in">list</span>::get_allocator</span><br><span class="line"><span class="built_in">list</span>::insert</span><br><span class="line"><span class="built_in">list</span>::max_size</span><br><span class="line"><span class="built_in">list</span>::merge</span><br><span class="line"><span class="built_in">list</span>::<span class="keyword">operator</span>=</span><br><span class="line"><span class="built_in">list</span>::pop_back</span><br><span class="line"><span class="built_in">list</span>::pop_front</span><br><span class="line"><span class="built_in">list</span>::push_back</span><br><span class="line"><span class="built_in">list</span>::push_front</span><br><span class="line"><span class="built_in">list</span>::rbegin</span><br><span class="line"><span class="built_in">list</span>::remove        <span class="comment">// remove(n); remove all values equals n</span></span><br><span class="line"><span class="built_in">list</span>::remove_if     </span><br><span class="line"><span class="comment">// mylist.remove_if ([](const int &amp;value) -&gt; bool&#123; return (value&lt;10);&#125;);</span></span><br><span class="line"><span class="built_in">list</span>::rend</span><br><span class="line"><span class="built_in">list</span>::resize</span><br><span class="line"><span class="built_in">list</span>::reverse</span><br><span class="line"><span class="built_in">list</span>::size</span><br><span class="line"><span class="built_in">list</span>::sort</span><br><span class="line"><span class="built_in">list</span>::splice</span><br><span class="line"><span class="built_in">list</span>::swap</span><br><span class="line"><span class="built_in">list</span>::unique        <span class="comment">// remove repeated or satisfied some conditions</span></span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+
+      
+      <!-- reward -->
+      
+    </div>
+    
+    
+      <!-- copyright -->
+      
+        <div class="declare">
+          <ul class="post-copyright">
+            <li>
+              <i class="ri-copyright-line"></i>
+              <strong>Copyright： </strong>
+              Copyright is owned by the author. For commercial reprints, please contact the author for authorization. For non-commercial reprints, please indicate the source.
+            </li>
+          </ul>
+        </div>
+        
+    <footer class="article-footer">
+      
+          
+<div class="share-btn">
+      <span class="share-sns share-outer">
+        <i class="ri-share-forward-line"></i>
+        分享
+      </span>
+      <div class="share-wrap">
+        <i class="arrow"></i>
+        <div class="share-icons">
+          
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="ri-weibo-fill"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="ri-wechat-fill"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="ri-qq-fill"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="ri-douban-line"></i>
+          </a>
+          <!-- <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a> -->
+          
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="ri-facebook-circle-fill"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="ri-twitter-fill"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="ri-google-fill"></i>
+          </a>
+        </div>
+      </div>
+</div>
+
+<div class="wx-share-modal">
+    <a class="modal-close" href="javascript:;"><i class="ri-close-circle-line"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="//api.qrserver.com/v1/create-qr-code/?size=150x150&data=http://yoursite.com/2020/01/31/C11_STL/" alt="微信分享二维码">
+    </div>
+</div>
+
+<div id="share-mask"></div>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c-c/" rel="tag">c/c++</a></li></ul>
+
+
+    </footer>
+
+  </div>
+
+  
+  
+  <nav class="article-nav">
+    
+      <a href="/2020/03/17/ayer%E4%B8%BB%E9%A2%98/" class="article-nav-link">
+        <strong class="article-nav-caption">上一篇</strong>
+        <div class="article-nav-title">
+          
+            ayer主题修改
+          
+        </div>
+      </a>
+    
+    
+      <a href="/2020/01/21/sh%E5%B0%8F%E7%BB%93/" class="article-nav-link">
+        <strong class="article-nav-caption">下一篇</strong>
+        <div class="article-nav-title">sh 小结</div>
+      </a>
+    
+  </nav>
+
+
+  
+
+  
+  
+  
+
+  
+  
+  
+  
+  
+
+</article>
+</section>
+      <footer class="footer">
+  <div class="outer">
+    <ul>
+      <li>
+        Copyrights &copy;
+        2019-2020
+        <i class="ri-heart-fill heart_icon"></i> yogurt
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+        
+        <span>
+  <span><i class="ri-user-3-fill"></i>Visitors:<span id="busuanzi_value_site_uv"></span></s>
+  <span class="division">|</span>
+  <span><i class="ri-eye-fill"></i>Views:<span id="busuanzi_value_page_pv"></span></span>
+</span>
+        
+      </li>
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      <li>
+        <!-- cnzz统计 -->
+        
+        <script type="text/javascript" src='https://s9.cnzz.com/z_stat.php?id=1278069914&amp;web_id=1278069914'></script>
+        
+      </li>
+    </ul>
+  </div>
+</footer>
+      <div class="float_btns">
+        <div class="totop" id="totop">
+  <i class="ri-arrow-up-line"></i>
+</div>
+
+      </div>
+    </main>
+    <aside class="sidebar on">
+      <button class="navbar-toggle"></button>
+<nav class="navbar">
+  
+  <div class="logo">
+    <a href="/"><img src="http://ww1.sinaimg.cn/large/006CByeUgy1gf5teohdtyj303k03mq2x.jpg" alt=""></a>
+  </div>
+  
+  <ul class="nav nav-main">
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/">主页</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/archives">归档</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/categories">分类</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/tags">标签</a>
+    </li>
+    
+  </ul>
+</nav>
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+    <li class="nav-item">
+      
+      <a class="nav-item-link nav-item-search"  title="Search">
+        <i class="ri-search-line"></i>
+      </a>
+      
+      
+    </li>
+  </ul>
+</nav>
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+    </aside>
+    <script>
+      if (window.matchMedia("(max-width: 768px)").matches) {
+        document.querySelector('.content').classList.remove('on');
+        document.querySelector('.sidebar').classList.remove('on');
+      }
+    </script>
+    <div id="mask"></div>
+
+<!-- #reward -->
+<div id="reward">
+  <span class="close"><i class="ri-close-line"></i></span>
+  <p class="reward-p"><i class="ri-cup-line"></i>请我喝杯咖啡吧~</p>
+  <div class="reward-box">
+    
+    <div class="reward-item">
+      <img class="reward-img" src="https://cdn.jsdelivr.net/gh/Shen-Yu/cdn/img/alipay.jpg">
+      <span class="reward-type">支付宝</span>
+    </div>
+    
+    
+    <div class="reward-item">
+      <img class="reward-img" src="https://cdn.jsdelivr.net/gh/Shen-Yu/cdn/img/wechat.jpg">
+      <span class="reward-type">微信</span>
+    </div>
+    
+  </div>
+</div>
+    
+<script src="/js/jquery-2.0.3.min.js"></script>
+
+
+<script src="/js/lazyload.min.js"></script>
+
+<!-- Subtitle -->
+
+<script>
+  try {
+    var typed = new Typed("#subtitle", {
+      strings: ['学会弯腰一笑   岁月太绝情', '总有歌叹奈何', ''],
+      startDelay: 0,
+      typeSpeed: 200,
+      loop: true,
+      backSpeed: 100,
+      showCursor: true
+    });
+  } catch (err) {
+    console.log(err)
+  }
+</script>
+
+<!-- Tocbot -->
+
+
+<script src="/js/tocbot.min.js"></script>
+
+<script>
+  tocbot.init({
+    tocSelector: '.tocbot',
+    contentSelector: '.article-entry',
+    headingSelector: 'h1, h2, h3, h4, h5, h6',
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    scrollContainer: 'main',
+    positionFixedSelector: '.tocbot',
+    positionFixedClass: 'is-position-fixed',
+    fixedSidebarOffset: 'auto'
+  });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery-modal@0.9.2/jquery.modal.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-modal@0.9.2/jquery.modal.min.css">
+<script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.7.0/dist/js/jquery.justifiedGallery.min.js"></script>
+
+<script src="/dist/main.js"></script>
+
+<!-- ImageViewer -->
+
+<!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+    <div class="pswp__bg"></div>
+
+    <!-- Slides wrapper with overflow:hidden. -->
+    <div class="pswp__scroll-wrap">
+
+        <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                <!--  Controls are self-explanatory. Order can be changed. -->
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" style="display:none" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+                <!-- element will get class pswp__preloader--active when preloader is running -->
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css">
+<script src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"></script>
+
+<script>
+    function viewer_init() {
+        let pswpElement = document.querySelectorAll('.pswp')[0];
+        let $imgArr = document.querySelectorAll(('.article-entry img:not(.reward-img)'))
+
+        $imgArr.forEach(($em, i) => {
+            $em.onclick = () => {
+                // slider展开状态
+                // todo: 这样不好，后面改成状态
+                if (document.querySelector('.left-col.show')) return
+                let items = []
+                $imgArr.forEach(($em2, i2) => {
+                    let img = $em2.getAttribute('data-idx', i2)
+                    let src = $em2.getAttribute('data-target') || $em2.getAttribute('src')
+                    let title = $em2.getAttribute('alt')
+                    // 获得原图尺寸
+                    const image = new Image()
+                    image.src = src
+                    items.push({
+                        src: src,
+                        w: image.width || $em2.width,
+                        h: image.height || $em2.height,
+                        title: title
+                    })
+                })
+                var gallery = new PhotoSwipe(pswpElement, PhotoSwipeUI_Default, items, {
+                    index: parseInt(i)
+                });
+                gallery.init()
+            }
+        })
+    }
+    viewer_init()
+</script>
+
+<!-- MathJax -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+      tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+  });
+
+  MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+      for(i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+  });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.6/unpacked/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script>
+  var ayerConfig = {
+    mathjax: true
+  }
+</script>
+
+<!-- Katex -->
+
+<!-- busuanzi  -->
+
+
+<script src="/js/busuanzi-2.3.pure.min.js"></script>
+
+
+<!-- ClickLove -->
+
+<!-- ClickBoom -->
+
+
+<script src="/js/clickBoom.js"></script>
+
+
+<!-- CodeCopy -->
+
+
+<link rel="stylesheet" href="/css/clipboard.css">
+
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js"></script>
+<script>
+  function wait(callback, seconds) {
+    var timelag = null;
+    timelag = window.setTimeout(callback, seconds);
+  }
+  !function (e, t, a) {
+    var initCopyCode = function(){
+      var copyHtml = '';
+      copyHtml += '<button class="btn-copy" data-clipboard-snippet="">';
+      copyHtml += '<i class="ri-file-copy-2-line"></i><span>COPY</span>';
+      copyHtml += '</button>';
+      $(".highlight .code pre").before(copyHtml);
+      $(".article pre code").before(copyHtml);
+      var clipboard = new ClipboardJS('.btn-copy', {
+        target: function(trigger) {
+          return trigger.nextElementSibling;
+        }
+      });
+      clipboard.on('success', function(e) {
+        let $btn = $(e.trigger);
+        $btn.addClass('copied');
+        let $icon = $($btn.find('i'));
+        $icon.removeClass('ri-file-copy-2-line');
+        $icon.addClass('ri-checkbox-circle-line');
+        let $span = $($btn.find('span'));
+        $span[0].innerText = 'COPIED';
+        
+        wait(function () { // 等待两秒钟后恢复
+          $icon.removeClass('ri-checkbox-circle-line');
+          $icon.addClass('ri-file-copy-2-line');
+          $span[0].innerText = 'COPY';
+        }, 2000);
+      });
+      clipboard.on('error', function(e) {
+        e.clearSelection();
+        let $btn = $(e.trigger);
+        $btn.addClass('copy-failed');
+        let $icon = $($btn.find('i'));
+        $icon.removeClass('ri-file-copy-2-line');
+        $icon.addClass('ri-time-line');
+        let $span = $($btn.find('span'));
+        $span[0].innerText = 'COPY FAILED';
+        
+        wait(function () { // 等待两秒钟后恢复
+          $icon.removeClass('ri-time-line');
+          $icon.addClass('ri-file-copy-2-line');
+          $span[0].innerText = 'COPY';
+        }, 2000);
+      });
+    }
+    initCopyCode();
+  }(window, document);
+</script>
+
+
+
+    
+    <div id="music">
+    
+    
+    
+    <iframe frameborder="no" border="1" marginwidth="0" marginheight="0" width="200" height="52"
+        src="//music.163.com/outchain/player?type=2&id=496869422&auto=0&height=32"></iframe>
+</div>
+
+<style>
+    #music {
+        position: fixed;
+        right: 15px;
+        bottom: 0;
+        z-index: 998;
+    }
+</style>
+    
+  </div>
+</body>
+
+</html>

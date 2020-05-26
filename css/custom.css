@@ -1,0 +1,35 @@
+.sidebar {
+  left: -8rem;
+  width: 8rem;
+}
+.sidebar.on {
+  left: 0;
+}
+.content.on {
+  margin-left: 0 !important;
+  background: rgba(0,84,130,0.3);
+  background-image: url("http://ww1.sinaimg.cn/large/006CByeUgy1gf5t0bt74pj32721kfe50.jpg");
+  background-position: center;
+  background-size: cover;
+  font-size: medium;
+}
+.navbar-toggle {
+  left: 9.5rem;
+}
+.search-form-wrap {
+  right: 8rem;
+}
+@media (min-width: 768px) {
+  .outer,
+  .wrap {
+    width: 60% !important;
+  }
+}
+@media (max-width: 768px) {
+  .tocbot {
+    display: none !important;
+  }
+  .content.on {
+    transform: translateX(8rem);
+  }
+}
