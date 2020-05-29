@@ -61,8 +61,8 @@
 
     
     <div class="article-meta">
-      <a href="/2020/05/24/winUbuntu/" class="article-date">
-  <time datetime="2020-05-24T04:58:38.203Z" itemprop="datePublished">2020-05-24</time>
+      <a href="/2020/05/29/winUbuntu/" class="article-date">
+  <time datetime="2020-05-29T14:20:40.187Z" itemprop="datePublished">2020-05-29</time>
 </a>
       
   <div class="article-category">
@@ -76,7 +76,7 @@
         <span class="post-meta-item-icon">
             <i class="ri-quill-pen-line"></i>
             <span class="post-meta-item-text"> Word count:</span>
-            <span class="post-count">787</span>
+            <span class="post-count">841</span>
         </span>
     </span>
 
@@ -85,7 +85,7 @@
         <span class="post-meta-item-icon">
             <i class="ri-book-open-line"></i>
             <span class="post-meta-item-text"> Reading time≈</span>
-            <span class="post-count">3 min</span>
+            <span class="post-count">4 min</span>
         </span>
     </span>
 </div>
@@ -110,7 +110,7 @@
       
 
       
-      <h1 id="windows-下使用-ubuntu-子系统"><a href="#windows-下使用-ubuntu-子系统" class="headerlink" title="windows 下使用 ubuntu 子系统"></a>windows 下使用 ubuntu 子系统</h1><p>首先可以按照 <a href="https://blog.csdn.net/qq_37735796/article/details/106265409" target="_blank" rel="noopener">这篇博文</a> 对 terminal 进行美化！</p>
+      <h1 id="windows-下使用-ubuntu-子系统"><a href="#windows-下使用-ubuntu-子系统" class="headerlink" title="windows 下使用 ubuntu 子系统"></a>windows 下使用 ubuntu 子系统</h1><p>首先可以按照 <a href="https://yo-gurts.github.io/2020/05/21/winTerminal/" target="_blank" rel="noopener">这篇博文</a> 对 terminal 进行美化！</p>
 <h2 id="更换软件源"><a href="#更换软件源" class="headerlink" title="更换软件源"></a>更换软件源</h2><p>ubuntu官方的源下载较慢，换成阿里云的！<a href="https://blog.csdn.net/zhangjiahao14/article/details/80554616" target="_blank" rel="noopener">参考链接</a></p>
 <p>替换 <code>/etc/apt/source.list</code> 为以下内容，<strong>做好备份！！</strong></p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">deb http:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;ubuntu&#x2F; bionic main restricted universe multiverse</span><br><span class="line"></span><br><span class="line">deb-src http:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;ubuntu&#x2F; bionic main restricted universe multiverse</span><br><span class="line"></span><br><span class="line">deb http:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;ubuntu&#x2F; bionic-security main restricted universe multiverse</span><br><span class="line"></span><br><span class="line">deb-src http:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;ubuntu&#x2F; bionic-security main restricted universe multiverse</span><br><span class="line"></span><br><span class="line">deb http:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;ubuntu&#x2F; bionic-updates main restricted universe multiverse</span><br><span class="line"></span><br><span class="line">deb-src http:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;ubuntu&#x2F; bionic-updates main restricted universe multiverse</span><br><span class="line"></span><br><span class="line">deb http:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;ubuntu&#x2F; bionic-backports main restricted universe multiverse</span><br><span class="line"></span><br><span class="line">deb-src http:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;ubuntu&#x2F; bionic-backports main restricted universe multiverse</span><br><span class="line"></span><br><span class="line">deb http:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;ubuntu&#x2F; bionic-proposed main restricted universe multiverse</span><br><span class="line"></span><br><span class="line">deb-src http:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;ubuntu&#x2F; bionic-proposed main restricted universe multiverse</span><br></pre></td></tr></table></figure>
@@ -162,7 +162,7 @@
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># git config --list  # 显示当前的Git配置</span></span><br><span class="line"><span class="comment"># git config -e [--global] # 编辑Git配置文件 </span></span><br><span class="line">git config [--global] user.name <span class="string">"[name]"</span>  <span class="comment"># 设置提交代码时的用户信息</span></span><br><span class="line">git config [--global] user.email <span class="string">"[email address]"</span> </span><br><span class="line">git config --global color.ui <span class="literal">true</span>  <span class="comment"># 让Git显示颜色，会让命令输出看起来更醒目</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 配置别名</span></span><br><span class="line">git config --global alias.st status</span><br><span class="line">git config --global alias.co checkout</span><br><span class="line">git config --global alias.ci commit</span><br><span class="line">git config --global alias.br branch</span><br><span class="line">git config --global alias.lg <span class="string">"log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)&lt;%an&gt;%Creset' --abbrev-commit"</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 配置SSH Key</span></span><br><span class="line">ssh-keygen -t rsa -C <span class="string">"youremail@example.com"</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 配置免密</span></span><br><span class="line"><span class="comment"># 下次执行git push再次输入用户名之后，git就会记住用户名密码并在上述目录下创建.git-credentials文件，记录的就是输入的用户名密码。</span></span><br><span class="line">vim ~/.gitconfig    <span class="comment"># 在后面追加如下两行</span></span><br><span class="line">cat&gt;&gt;~/.gitconfig&lt;&lt;EOF</span><br><span class="line">[credential]</span><br><span class="line">	helper=store</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>自定义一些别名</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">cat&gt;&gt;~/.bashrc&lt;&lt;EOF</span><br><span class="line"><span class="comment"># alias set</span></span><br><span class="line"><span class="built_in">alias</span> la=<span class="string">'ls -A'</span></span><br><span class="line"><span class="built_in">alias</span> lh=<span class="string">'ls -lh'</span></span><br><span class="line"><span class="built_in">alias</span> l=<span class="string">'ls'</span></span><br><span class="line"><span class="built_in">alias</span> cp=<span class="string">'cp -v'</span></span><br><span class="line"><span class="built_in">alias</span> mv=<span class="string">'mv -v'</span></span><br><span class="line"><span class="built_in">alias</span> rm=<span class="string">'rm -v'</span></span><br><span class="line"><span class="built_in">alias</span> vi=<span class="string">'vim'</span></span><br><span class="line"><span class="built_in">alias</span> lm=<span class="string">'ls -l|grep "^-"| wc -l'</span>   <span class="comment">#当前目录下文件个数</span></span><br><span class="line">EOF</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">cat&gt;&gt;~/.bashrc&lt;&lt;EOF</span><br><span class="line"><span class="comment"># alias set</span></span><br><span class="line"><span class="built_in">alias</span> la=<span class="string">'ls -A'</span></span><br><span class="line"><span class="built_in">alias</span> lh=<span class="string">'ls -lh'</span></span><br><span class="line"><span class="built_in">alias</span> l=<span class="string">'ls'</span></span><br><span class="line"><span class="built_in">alias</span> cp=<span class="string">'cp -v'</span></span><br><span class="line"><span class="built_in">alias</span> mv=<span class="string">'mv -v'</span></span><br><span class="line"><span class="built_in">alias</span> rm=<span class="string">'rm -v'</span></span><br><span class="line"><span class="built_in">alias</span> vi=<span class="string">'vim'</span></span><br><span class="line"><span class="built_in">alias</span> lm=<span class="string">'ls -l|grep "^-"| wc -l'</span>   <span class="comment">#当前目录下文件个数</span></span><br><span class="line"><span class="built_in">alias</span> img=<span class="string">'mogrify -negate'</span>  <span class="comment"># 图片反色 img *.png</span></span><br><span class="line">EOF</span><br></pre></td></tr></table></figure>
 </li>
 <li><p><strong>配置vim</strong></p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">cat&gt;&gt;~/.vimrc&lt;&lt;EOF</span><br><span class="line"><span class="string">" 自动匹配括号</span></span><br><span class="line"><span class="string">inoremap &#123; &#123;&#125;&lt;LEFT&gt;  </span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">set number  </span></span><br><span class="line"><span class="string">set ruler</span></span><br><span class="line"><span class="string">set showcmd</span></span><br><span class="line"><span class="string">set hls</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">"</span>this will make mouse active</span><br><span class="line"><span class="built_in">set</span> mouse=a</span><br><span class="line"></span><br><span class="line"><span class="string">"Set up tab spaces</span></span><br><span class="line"><span class="string">set tabstop=4 softtabstop=4 shiftwidth=4 expandtab</span></span><br><span class="line"><span class="string">set autoindent</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">"</span>To speed up vim</span><br><span class="line"><span class="built_in">set</span> re=1</span><br><span class="line"><span class="built_in">set</span> ttyfast</span><br><span class="line"><span class="built_in">set</span> lazyredraw</span><br><span class="line"><span class="built_in">set</span> scrolljump=10</span><br><span class="line"></span><br><span class="line"><span class="string">"设置非输入模式时按enter也换行</span></span><br><span class="line"><span class="string">nmap &lt;CR&gt; o&lt;Esc&gt;</span></span><br><span class="line"><span class="string">EOF</span></span><br></pre></td></tr></table></figure>
@@ -171,8 +171,26 @@
 </li>
 <li><p>设置终端仅显示当前文件夹名称</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 修改 ~/.bashrc 第 60 行的 \w 改为大写的 W 即可</span></span><br><span class="line">59  <span class="keyword">if</span> [ <span class="string">"<span class="variable">$color_prompt</span>"</span> = yes ]; <span class="keyword">then</span></span><br><span class="line">60      PS1=<span class="string">'$&#123;debian_chroot:+($debian_chroot)&#125;\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\W\[\033[00m\]\$ '</span></span><br><span class="line">61  <span class="keyword">else</span></span><br><span class="line">62      PS1=<span class="string">'$&#123;debian_chroot:+($debian_chroot)&#125;\u@\h:\w\$ '</span></span><br><span class="line">63  <span class="keyword">fi</span></span><br></pre></td></tr></table></figure>
+
 </li>
 </ul>
+<h2 id="实用技巧"><a href="#实用技巧" class="headerlink" title="实用技巧"></a>实用技巧</h2><p>在子系统中还可以调用windows的工具！！！</p>
+<table>
+<thead>
+<tr>
+<th align="left">name</th>
+<th align="left">作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">explorer.exe</td>
+<td align="left">打开文件管理器</td>
+</tr>
+<tr>
+<td align="left">code</td>
+<td align="left">打开 vs code (里面还可以直接打jupyter notebook)</td>
+</tr>
+</tbody></table>
 
       
       <!-- reward -->
@@ -237,7 +255,7 @@
     <a class="modal-close" href="javascript:;"><i class="ri-close-circle-line"></i></a>
     <p>扫一扫，分享到微信</p>
     <div class="wx-qrcode">
-      <img src="//api.qrserver.com/v1/create-qr-code/?size=150x150&data=http://yoursite.com/2020/05/24/winUbuntu/" alt="微信分享二维码">
+      <img src="//api.qrserver.com/v1/create-qr-code/?size=150x150&data=http://yoursite.com/2020/05/29/winUbuntu/" alt="微信分享二维码">
     </div>
 </div>
 
