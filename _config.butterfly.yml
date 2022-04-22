@@ -26,7 +26,7 @@ code_word_wrap: false
 # copy settings
 # copyright: Add the copyright information after copied content (複製的內容後面加上版權信息)
 copy:
-  enable: false
+  enable: true
   copyright:
     enable: false
     limit_count: 50
@@ -35,7 +35,7 @@ copy:
 # formal:
 #   icon: link || the description
 social:
-  # fab fa-github: https://github.com/xxxxx || Github
+  fab fa-github: https://github.com/yo-gurts || Github
   fas fa-envelope: mailto:yusong1117.u@gmail.com || Email
 
 # search (搜索)
@@ -60,8 +60,8 @@ local_search:
 
 # MathJax
 mathjax:
-  enable: false
-  per_page: false
+  enable: true
+  per_page: true
 
 # KaTeX
 katex:
@@ -485,7 +485,7 @@ tag_ui: # 留空或 index
 # Website Background (設置網站背景)
 # can set it to color or image (可設置圖片 或者 顔色)
 # The formal of image: url(http://xxxxxx.com/xxx.jpg)
-background: url(https://s2.loli.net/2022/04/20/b2ZR5KQh3sYOMPN.png)
+background: url(https://s2.loli.net/2022/04/22/T12XxDcRFB5GzoL.jpg)
 
 # Footer Background
 footer_bg: transparent
@@ -534,7 +534,7 @@ activate_power_mode:
 
 # Mouse click effects: fireworks (鼠標點擊效果: 煙火特效)
 fireworks:
-  enable: false
+  enable: true
   zIndex: 9999 # -1 or 9999
   mobile: false
 
