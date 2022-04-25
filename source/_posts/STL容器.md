@@ -24,7 +24,6 @@ top_img: transparent
 - `.front()`：返回第一元素的**引用**，你可以使用这些操作函数更改元素内容
 - `.back() `：返回最末元素的**引用**，`c.back() = 10`
 
-
 ### Vector
 
 Vector是一个dynamic array。
@@ -200,11 +199,10 @@ forward list原则上就是一个受限的list，不支持任何“后退移动"
 
 ### Queue
 
-- `.front()`：返回第一元素的**引用**
+- `.front()`：返回第一个元素的**引用**，该元素将最先出队
 - `.back() `：返回最末元素的**引用**，`c.back() = 10`
 - `.push()`： 将一个元素放入 queue 中
 - `.emplace()`： 将一个元素放入 queue 中，效率比 push 更高
-- `.top()`： 返回 queue 内的下一个元素
 - `.pop()`： 从 queue 内移除一个元素
 
 ### Priority_queue
