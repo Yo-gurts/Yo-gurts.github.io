@@ -585,7 +585,7 @@ font:
   global-font-size: 15px
   code-font-size: 15px
   font-family:
-  code-font-family: "Monospace Regluar"
+  code-font-family: monospace
 
 # Font settings for the site title and site subtitle
 # 左上角網站名字 主頁居中網站名字

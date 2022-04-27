@@ -200,6 +200,33 @@ read(fd, msg, n);
   1. 使用 lseek 获取文件大小
   2. 使用 lseek 拓展文件大小，但要想使文件大小真正拓展，必须进行写操作。也可使用 truncate 函数，直接拓展文件
 
+## truncate 函数
+
+设置文件为指定大小，若文件大小大于指定值时，会截断到指定大小。小于时，会在文件末尾添加空字符。
+
+文件不存在，或文件没有写权限，返回 -1。
+
+```c
+#include <unistd.h>
+#include <sys/types.h>
+
+int truncate(const char *path, off_t length);
+int ftruncate(int fd, off_t length);
+```
+- path：文件路径
+- length：指定文件大小
+- 返回值：
+  - 0，成功；
+  - -1，失败，错误码存储在errno中；
+
+- fd：文件描述符
+- length：指定文件大小
+- 返回值：
+  - 0，成功；
+  - -1，失败，错误码存储在errno中；
+
+编译时使用`-std=c99`会报警告，可以使用`-std=gnu99`来兼容。
+
 ## stat 函数
 
 获取文件属性，从 inode 结构体中获取。
