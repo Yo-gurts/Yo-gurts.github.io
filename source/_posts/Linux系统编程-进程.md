@@ -202,5 +202,6 @@ int main() {
 ## 参考资料
 
 - [PCB 进程控制块](https://www.cnblogs.com/yungyu16/p/13024626.html)
+- [PCB(task_struct)源码](https://elixir.bootlin.com/linux/v5.4.190/source/include/linux/sched.h#L624)
 - [操作系统--进程](https://github.com/szza/LearningNote/blob/master/4.%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/3_%E8%BF%9B%E7%A8%8B.md)
 - [物理内存和虚拟内存的映射关系](https://www.bilibili.com/video/BV1KE411q7ee?p=77)
