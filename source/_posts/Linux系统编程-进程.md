@@ -199,6 +199,117 @@ int main() {
 }
 ```
 
+## 进程组与会话
+
+进程组：进程组是一组进程的集合，每个进程组都有一个组长，与进程ID与组ID相同。
+
+默认子进程与父进程属于同一进程组，进程组ID == 第一个进程ID
+
+只要进程组中有一个进程存在，进程组就存在，与组长进程是否终止无关。
+
+```bash
+kill -9 -PGID # 给进程组中的所有进程发送 SIGKILL
+```
+
+会话：会话是一组**进程组**的集合，每个会话都有一个会话ID(SID)。
+
+同样，也可以给会话中的所有进程发送信号！
+
+终端中运行的程序其会话ID与该终端的进程ID相同，因此下面的命令会将终端也关闭！
+
+```bash
+cat | cat | cat | wc -l # 任意启动多个进程
+
+kill -9 -SID # 在另一个终端中发送 SIGKILL
+```
+
+### 会话
+
+创建会话的 6 点注意事项：
+1. 调用进程不能是进程组组长，该进程变成新会话首进程
+2. 该进程成为一个新进程组的组长进程
+3. 需要 root 权限（ubuntu 不需要）
+4. 新会话丢弃原有的控制终端，该会话没有控制终端
+5. 该调用进程是组长进程，则出错返回
+6. 建立新会话时，先调用 fork，父进程终止，子进程调用 setsid
+
+### getsid 函数
+
+获取进程的会话 id
+
+```c
+#include <sys/types.h>
+#include <unistd.h>
+
+pid_t getsid(pid_t pid);
+```
+
+- pid 参数：
+  - 如果 pid 为 0，则获取当前进程的会话 id；
+  - 如果 pid 为 > 0，则获取指定进程的会话 id；
+- 返回值：
+  - 返回会话 id，失败返回 -1，并设置 errno。
+
+### setsid 函数
+
+创建一个新会话，并以自己的 ID 设置进程组 ID，同时也是新会话的 ID！
+
+```c
+#include <sys/types.h>
+#include <unistd.h>
+
+pid_t setsid(void);
+```
+- 返回值：成功返回调用进程的会话 ID，失败返回-1，设置 error
+
+## 守护进程
+
+daemon 进程。通常运行于操作系统后台，脱离控制终端。一般不与用户直接交互。周期性的等待某个事件发生或周期性执行某一动作。
+
+**不受用户登录注销影响**。通常采用以 d 结尾的命名方式。
+
+创建守护进程，最关键的一步是调用 setsid 函数创建一个新的 Session，并成为 Session Leader。
+
+创建守护进程的步骤：
+1. fork 子进程，让父进程终止。
+2. 子进程调用 `setsid()` 创建新会话。
+3. 通常根据需要，改变工作目录位置 `chdir()`，防止目录被卸载。
+4. 通常根据需要，重设 umask 文件权限掩码，影响新文件的创建权限。022 -- 755
+5. 通常根据需要，关闭/重定向 文件描述符（主要是针对 0, 1, 2，一般是重定向到 `/dev/null`）。
+6. 守护进程 业务逻辑。`while()`
+
+```c
+int main(int argc, char *argv[])
+{
+    pid_t pid;
+    int ret, fd;
+    pid = fork();
+    if (pid > 0)    // 1. 创建子进程，父进程终止
+        exit(0);
+
+    pid = setsid(); // 2. 子进程调用 `setsid()` 创建新会话
+    if (pid == -1)
+        printf("setsid error");
+
+    ret = chdir("/home/zhcode/Code/code146"); // 3. 通常根据需要，改变工作目录位置
+    if (ret == -1)
+        printf("chdir error");
+
+    umask(0022);    // 4. 通常根据需要，重设 umask 文件权限掩码
+
+    close(STDIN_FILENO);    // 5. 通常根据需要，关闭/重定向 文件描述符
+    fd = open("/dev/null", O_RDWR); // fd --> 0
+    if (fd == -1)
+        printf("open error");
+
+    dup2(fd, STDOUT_FILENO); // 重定向 stdout 和 stderr
+    dup2(fd, STDERR_FILENO);
+
+    while(1);     // 6. 守护进程 业务逻辑
+    return 0;
+}
+```
+
 ## 参考资料
 
 - [PCB 进程控制块](https://www.cnblogs.com/yungyu16/p/13024626.html)

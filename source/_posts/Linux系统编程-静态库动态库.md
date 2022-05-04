@@ -1,7 +1,7 @@
 ---
 title: Linux系统编程-静态库动态库
 top_img: transparent
-date: 2022-04-28 19:40:35
+date: 2022-04-24 14:40:35
 updated: 2022-05-03 19:40:35
 tags:
   - Linux
@@ -40,27 +40,27 @@ description: Linux 下制件静态库和动态库的方法、流程
     int add(int a, int b) {
         return a + b;
     }
-
+    
     int sub(int a, int b) {
         return a - b;
     }
-
+    
     // mymath.h
     #ifndef _MYMATH_H_
     #define _MYMATH_H_
-
+    
     int add(int, int);
     int sub(int, int);
-
+    
     #endif
-
+    
     // main.c
     #include <stdio.h>
     #include "mymath.h"
-
+    
     int main() {
         int a = 10, b = 5;
-
+    
         printf("add: %d, sub: %d\n", add(a, b), sub(a, b));
         return 0;
     }
@@ -80,7 +80,7 @@ gcc main.c ./lib/libmymath.a -I ./include -o static
 │   └── libmymath.a
 ├── main.c
 ├── mymath.c    # 已经可以删除了
-└── static	    # 生成的可执行文件
+└── static      # 生成的可执行文件
 ```
 
 要点：
@@ -89,7 +89,7 @@ gcc main.c ./lib/libmymath.a -I ./include -o static
 
 ## 动态库
 
-1.  将 .c 生成 .o 文件，（生成与位置无关的代码 -fPIC） `gcc -c mymath.c -o mymath.o -fPIC`
+1.  将 `.c` 生成 `.o` 文件，（生成与位置无关的代码 `-fPIC`） `gcc -c mymath.c -o mymath.o -fPIC`
 2.  使用 `gcc -shared` 制作动态库 `gcc -shared -o libmymath.so mymath.o`
 3.  编译可执行文件时，指定所使用的动态库，`-l` 指定库名（去掉lib前缀与.so后缀），`-L `指定库路径
 
@@ -115,11 +115,12 @@ $ ./dynamic
   - 链接器：工作于链接阶段，用`-l -L`指定动态库路径
   - 动态链接器：工作于程序运行阶段，工作时需要提供动态库所在目录位置，通过环境变量：`export LD_LIBRARY_PATH=/path`
 
-4.  设置 `LD_LIBRARY_PATH` 指定动态库的目录（建议使用绝对路径），环境变量是进程的概念，要让动态库地址一直生效：
-    1.  通过环境变量 `export LD_LIBRARY_PATH=/path`，退出该终端后失效
-    2.  在`.bashrc`中添加环境变量，每次打开终端自动加载环境变量
-    3.  将库文件复制到 `/lib` 目录下，标准c库所在目录
-    4.  在`/etc/ld.so.conf`中添加 `include /path/lib.so`，使用 `ldconfig -v` 使修改生效
+**解决办法：**设置 `LD_LIBRARY_PATH` 指定动态库的目录（建议使用绝对路径），环境变量是进程的概念，要让动态库地址一直生效：
+
+1.  通过环境变量 `export LD_LIBRARY_PATH=/path`，退出该终端后失效
+2.  在`.bashrc`中添加环境变量，每次打开终端自动加载环境变量
+3.  将库文件复制到 `/lib` 目录下，标准c库所在目录
+4.  在`/etc/ld.so.conf`中添加 `include /path/lib.so`，使用 `ldconfig -v` 使修改生效
 
 ## 相关工具
 
@@ -137,14 +138,14 @@ objdump -dS dynamic
 
 ```bash
 ldd static
-	linux-vdso.so.1 (0x00007ffd507e9000)
-	libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007fba762d7000)
-	/lib64/ld-linux-x86-64.so.2 (0x00007fba764ee000)
+    linux-vdso.so.1 (0x00007ffd507e9000)
+    libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007fba762d7000)
+    /lib64/ld-linux-x86-64.so.2 (0x00007fba764ee000)
 ldd dynamic
-	linux-vdso.so.1 (0x00007ffee615b000)
-	libmymath.so => ./lib/libmymath.so (0x00007f482012c000)
-	libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007f481ff1c000)
-	/lib64/ld-linux-x86-64.so.2 (0x00007f4820138000)
+    linux-vdso.so.1 (0x00007ffee615b000)
+    libmymath.so => ./lib/libmymath.so (0x00007f482012c000)
+    libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007f481ff1c000)
+    /lib64/ld-linux-x86-64.so.2 (0x00007f4820138000)
 ```
 
 ### strace 系统调用
@@ -194,16 +195,6 @@ write(1, "add: 15, sub: 5\n", 16add: 15, sub: 5
 )       = 16    # 写到标准输出，字符串长度为16
 exit_group(0)                           = ?
 +++ exited with 0 +++
-```
-
-##
-
-查看环境变量的命令：
-
-```bash
-# 查看环境变量的命令：
-env
-
 ```
 
 ## 参考资料
