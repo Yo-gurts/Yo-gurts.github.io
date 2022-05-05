@@ -216,6 +216,38 @@ forward list原则上就是一个受限的list，不支持任何“后退移动"
 - `.top()`： 返回priority queue内的下一个元素
 - `.pop()`： 从priority queue内移除一个元素
 
+```c
+struct Node {
+    int priority;
+    int value;
+    Node(int p, int v) : priority(p), value(v) {}
+    bool operator<(const Node& other) const {
+        return priority < other.priority;
+    }
+};
+
+struct cmp {
+    bool operator()(const Node &a, const Node &b) {
+        return a->val > b->val;
+    }
+};
+
+int main() {
+    // priority_queue<int, vector<int>, less<int>> pq; // method 1, 正常类型
+    // method 2, 自定义类型，不能使用 lambda 或者函数，必须是类型里面重载运算符
+    // priority_queue<Node, vector<Node>, cmp> pq;
+    priority_queue<Node> pq;    // method 3, 重载了 operator<
+
+    for (int i = 1; i < 4; i++)
+        pq.push(Node(i, i));
+   
+    while (!pq.empty()) {
+        cout << pq.top().value << endl;
+        pq.pop();
+    }
+}
+```
+
 ### Bitset
 
 Bitset造出了一个内含bit或Boolean值上且**大小固定的array**。
