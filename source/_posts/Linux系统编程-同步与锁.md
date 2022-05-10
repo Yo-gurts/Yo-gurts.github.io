@@ -35,6 +35,8 @@ sudo apt install manpages-posix-dev
 ```c
 #include <pthread.h>
 
+// 静态初始化
+pthead_mutex_t muetx = PTHREAD_MUTEX_INITIALIZER;
 // 下面几个函数都是 成功返回 0， 失败返回错误号
 int pthread_mutex_init(pthread_mutex_t *restrict mutex,
         const pthread_mutexattr_t *restrict attr);
@@ -76,6 +78,108 @@ int pthread_mutex_init(pthread_mutex_t *restrict mutex,
 1. 线程试图对同一个互斥量 A 加锁两次。
 2. 线程 1 拥有 A 锁，请求获得 B 锁；线程 2 拥有 B 锁，请求获得 A 锁
 
+### example
+
+测试1：在不加锁的情况下，下面的`i++`和`printf`之间可能被另一个线程打断，导致输出的`i`的大小不连续！
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+#include <time.h>
+#include <unistd.h>
+
+int i = 0;
+
+void *thread_func(void *args) {
+    while(1) {
+        i++;
+        printf("thread_func: %d \n", i);
+        usleep(10);
+    }
+    return NULL;
+}
+
+int main() {
+    pthread_t tid;
+    pthread_create(&tid, NULL, thread_func, NULL);
+    while(1) {
+        i++;
+        printf("main_func: %d \n", i);
+        usleep(10);
+    }
+    return 0;
+}
+
+// result:
+// thread_func: 17982
+// main_func: 17982
+// thread_func: 17984
+// main_func: 17984
+// thread_func: 17986
+// main_func: 17986
+// thread_func: 17988
+// main_func: 17988
+// thread_func: 17990
+// main_func: 17990
+// thread_func: 17992
+// main_func: 17992
+// thread_func: 17994
+```
+
+加锁保证数据不被另一个线程修改！
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+#include <time.h>
+#include <unistd.h>
+
+
+int i = 0;
+pthread_mutex_t mutex_i = PTHREAD_MUTEX_INITIALIZER;
+
+void *thread_func(void *args) {
+    while(1) {
+        pthread_mutex_lock(&mutex_i);  // 上锁
+        i++;
+        printf("thread_func: %d \n", i);
+        pthread_mutex_unlock(&mutex_i);  // 解锁
+        usleep(10);
+    }
+    return NULL;
+}
+
+int main() {
+
+    pthread_t tid;
+    pthread_create(&tid, NULL, thread_func, NULL);
+
+    while(1) {
+        pthread_mutex_lock(&mutex_i);  // 上锁
+        i++;
+        printf("main_func: %d \n", i);
+        pthread_mutex_unlock(&mutex_i);  // 解锁
+        usleep(10);
+    }
+    return 0;
+}
+
+// result:
+// main_func: 19946
+// thread_func: 19947
+// main_func: 19948
+// thread_func: 19949
+// main_func: 19950
+// thread_func: 19951
+// main_func: 19952
+// thread_func: 19953
+// main_func: 19954
+// thread_func: 19955
+// main_func: 19956
+```
+
 ## rwlock 读写锁
 
 - 读共享，写独占。
@@ -85,6 +189,8 @@ int pthread_mutex_init(pthread_mutex_t *restrict mutex,
 ```c
 #include <pthread.h>
 
+// 静态初始化
+pthread_rwlock_t rwlock = PTHREAD_RWLOCK_INITIALIZER;
 // 初始化读写锁
 int pthread_rwlock_init(pthread_rwlock_t *restrict rwlock,
         const pthread_rwlockattr_t *restrict attr);
@@ -97,6 +203,148 @@ int pthread_rwlock_tryrdlock(pthread_rwlock_t *rwlock);
 int pthread_rwlock_unlock(pthread_rwlock_t *rwlock);
 ```
 
+## cond 条件变量
+
+条件变量本身不是锁！但它也可以造成线程阻塞。通常与互斥锁配合使用。给多线程提供一个会合的场所。
+
+```c
+#include <pthread.h>
+
+// 静态初始化
+pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+// 初始化条件变量
+int pthread_cond_init(pthread_cond_t *restrict cond,
+        const pthread_condattr_t *restrict attr);
+int pthread_cond_destroy(pthread_cond_t *cond);
+
+// 阻塞等待条件变量满足
+int pthread_cond_wait(pthread_cond_t *restrict cond,
+        pthread_mutex_t *restrict mutex);
+// 阻塞等待条件变量满足，最长等待到 abstime 时刻
+int pthread_cond_timedwait(pthread_cond_t *restrict cond,
+        pthread_mutex_t *restrict mutex,
+        const struct timespec *restrict abstime);
+// 唤醒（至少）一个阻塞在该条件变量上的线程，一般就理解为唤醒一个线程。
+int pthread_cond_signal(pthread_cond_t *cond);
+// 唤醒所有阻塞在该条件变量上的线程
+int pthread_cond_broadcast(pthread_cond_t *cond);
+```
+
+### pthread_cond_wait 函数
+
+阻塞等待一个条件变量！
+
+```c
+int pthread_cond_wait(pthread_cond_t *restrict cond,
+        pthread_mutex_t *restrict mutex);
+```
+
+- cond：条件变量的地址
+- mutex：互斥锁的地址
+- 返回值：0（成功），非 0（失败）
+
+函数作用：
+1. 阻塞等待条件变量 `cond` 满足
+2. 释放已掌握的互斥锁（解锁互斥量）相当于 `pthread_mutex_unlock(&mutex)`; **1.2.两步为一个原子操作**。
+3. 当被唤醒，`pthread_cond_wait` 函数返回时，解除阻塞并重新申请获取互斥锁 `pthread_mutex_lock(&mutex)`;
+
+此函数的原理不太好理解，建议看视频介绍[条件变量原理](https://www.bilibili.com/video/BV1KE411q7ee?p=176&t=290.8)！
+
+### pthread_cond_timedwait 函数
+
+阻塞等待一个条件变量，最长等待到 abstime 时刻。
+
+```c
+int pthread_cond_timedwait(pthread_cond_t *restrict cond,
+        pthread_mutex_t *restrict mutex,
+        const struct timespec *restrict abstime);
+```
+
+- cond：条件变量的地址
+- mutex：互斥锁的地址
+- abstime：等待的时间，绝对时间（即从1970年1月1日零时起的纳秒数）
+- 返回值：0（成功），非 0（失败）
+
+### 生产者消费者实现
+
+此处实现的产品是后生产的产品先被消费（栈）！
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <pthread.h>
+
+struct msg {
+    int num;
+    struct msg *next;
+};
+
+struct msg *product;
+pthread_cond_t has_product = PTHREAD_COND_INITIALIZER;
+pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+
+void *consumer(void *arg) {
+    struct msg *p;
+    while(1) {
+        pthread_mutex_lock(&lock);
+        while(product == NULL) {    // 多消费者情况下，防止产品被其他消费者消费
+            // 注意理解此函数会进行的操作（解锁+阻塞，收到唤醒解除阻塞+加锁）
+            pthread_cond_wait(&has_product, &lock);
+        }
+
+        p = product;
+        product = product->next;    // 模拟消费一个产品
+        // 将 printf 也放在锁的范围，这样才能观察到产品是后生产先被消费
+        printf("consumer %lu --- product %d\n", pthread_self(), p->num);
+        pthread_mutex_unlock(&lock);
+
+        free(p);
+        sleep(rand() % 5);
+    }
+    return NULL;
+}
+
+void *producer(void *arg) {
+    struct msg *p;
+    while(1) {
+        p = malloc(sizeof(struct msg));
+        p->num = rand() % 1000 + 1;    // 模拟生产一个产品
+
+        pthread_mutex_lock(&lock);
+        // 将 printf 也放在锁的范围，这样才能观察到产品是后生产先被消费
+        printf("producer %lu --- product %d\n", pthread_self(), p->num);
+        p->next = product;
+        product = p;    // 这种实现是栈的方式，后生产的产品先出
+        pthread_mutex_unlock(&lock);
+
+        // 将一个阻塞在该条件变量上的线程唤醒，当前代码同时唤醒多个线程，会导致错误
+        pthread_cond_signal(&has_product);
+        sleep(rand() % 5);
+    }
+    return NULL;
+}
+
+int main() {
+
+    pthread_t cons, prod;
+    pthread_create(&prod, NULL, producer, NULL);
+    pthread_create(&cons, NULL, consumer, NULL);
+
+    pthread_join(prod, NULL);
+    pthread_join(cons, NULL);
+    return 0;
+}
+```
+
+## sem 信号量
+
+进化版的互斥锁，加锁的线程数量可以自定义。
+
+同样是建议锁，虽然支持多次加锁，但信号量本身并不能保证数据不紊乱，而是需要底层数据结构支持并发操作。
+
 ## 相关资料
 
 - [读写锁优先级](https://www.bilibili.com/video/BV1KE411q7ee?p=172&spm_id_from=pageDriver)
+- [条件变量原理](https://www.bilibili.com/video/BV1KE411q7ee?p=176&t=290.8)
+- [生产者-多个消费者](https://www.bilibili.com/video/BV1KE411q7ee?p=180&t=471.6)

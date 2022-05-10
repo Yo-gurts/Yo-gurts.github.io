@@ -19,7 +19,9 @@ description:
 
 一个socket只有一个文件描述符，即发送缓冲区和接收缓冲区使用同一个文件描述符。
 
-### 字节序转换
+网络套接字本质：一个文件描述符指向一个套接字（该套接字内部由内核借助两个缓冲区实现）。
+
+## 字节序转换
 
 由于历史遗留问题，网络数据流采用大端字节序，而 pc 本地一般采用的小段字节序，所以在网络通信中，需要转换字节序。
 
@@ -38,7 +40,7 @@ uint32_t ntohl(uint32_t netlong);
 uint16_t ntohs(uint16_t netshort);
 ```
 
-### inet_pton 函数
+## inet_pton 函数
 
 将一个点分十进制的IP地址（字符串）转换为一个32位的整数。
 
@@ -46,6 +48,11 @@ uint16_t ntohs(uint16_t netshort);
 #include <arpa/inet.h>
 
 int inet_pton(int af, const char *src, void *dst);
+
+// example
+char *ip = "192.168.1.1";
+int ip_int = 0;
+inet_pton(AF_INET, ip, &ip_int);
 ```
 
 - af：地址族，可以是`AF_INET(ipv4)`、`AF_INET6(ipv6)`
@@ -56,7 +63,7 @@ int inet_pton(int af, const char *src, void *dst);
     - 0，异常，说明 `src` 不是一个合法的ip地址
     - -1，`af` 不是一个合法的地址族
 
-### inet_ntop 函数
+## inet_ntop 函数
 
 将一个网络字节序的IP地址转换为一个点分十进制的IP地址（字符串）。
 
@@ -65,6 +72,11 @@ int inet_pton(int af, const char *src, void *dst);
 
 const char *inet_ntop(int af, const void *src,
                         char *dst, socklen_t size);
+
+// example
+struct sockaddr_in client_addr;
+char ipv4_str[16];
+inet_ntop(AF_INET, &client_addr.sin_addr.s_addr, ipv4_str, sizeof(ipv4_str));
 ```
 
 - af：地址族，可以是`AF_INET(ipv4)`、`AF_INET6(ipv6)`
@@ -73,7 +85,7 @@ const char *inet_ntop(int af, const void *src,
 - size：dst 的大小
 - 返回值：成功返回 dst, 失败返回 NULL
 
-### inet_addr 函数
+## inet_addr 函数
 
 将一个点分十进制的IP地址（字符串）转换为一个32位的整数。
 
@@ -90,7 +102,7 @@ in_addr_t inet_addr(const char *cp);
 
 使用这个函数可能会出现问题，因为 `INADDR_NONE` 也是一个有效的IP地址`255.255.255.255`！
 
-### sockaddr 结构
+## sockaddr 结构
 
 同样是历史遗留问题，socket 相关的函数大多都是使用 `struct sockaddr` 结构，但现在使用的往往是 `struct sockaddr_in`，因此在传递参数时，要进行强制类型转换。
 
@@ -343,4 +355,14 @@ int main() {
     return 0;
 }
 ```
+
+`nc` 命令也可以用来做客户端测试！
+
+```bash
+nc 192.168.0.8 10001
+```
+
+## 相关资料
+
+[listen 和 accpet 函数说明](https://www.bilibili.com/video/BV1iJ411S7UA?p=18&spm_id_from=pageDriver)
 
