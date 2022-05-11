@@ -198,6 +198,7 @@ int pthread_rwlock_destroy(pthread_rwlock_t *rwlock);
 // 加读锁，
 int pthread_rwlock_wrlock(pthread_rwlock_t *rwlock);
 int pthread_rwlock_rdlock(pthread_rwlock_t *rwlock);
+int pthread_rwlock_trywrlock(pthread_rwlock_t *rwlock);
 int pthread_rwlock_tryrdlock(pthread_rwlock_t *rwlock);
 
 int pthread_rwlock_unlock(pthread_rwlock_t *rwlock);
@@ -339,12 +340,125 @@ int main() {
 
 ## sem 信号量
 
-进化版的互斥锁，加锁的线程数量可以自定义。
+进化版的互斥锁，加锁的线程数量 N 可以自定义，即同时访问数据的线程数量可以为 N。
 
 同样是建议锁，虽然支持多次加锁，但信号量本身并不能保证数据不紊乱，而是需要底层数据结构支持并发操作。
+
+**信号和信号量毫无关系！！**
+
+```c
+#include <semaphore.h>
+
+int sem_init(sem_t *sem, int pshared, unsigned int value);
+int sem_destroy(sem_t *sem);
+
+int sem_wait(sem_t *sem);
+int sem_trywait(sem_t *sem);
+int sem_timedwait(sem_t *sem, const struct timespec *abs_timeout);
+
+int sem_post(sem_t *sem);
+```
+
+信号量可以应用与线程、**进程**之间的同步！
+
+### sem_init 函数
+
+初始化信号量，可以设置是否共享，以及初始值。
+
+```c
+#include <semaphore.h>
+
+int sem_init(sem_t *sem, int pshared, unsigned int value);
+```
+
+- sem：信号量的地址
+- pshared：是否共享，0（用于线程间同步），1（用于进程间同步，在进程间共享）
+- value：N 值，可同时访问数据的线程数量
+- 返回值：0（成功），-1（失败）
+
+### 生产者消费者实现
+
+这个与上面基于条件变量的实现逻辑不同，建议先看视频[基于信号量实现生产者消费者模型](https://www.bilibili.com/video/BV1KE411q7ee?p=183&spm_id_from=pageDriver)
+理解实现的原理，再看具体实现代码。
+
+注意，对信号量初始化时，将 `product_num` 初始化为0，但仍然可以调用`sem_post`, `sem_wait`
+等函数，这与上面所说的最多只能有 N (这里为0) 是不是矛盾？怎么实现多个消费者？
+
+```c
+#include <pthread.h>
+#include <semaphore.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <unistd.h>
+
+#define NUM 10
+
+sem_t blank_num;
+sem_t product_num;
+
+int products[NUM];
+
+void *producer(void *arg) {
+    int i = 0;
+    while(1) {
+        sem_wait(&blank_num);   // 空格为空时阻塞 blank_num--
+
+        // 生产一个产品
+        products[i] = rand() % 1000;
+        printf("produce product: %d in index: %d\n", products[i], i);
+        sem_post(&product_num); // product_num++
+
+        i = (i+1) % NUM;    // 环形队列
+        sleep(rand() % 3);
+    }
+    return NULL;
+}
+
+void *consumer(void *arg) {
+    int i = 0;
+    while(1) {
+        sem_wait(&product_num); // 当产品为空时阻塞 product_num--
+
+        // 消费产品
+        printf("consume product: %d in index: %d\n", products[i], i);
+        sem_post(&blank_num);   // blank_num++
+
+        i = (i+1) % NUM;
+        sleep(rand() % 3);
+    }
+    return NULL;
+}
+
+int main() {
+    pthread_t prod, cons;
+
+    sem_init(&product_num, 0, 0);
+    sem_init(&blank_num, 0, NUM);
+
+    pthread_create(&prod, NULL, producer, NULL);
+    pthread_create(&cons, NULL, consumer, NULL);
+
+    pthread_join(prod, NULL);
+    pthread_join(cons, NULL);
+    return 0;
+}
+```
+
+## 对比总结
+
+| pthread_mutex_t       | pthread_rwlock_t                                       | pthread_cond_t                                  | sem_t         |
+| --------------------- | ------------------------------------------------------ | ----------------------------------------------- | ------------- |
+| pthread_mutex_init    | pthread_rwlock_init                                    | pthread_cond_init                               | sem_init      |
+| pthread_mutex_lock    | pthread_rwlock_wrlock<br />pthread_rwlock_rdlock       | pthread_cond_wait                               | sem_wait      |
+| pthread_mutex_trylock | pthread_rwlock_trywrlock<br />pthread_rwlock_tryrdlock |                                                 | sem_trywait   |
+|                       |                                                        | pthread_cond_timedwait                          | sem_timedwait |
+| pthread_mutex_unlock  | pthread_rwlock_unlock                                  | pthread_cond_signal<br />pthread_cond_broadcast | sem_post      |
+| pthread_mutex_destroy | pthread_rwlock_destroy                                 | pthread_cond_destroy                            | sem_destroy   |
 
 ## 相关资料
 
 - [读写锁优先级](https://www.bilibili.com/video/BV1KE411q7ee?p=172&spm_id_from=pageDriver)
 - [条件变量原理](https://www.bilibili.com/video/BV1KE411q7ee?p=176&t=290.8)
 - [生产者-多个消费者](https://www.bilibili.com/video/BV1KE411q7ee?p=180&t=471.6)
+- [基于信号量实现生产者消费者模型](https://www.bilibili.com/video/BV1KE411q7ee?p=183&spm_id_from=pageDriver)
