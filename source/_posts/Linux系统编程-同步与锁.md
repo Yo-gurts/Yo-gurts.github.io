@@ -247,7 +247,9 @@ int pthread_cond_wait(pthread_cond_t *restrict cond,
 函数作用：
 1. 阻塞等待条件变量 `cond` 满足
 2. 释放已掌握的互斥锁（解锁互斥量）相当于 `pthread_mutex_unlock(&mutex)`; **1.2.两步为一个原子操作**。
-3. 当被唤醒，`pthread_cond_wait` 函数返回时，解除阻塞并重新申请获取互斥锁 `pthread_mutex_lock(&mutex)`;
+3. 当被唤醒，`pthread_cond_wait` 函数返回时，**解除阻塞并重新申请获取互斥锁** `pthread_mutex_lock(&mutex)`;
+
+**注意：`pthread_cond_broadcast`会唤醒所有阻塞在该条件变量上的线程，但并不意味这所有线程会同时收到`pthread_cond_wait`函数返回，因为该函数返回前还有获取互斥锁这一步，任意一个线程获取锁后，其他线程都会阻塞等待！所以，实际上线程的唤醒任然有先后顺序！**
 
 此函数的原理不太好理解，建议看视频介绍[条件变量原理](https://www.bilibili.com/video/BV1KE411q7ee?p=176&t=290.8)！
 
@@ -267,6 +269,10 @@ int pthread_cond_timedwait(pthread_cond_t *restrict cond,
 - 返回值：0（成功），非 0（失败）
 
 ### 生产者消费者实现
+
+条件变量和互斥量是对产品列表加锁，无论是生产者还是消费者，想要生产或消费产品，都需要先获得锁，才能对产品列表进行操作！
+
+这里用到的核心函数就是[pthread_cond_wait](#pthread_cond_wait 函数)，只要理解该函数的逻辑，就容易理解下面的模型！
 
 此处实现的产品是后生产的产品先被消费（栈）！
 
@@ -288,8 +294,11 @@ pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 void *consumer(void *arg) {
     struct msg *p;
     while(1) {
-        pthread_mutex_lock(&lock);
-        while(product == NULL) {    // 多消费者情况下，防止产品被其他消费者消费
+        pthread_mutex_lock(&lock);  // 加锁防止其他消费者抢占
+
+        /* 多消费者时，这里必须用while，因为通过broadcast方式唤醒所有阻塞线程时（唤醒时所有线程要去争锁），
+           有可能其他线程先获得锁，也就先消费了产品，到本线程时，可能已经没有产品了，因此还要先判断是否有产品！ */
+        while(product == NULL) {
             // 注意理解此函数会进行的操作（解锁+阻塞，收到唤醒解除阻塞+加锁）
             pthread_cond_wait(&has_product, &lock);
         }
@@ -319,9 +328,10 @@ void *producer(void *arg) {
         product = p;    // 这种实现是栈的方式，后生产的产品先出
         pthread_mutex_unlock(&lock);
 
-        // 将一个阻塞在该条件变量上的线程唤醒，当前代码同时唤醒多个线程，会导致错误
-        pthread_cond_signal(&has_product);
-        sleep(rand() % 5);
+        // 将一个阻塞在该条件变量上的线程唤醒
+        // pthread_cond_signal(&has_product);
+        pthread_cond_broadcast(&has_product);
+        sleep(rand() % 2);
     }
     return NULL;
 }
@@ -332,6 +342,12 @@ int main() {
     pthread_create(&prod, NULL, producer, NULL);
     pthread_create(&cons, NULL, consumer, NULL);
 
+    pthread_t cons1, cons2; // 模拟多消费者
+    pthread_create(&cons1, NULL, consumer, NULL);
+    pthread_create(&cons2, NULL, consumer, NULL);
+    pthread_join(cons1, NULL);
+    pthread_join(cons2, NULL);
+
     pthread_join(prod, NULL);
     pthread_join(cons, NULL);
     return 0;
@@ -341,6 +357,8 @@ int main() {
 ## sem 信号量
 
 进化版的互斥锁，加锁的线程数量 N 可以自定义，即同时访问数据的线程数量可以为 N。
+
+**初值为N，并不是最大值为N，但若调用sem_post，N值还会变大！**
 
 同样是建议锁，虽然支持多次加锁，但信号量本身并不能保证数据不紊乱，而是需要底层数据结构支持并发操作。
 
@@ -455,6 +473,43 @@ int main() {
 |                       |                                                        | pthread_cond_timedwait                          | sem_timedwait |
 | pthread_mutex_unlock  | pthread_rwlock_unlock                                  | pthread_cond_signal<br />pthread_cond_broadcast | sem_post      |
 | pthread_mutex_destroy | pthread_rwlock_destroy                                 | pthread_cond_destroy                            | sem_destroy   |
+
+下面的方法有助于理解其实现原理，但不是真实情况：
+
+- `mutex`可以看作一个整数，且只有两种取值：0和1。
+    - init ：将 `i` 的值设置为1。
+    - lock ：相当于 `i--`，将 `i` 的值从 1 变为 0。如果 `i` 为0，则阻塞。
+    - unlock ：相当于 `i++`，若 i 已经为 1，i 将不会变化。
+- `sem` 相当于初值为 N 的互斥量
+    - init ：初始化 `i`，初始值为 N。
+    - wait ：相当于 `i--`，若 `i` 为0，则阻塞。
+    - post ：相当于 `i++`，若 `i` 已经达到 N，还是会 `++`！（注意与 mutex 区分）
+
+```c
+// mutex
+int main() {
+    pthread_mutex_t m;
+    pthread_mutex_init(&m, NULL);
+    pthread_mutex_unlock(&m);
+    pthread_mutex_lock(&m);     printf("lock 1\n");
+    pthread_mutex_lock(&m);     printf("lock 2\n"); // 阻塞
+    return 0;
+}
+
+// sem
+int main() {
+    sem_t s;
+    sem_init(&s, 1, 3);
+    sem_post(&s);
+    sem_wait(&s);   printf("wait 1\n");
+    sem_wait(&s);   printf("wait 2\n");
+    sem_wait(&s);   printf("wait 3\n");
+    sem_wait(&s);   printf("wait 4\n");
+    sem_wait(&s);   printf("wait 5\n"); // 阻塞
+    sem_destroy(&s);
+    return 0;
+}
+```
 
 ## 相关资料
 
