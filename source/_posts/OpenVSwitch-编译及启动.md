@@ -277,7 +277,7 @@ ARG pktgen_version=20.11.3
 
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get -y install build-essential python3-pip liblua5.3-dev \
-    cmake wget libnuma-dev pciutils libpcap-dev libelf-dev linux-headers-generic \
+    cmake wget libnuma-dev pciutils libpcap-dev libelf-dev linux-headers-generic a\
     && pip3 install meson ninja pyelftools
 
 WORKDIR /opt

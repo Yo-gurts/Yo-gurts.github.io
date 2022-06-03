@@ -298,7 +298,7 @@ int main() {
         print_set(&pend);
         sleep(2);
     }
-	return 0;
+    return 0;
 }
 ```
 
@@ -346,7 +346,7 @@ int main() {
     sigaction(SIGINT, &act, &oldact);
 
     while(1);
-	return 0;
+    return 0;
 }
 ```
 
@@ -418,7 +418,7 @@ int main() {
         printf("i'm child, pid = %d\n", getpid());
     }
 
-	return 0;
+    return 0;
 }
 ```
 

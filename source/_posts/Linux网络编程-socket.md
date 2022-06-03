@@ -230,13 +230,25 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
 // example
 struct sockaddr_in client_addr;
 socklen_t client_addrlen = sizeof(client_addr);
-int sockfd2 = accept(sockfd1, (struct sockaddr *)&client_addr, &client_addrlen);
+int sockfd2;
+again:
+    sockfd2 = accept(sockfd1, (struct sockaddr *)&client_addr, &client_addrlen);
+    if (sockfd2 < 0) {
+        if (errno == EINTR || errno == ECONNABORTED)
+            goto again;
+        else {
+            perror("accept error");
+            exit(1);
+        }
+    }
 ```
 
 - sockfd：传入的套接字，上面绑定了地址的 socket1
 - addr：传出参数，返回成功建立连接的**客户端**的地址结构
 - addrlen：传入传出参数，传入为参2 addr 的大小，传出为客户端的 addr 的实际大小
-- 返回值：成功返回新建的 socket2 文件描述符，失败返回 -1，并设置 errno
+- 返回值：成功返回新建的 socket2 文件描述符，失败返回 -1，并设置 errno：
+    - EINTR：被信号中断
+    - ECONNABORTED：连接被拒绝
 
 ### connect 函数
 

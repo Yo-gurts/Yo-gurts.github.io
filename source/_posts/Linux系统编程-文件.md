@@ -13,6 +13,22 @@ description: Linux下一切皆文件，整理处理文件的相关系统调用
 
 应用程序的系统调用过程：应用程序->库函数->系统调用->驱动->硬件（磁盘、网卡等）
 
+## 内核态和用户态
+
+现代处理器架构一般允许 CPU 至少在两种不同状态下运行，即：用户态和核心态（有时也称之为监管态 supervisor mode）。执行硬件指令可使 CPU 在两种状态间来回切换。与之对应，**可将虚拟内存区域划分（标记）为用户空间部分或内核空间部分**。**在用户态下运行时，CPU 只能访问被标记为用户空间的内存**，试图访问属于内核空间的内存会引发硬件异常。**当运行于核心态时，CPU 既能访问用户空间内存，也能访问内核空间内存**。
+
+仅当处理器在核心态运行时，才能执行某些特定操作。这样的例子包括：执行宕机（halt）指令去关闭系统，访问内存管理硬件，以及设备 I/O 操作的初始化等。实现者们利用这一硬件设计，将操作系统置于内核空间。这确保了用户进程既不能访问内核指令和数据结构，也无法执行不利于系统运行的操作。
+
+## 系统调用
+
+系统调用是受控的内核入口，借助于这一机制，进程可以请求内核以自己的名义去执行某些动作。以应用程序编程接口（API）的形式，内核提供有一系列服务供程序访问。这包括创建新进程、执行 I/O，以及为进程间通信创建管道等。
+
+- 系统调用将处理器从用户态切换到核心态，以便 CPU 访问受到保护的内核内存。
+- 系统调用的组成是固定的，每个系统调用都由一个唯一的数字来标识。（程序通过名称来标识系统调用，对这一编号方案往往一无所知。）
+- 每个系统调用可辅之以一套参数，对用户空间（亦即进程的虚拟地址空间）与内核空间之间（相互）传递的信息加以规范。
+
+在探究系统调用时会反复涉及原子操作的概念。**所有系统调用都是以原子操作方式执行的**。之所以这么说，是指内核保证了某系统调用中的所有步骤会作为独立操作而一次性加以执行，其间不会为其他进程或线程所中断。
+
 ## 文件类型
 
 | 文件类型标识 | 文件类型 |
@@ -37,6 +53,8 @@ description: Linux下一切皆文件，整理处理文件的相关系统调用
 
 进程里面用户打开的文件的文件描述符从3开始编号。
 
+**两个不同的文件描述符，若指向同一打开文件句柄，将共享同一文件偏移量**。因此，如果通过其中一个文件描述符来修改文件偏移量（由调用 read()、write()或 lseek()所致），那么从另一文件描述符中也会观察到这一变化。无论这两个文件描述符分属于不同进程，还是同属于一个进程，情况都是如此。
+
 ### dentry 和 inode
 
 一个文件主要由两部分组成，dentry(目录项)和 inode，inode 本质是结构体，存储文件的属性信息，如：权限、类型、大小、时间、用户、盘快位置等。也叫做文件属性管理结构，大多数的 inode 都存储在磁盘上，少量常用、近期使用的 inode 会被缓存到内存中。
@@ -58,11 +76,13 @@ ln oldfile.txt newfile.txt # 创建硬链接
 ln -s /etc/oldfile.txt newfile.txt # 软链接文件创建时最好用绝对路径，或者文件移动位置后会失效
 ```
 
-![](https://xzchsia.github.io/img/in-post/linux-hard-soft-link/linux-soft-hard-link-diff.png)
+![img](../images/Linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B-%E6%96%87%E4%BB%B6/linux-soft-hard-link-diff.png)
 
 冷知识：`.`、`..`目录也是通过硬链接创建的。
 
 ## open 函数
+
+打开文件并返回文件描述符，其返回值为进程未用文件描述符中数值最小者！
 
 ```c
 #include <sys/types.h>
@@ -80,13 +100,14 @@ int fd = open("/etc/passwd", O_RDWR|O_CREAT|O_EXCL, 0664);
 - flags：指定文件的打开方式，`O_RDONLY, O_WRONLY, or O_RDWR`
     - O_RDONLY：只读
     - O_WRONLY：只写
-    - O_RDWR：读写
+    - O_RDWR：读写。注意 O_RDWR 并不等同于 O_RDONLY | O_WRONLY，后者（或组合）属于逻辑错误。
+      早期的 UNIX 实现中使用数字 0、1、2 表示上述三个打开方式，为了与早期系统兼容，采用了同样的方式！
     - O_APPEND：若文件有内容，在文件末尾追加
     - O_TRUNC：若文件存在则清空
     - O_CREAT：若文件不存在则创建
     - O_EXCL：若文件存在则报错，配合O_CREAT使用
-- mode：flags 指定了 O_CREAT 时才可使用指定文件权限`mode=0664`，文件权限 = mode & ~umask。
-- 返回值：文件描述符，若失败则返回-1并设置errno
+- mode：flags 指定了 O_CREAT 时才可使用，指定文件权限 `mode=0664`(八进制数)，文件权限 = mode & ~umask。
+- 返回值：文件描述符，若失败则返回-1并设置errno，其返回值为进程未用文件描述符中数值最小者！
 
 ### umask
 
@@ -102,15 +123,30 @@ umask值一共有4组数字，其中第1组数字用于定义特殊权限，我�
 
 ## 错误处理
 
-系统调用的函数出错时，通常会设置变量`errno`，可以通过 `strerror(errno)`来查看报错数字的含义。
+系统调用的函数出错时，通常会设置变量`errno`，可以通过库函数 `strerror(errno)`和`perror(char *msg)`来查看报错数字的含义。
 
 ```c
-#include <error.h>
+#include <stdio.h>
+void perror(const char *s);
 
-printf("error: %s \n", strerror(errno))
+#include <string.h>
+char *strerror(int errnum);
+
+fd = open(pathname，flags，mode);
+if (fd == -1) {
+    perror("open");
+    // printf("error: %s \n", strerror(errno));
+    exit(EXIT_FATLURE);
+}
 ```
 
+函数 `perror()`会打印出其 msg 参数所指向的字符串，紧跟一条与当前 errno 值相对应的消息。
+
+函数 `strerror()`会针对其 errno 参数中所给定的错误号，返回相应的错误字符串。
+
 ## close 函数
+
+`close()`系统调用关闭一个打开的文件描述符，并将其释放回调用进程，供该进程继续使用。当一进程终止时，将自动关闭其已打开的所有文件描述符。
 
 ```c
 #include <unistd.h>
@@ -134,16 +170,16 @@ ssize_t n = read(fd, buf, 100);
 ```
 
 - fd：文件描述符
-- buf：存放读取数据的缓冲区
-- count：要读取的字节数
-- 返回值：
+- buf：用来存放输入数据的内存缓冲区地址。缓冲区至少应有 count 个字节。
+- count：指定最多能读取的字节数，size_t 数据类型属于无符号整数类型。
+- 返回值：ssize_t 数据类型属于有符号的整数类型
   - `>0`，读取的字节数；
-  - =0，读到文件末尾；
+  - =0，读到文件末尾（EOF）；
   - -1，读取失败，错误码存储在errno中；
 
 ## write 函数
 
-向文件写入数据，返回写入的字节数。
+向文件写入数据，返回实际写入的字节数。
 
 ```c
 #include <unistd.h>
@@ -157,8 +193,8 @@ ssize_t n = write(fd, buf, strlen(buf));
 ```
 
 - fd：文件描述符
-- buf：要写入的数据
-- count：要写入的字节数
+- buf：要写入的数据的内存地址
+- count：欲从 buffer 写入文件的数据字节数
 - 返回值：
   - `>0`，写入的字节数；
   - -1，写入失败，错误码存储在errno中；
@@ -173,7 +209,7 @@ ssize_t n = write(fd, buf, strlen(buf));
 
 ## lseek 函数
 
-设置文件指针的位置，用于文件的读写。
+对于每个打开的文件，系统内核会记录其文件偏移量，有时也将文件偏移量称为读写偏移量或指针。文件偏移量是指执行下一个 read()或 write()操作的文件起始位置，会以相对于文件头部起始点的文件当前位置来表示。文件第一个字节的偏移量为 0。
 
 ```c
 #include <sys/types.h>
@@ -196,11 +232,14 @@ read(fd, msg, n);
 - whence：起始偏移位置，可以是 SEEK_SET（文件开头），SEEK_CUR（当前位置），SEEK_END（文件末尾）
 - 返回值：文件指针的新位置，若失败则返回-1并设置errno
 
+获取文件偏移量的当前位置：`curr = lseek(fd，0，SEEK_CUR);`
+
 应用场景：
+
   1. 使用 lseek 获取文件大小
   2. 使用 lseek 拓展文件大小，但要想使文件大小真正拓展，必须进行写操作。也可使用 truncate 函数，直接拓展文件
 
-## truncate 函数
+## truncate/ftruncate 函数
 
 设置文件为指定大小，若文件大小大于指定值时，会截断到指定大小。小于时，会在文件末尾添加空字符。
 
@@ -214,18 +253,50 @@ int truncate(const char *path, off_t length);
 int ftruncate(int fd, off_t length);
 ```
 - path：文件路径
-- length：指定文件大小
+- length：指定文件大小，若文件当前长度大于参数 length，调用将丢弃超出部分，若小于参数 length，调用将在文件尾部添加一系列空字节或是一个文件空洞。
 - 返回值：
   - 0，成功；
   - -1，失败，错误码存储在errno中；
-
-- fd：文件描述符
-- length：指定文件大小
-- 返回值：
-  - 0，成功；
-  - -1，失败，错误码存储在errno中；
+- fd：要修改的文件描述符。该系统调用不会修改文件偏移量！
 
 编译时使用`-std=c99`会报警告，可以使用`-std=gnu99`来兼容。
+
+## fcntl 函数
+
+`fcntl()`系统调用对一个打开的文件描述符执行一系列控制操作。
+
+```c
+#include <unistd.h>
+#include <fcntl.h>
+
+int fcntl(int fd, int cmd, ... /* arg */ );
+```
+
+- cmd 参数所支持的操作范围很广。
+- 第三个参数以省略号来表示，这意味着可以将其设置为不同的类型，或者加以省略。内核会依据 cmd 参数（如果有的话）的值来确定该参数的数据类型。
+
+## pread/pwrite 函数
+
+系统调用 pread()和 pwrite()完成与 read()和 write()相类似的工作，只是前两者会在 offset 参数所指定的位置进行文件 I/O 操作，而非始于文件的当前偏移量处，且**它们不会改变文件的当前偏移量**。
+
+```c
+#include <unistd.h>
+
+ssize_t pread(int fd, void *buf, size_t count, off_t offset);
+ssize_t pwrite(int fd, const void *buf, size_t count, off_t offset);
+
+// pread(O)调用等同于将如下调用纳入同一原子操作:
+off_t orig;
+
+orig = lseek(fd，0，SEEK_CUR);   /# Save CUITITent offset *#/
+lseek(fd，offset，SEEK_SET);
+s = read(fd，buf，len);
+lseek(fd，orig，SEEK_SET);       /# Restore original file offset *#/
+```
+
+- offset: 在指定的位置进行文件 I/O 操作
+
+该函数在多线程下有用武之地，当调用pread()或 pwrite()时，多个线程可同时对同一文件描述符执行 I/O 操作，且不会因其他线程修改文件偏移量而受到影响。
 
 ## stat 函数
 
@@ -364,3 +435,8 @@ int newfd = dup2(fd, STDOUT_FILENO); // 将标准输出等重定向到文件
   - -1，失败，错误码存储在errno中；
 
 让 newfd 指向 oldfd，也就是说无论写newfd还是oldfd，都会写到oldfd。
+
+## 相关资料
+
+- [**Linux系统调用列表**](https://blog.51cto.com/u_3078781/3287065)
+- 《LINUX 系统编程手册》
