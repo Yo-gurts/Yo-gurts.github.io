@@ -55,6 +55,7 @@ const __u8 ip_tos2prio[16]={0,0,0,0,2,2,2,2,6,6,6,4,4,4,4};
 也就是说：
 
 ```c
+const __u8 ip_tos2prio[16]={0,0,0,0,2,2,2,2,6,6,6,4,4,4,4};
 skb->priority = ip_tos2prio[(tos & 0x1E) >> 1];
 ```
 

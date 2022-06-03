@@ -335,11 +335,66 @@ RUN apt-get update \
 
 ### 基于内核数据通路
 
+以默认参数启动可直接使用`ovs-ctl`命令。
 
+```bash
+ovs-ctl start
+```
 
 ### 基于 DPDK 的数据通路
 
+DPDK的数据通路需要一些额外的配置。
 
+```bash
+# 删除旧的配置信息
+rm /usr/local/etc/openvswitch/*
+rm /usr/local/var/run/openvswitch/*
+rm /usr/local/var/log/openvswitch/*
+
+## 0. 设置hugepages
+dpdk-hugepages.py -p 1G --setup 4G
+
+## 1. 启动ovsdb，先不启动ovs-vswitchd
+ovs-ctl --no-ovs-vswitchd start --system-id=random
+
+## 2. 配置使用DPDK，可以配置从任何给定 NUMA 节点使用的内存量
+ovs-vsctl --no-wait set Open_vSwitch . other_config:pmd-cpu-mask=0x02
+ovs-vsctl --no-wait set Open_vSwitch . other_config:dpdk-socket-mem="1024"
+ovs-vsctl --no-wait set Open_vSwitch . other_config:dpdk-init=true
+
+## 3. 启动 ovs-vswitchd （启动完成）
+ovs-ctl --no-ovsdb-server --db-sock="$DB_SOCK" start
+```
+
+以上面的方式启动时，无法指定相关文件的路径，下面是最原始的启动流程：
+
+```bash
+# 创建数据库文件
+mkdir -p /usr/local/etc/openvswitch
+ovsdb-tool create /usr/local/etc/openvswitch/conf.db \\
+    /usr/local/share/openvswitch/vswitch.ovsschema
+
+# 启动数据库
+mkdir -p /usr/local/var/run/openvswitch
+mkdir -p /usr/local/var/log/openvswitch
+ovsdb-server --remote=punix:/usr/local/var/run/openvswitch/db.sock \\
+    --remote=db:Open_vSwitch,Open_vSwitch,manager_options \\
+    --private-key=db:Open_vSwitch,SSL,private_key \\
+    --certificate=db:Open_vSwitch,SSL,certificate \\
+    --bootstrap-ca-cert=db:Open_vSwitch,SSL,ca_cert \\
+    --pidfile --detach --log-file
+
+# 初始化数据库
+ovs-vsctl --no-wait init
+
+# 配置使用DPDK, pmd-cpu-mask 要用16进制
+ovs-vsctl --no-wait set Open_vSwitch . other_config:pmd-cpu-mask=0x6
+ovs-vsctl --no-wait set Open_vSwitch . other_config:dpdk-socket-mem="1024"
+ovs-vsctl --no-wait set Open_vSwitch . other_config:dpdk-init=true
+
+# 启动 Open vSwitch 守护进程
+ovs-vswitchd --pidfile --detach --log-file=/root/logfile/s1-vswitchd.log
+```
 
 ## 相关资料
 
