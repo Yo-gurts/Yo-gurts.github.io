@@ -43,6 +43,10 @@ sudo modprobe openvswitch
 modinfo ./datapath/linux/openvswitch.ko | grep depends # 查看缺少依赖模块
 sudo modprobe nf_conntrack
 sudo modprobe nf_nat
+
+# 启动工具 ovs-ctl
+echo 'export PATH=$PATH:/usr/local/share/openvswitch/scripts' | tee -a /root/.bashrc \
+echo 'export DB_SOCK=/usr/local/var/run/openvswitch/db.sock' | tee -a /root/.bashrc
 ```
 
 [安装内核模块时报错的解决办法](https://blog.csdn.net/u010710985/article/details/119980125)
@@ -98,6 +102,10 @@ make -j     # 多线程编译
 # 单元测试（可以跳过）
 make check TESTSUITEFLAGS=-j8
 sudo make install
+
+# 启动工具 ovs-ctl
+echo 'export PATH=$PATH:/usr/local/share/openvswitch/scripts' | tee -a /root/.bashrc \
+echo 'export DB_SOCK=/usr/local/var/run/openvswitch/db.sock' | tee -a /root/.bashrc
 ```
 
 ## 生成Docker镜像

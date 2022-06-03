@@ -1,6 +1,8 @@
 src="/home/yogurt/Documents/source/_posts"
 dst="./source/_posts"
 
+rm ${dst}/*.md
+
 ln ${src}/Linux系统编程-信号.md ${dst}/Linux系统编程-信号.md
 ln ${src}/Linux系统编程-同步与锁.md ${dst}/Linux系统编程-同步与锁.md
 ln ${src}/Linux系统编程-文件.md ${dst}/Linux系统编程-文件.md

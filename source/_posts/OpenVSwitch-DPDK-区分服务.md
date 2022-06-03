@@ -135,7 +135,16 @@ dp_netdev_input__(pmd, packets, false, port_no);	// dpif-netdev.c
 
 因此，要使用 IP 包头中的 TOS 字段，只能自己添加用 TOS 初始化 `skb_priority` 的实现代码。
 
-可参考函数`packet_set_ipv4() lib/packets.c`！
+虽然上面的步骤中没有涉及到解析数据包的头部信息（L2/L3/L4），但要进行流表匹配，又必须要有这些信息，但这里只将这些信息提取到了`miniflow`结构中！
+
+```c
+2.1.2 提取信息到 miniflow 结构中！该函数就相当于协议栈，完成了对数据包 header 的解析
+miniflow_extract(packet, &key->mf);		// dpif-netdev.c
+```
+
+只需要在该函数中解析 `ip_tos` 后赋值给 `md->skb_priority` 即可！
+
+同样，后续还可能存在其他操作会修改 `md->skb_priority` 字段，但并不会改变数据包中 `TOS` 的值，**如果需要修改 `TOS` ，可参考函数`packet_set_ipv4() lib/packets.c`，会涉及到重新计算校验和等。**
 
 ## 相关资料
 
