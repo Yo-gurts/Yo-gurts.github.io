@@ -17,4 +17,5 @@ ln ${src}/OpenVSwitch-DPDK-区分服务.md ${dst}/OpenVSwitch-DPDK-区分服务.
 ln ${src}/OpenVSwitch-控制器ONOS.md ${dst}/OpenVSwitch-控制器ONOS.md
 ln ${src}/OpenVSwitch-编译及启动.md ${dst}/OpenVSwitch-编译及启动.md
 ln ${src}/ProgramBasic_STL.md ${dst}/STL容器.md
+ln ${src}/Redis笔记.md ${dst}/Redis笔记.md
 ln ${src}/Tensorflow-hub.md ${dst}/Tensorflow-hub.md

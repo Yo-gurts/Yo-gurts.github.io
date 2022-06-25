@@ -31,7 +31,7 @@ description: Linux 中的进程创建、回收。
 
 - **初始化数据段**包含显式初始化的全局变量和静态变量。当程序加载到内存时，从可执行文件中读取这些变量的值。
 
-- **未初始化数据段( BSS 段)**包含了未进行显式初始化的全局变量和静态变量。程序启动之前，系统将本段内所有内存初始化为 0。
+- **未初始化数据段(BSS段)**包含了未进行显式初始化的全局变量和静态变量。程序启动之前，系统将本段内所有内存初始化为 0。
 
   将经过初始化的全局变量和静态变量与未经初始化的全局变量和静态变量分开存放，其主要原因在于程序在磁盘上存储时，没有必要为未经初始化的变量分配存储空间。相反，可执行文件只需记录未初始化数据段的位置及所需大小，直到运行时再由程序加载器来分配这一空间。
 
@@ -40,6 +40,10 @@ description: Linux 中的进程创建、回收。
 - 堆（heap）是可在运行时（为变量）动态进行内存分配的一块区域。堆顶端称作 program break.
 
 ![image-20220526222503936](../images/Linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B-%E8%BF%9B%E7%A8%8B/image-20220526222503936.png)
+
+在 Linux 操作系统中，虚拟地址空间的内部又被分为**内核空间和用户空间**两部分，不同位数的系统，地址空间的范围也不同。比如最常见的 32 位和 64 位系统，如下所示：
+
+![img](../images/Linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B-%E8%BF%9B%E7%A8%8B/3a6cb4e3f27241d3b09b4766bb0b1124.png)
 
 ### 进程状态
 
@@ -407,3 +411,5 @@ int main(int argc, char *argv[])
 - [PCB(task_struct)源码](https://elixir.bootlin.com/linux/v5.4.190/source/include/linux/sched.h#L624)
 - [操作系统--进程](https://github.com/szza/LearningNote/blob/master/4.%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/3_%E8%BF%9B%E7%A8%8B.md)
 - [物理内存和虚拟内存的映射关系](https://www.bilibili.com/video/BV1KE411q7ee?p=77)
+- [小林coding--为什么要有虚拟内存？](https://xiaolincoding.com/os/3_memory/vmem.html#linux-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86)
+- 《Linux系统编程——6.4虚拟内存管理》
