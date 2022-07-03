@@ -162,6 +162,7 @@ FROM ubuntu:20.04
 
 # 复制编译后的文件
 COPY --from=build /usr/local /usr/local/
+WORKDIR /root
 
 RUN apt-get update \
   && apt-get -y --no-install-recommends install python3-all iproute2 net-tools \
@@ -209,6 +210,7 @@ FROM ubuntu:20.04
 
 # 复制相关文件
 COPY --from=build /usr/local /usr/local/
+WORKDIR /root
 
 RUN apt-get update \
     && apt-get -y --no-install-recommends install liblua5.3 libnuma-dev pciutils \
@@ -264,6 +266,7 @@ FROM ubuntu:20.04
 
 # 复制编译后的文件
 COPY --from=build /usr/local /usr/local/
+WORKDIR /root
 
 RUN apt-get update \
     && apt-get -y --no-install-recommends install liblua5.3 libnuma-dev pciutils \
@@ -285,7 +288,7 @@ ARG pktgen_version=20.11.3
 
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get -y install build-essential python3-pip liblua5.3-dev \
-    cmake wget libnuma-dev pciutils libpcap-dev libelf-dev linux-headers-generic a\
+    cmake wget libnuma-dev pciutils libpcap-dev libelf-dev linux-headers-generic \
     && pip3 install meson ninja pyelftools
 
 WORKDIR /opt
@@ -321,6 +324,7 @@ RUN cd pktgen-dpdk-pktgen-${pktgen_version} \
 FROM ubuntu:20.04
 
 COPY --from=build /usr/local /usr/local/
+WORKDIR /root
 
 RUN apt-get update \
     && apt-get -y --no-install-recommends install liblua5.3 libnuma-dev pciutils libpcap-dev python3 iproute2 \
