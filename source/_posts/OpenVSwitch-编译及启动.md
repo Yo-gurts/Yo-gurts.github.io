@@ -166,6 +166,7 @@ WORKDIR /root
 
 RUN apt-get update \
   && apt-get -y --no-install-recommends install python3-all iproute2 net-tools \
+  	 vim iperf iftop tcpdump \
   && ldconfig \
   && echo 'export PATH=$PATH:/usr/local/share/openvswitch/scripts' | tee -a /root/.bashrc \
   && echo 'export DB_SOCK=/usr/local/var/run/openvswitch/db.sock' | tee -a /root/.bashrc
@@ -214,7 +215,7 @@ WORKDIR /root
 
 RUN apt-get update \
     && apt-get -y --no-install-recommends install liblua5.3 libnuma-dev pciutils \
-    libpcap-dev python3 iproute2 net-tools iputils-ping \
+    libpcap-dev python3 iproute2 net-tools iputils-ping vim iperf iftop tcpdump \
     && ldconfig \
     && echo 'export PATH=$PATH:/usr/local/share/openvswitch/scripts' | tee -a /root/.bashrc \
     && echo 'export DB_SOCK=/usr/local/var/run/openvswitch/db.sock' | tee -a /root/.bashrc
@@ -270,7 +271,7 @@ WORKDIR /root
 
 RUN apt-get update \
     && apt-get -y --no-install-recommends install liblua5.3 libnuma-dev pciutils \
-    libpcap-dev python3 iproute2 net-tools iputils-ping \
+    libpcap-dev python3 iproute2 net-tools iputils-ping vim iperf iftop tcpdump \
     && ldconfig \
     && echo 'export PATH=$PATH:/usr/local/share/openvswitch/scripts' | tee -a /root/.bashrc \
     && echo 'export DB_SOCK=/usr/local/var/run/openvswitch/db.sock' | tee -a /root/.bashrc

@@ -117,6 +117,8 @@ ovs-vsctl set-controller s2 tcp:172.17.0.2:6653
 
 下发的`ARP`流表只能匹配`MAC`地址，但一般不需要手动下发。网络拓扑比较小时，也可以通过`arp -s {ip} {mac}`手动配置。
 
+**限制**：匹配的以太类型不为IP时，无法匹配目的IP或源IP！即ARP和MPLS类型的，只能和MAC地址一起作为匹配域。
+
 ## 参考资料
 
 -   [onos 官网预编译的下载页面](https://wiki.onosproject.org/display/ONOS/Downloads)

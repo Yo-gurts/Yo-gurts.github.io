@@ -40,27 +40,27 @@ description: Linux 下制件静态库和动态库的方法、流程
     int add(int a, int b) {
         return a + b;
     }
-    
+
     int sub(int a, int b) {
         return a - b;
     }
-    
+
     // mymath.h
     #ifndef _MYMATH_H_
     #define _MYMATH_H_
-    
+
     int add(int, int);
     int sub(int, int);
-    
+
     #endif
-    
+
     // main.c
     #include <stdio.h>
     #include "mymath.h"
-    
+
     int main() {
         int a = 10, b = 5;
-    
+
         printf("add: %d, sub: %d\n", add(a, b), sub(a, b));
         return 0;
     }
@@ -121,6 +121,101 @@ $ ./dynamic
 2.  在`.bashrc`中添加环境变量，每次打开终端自动加载环境变量
 3.  将库文件复制到 `/lib` 目录下，标准c库所在目录
 4.  在`/etc/ld.so.conf`中添加 `include /path/lib.so`，使用 `ldconfig -v` 使修改生效
+
+## Makefile
+
+**命名**：必须为 `Makefile / makefile`
+
+**缩进**：必须用`Tab`，不能用空格
+
+**变量**：与`bash`类似，但用 `$()` 而不是 `${}`
+
+**一个规则**：目标的时间必须晚于依赖条件的时间，否则，更新目标
+
+```makefile
+目标：依赖
+（Tab）命令
+```
+
+**两个函数**：匹配函数和替换函数
+
+```makefile
+# 匹配当前工作目录下的所有.c 文件。将文件名组成列表，赋值给变量 src
+# src = add.c sub.c div1.c
+src = $(wildcard *.c)
+src = $(wildcard ./*.c) # 和上面等价
+src = $(wildcard ./dir/*.c)  # 匹配子目录 src=./dir/add.c ./dir/sub.c
+```
+
+```makefile
+# 将参数 3 中，包含参数 1 的部分，替换为参数 2
+# obj = add.o sub.o div1.o
+obj = $(patsubst %.c, %.o, $(src))
+```
+
+**三个自动变量**：
+
+- `$@`：表示规则中的目标
+- `$<`：表示规则中的第一个依赖条件
+- `$^`：表示规则中所有的依赖条件
+
+**模式规则**：自动匹配当前目录下的文件
+
+```makefile
+# 目标：依赖
+#（Tab）命令
+%.o:%.c
+    gcc -c $< -o %@
+# 等价于为每一个 .c 文件写
+# a.o:a.c
+#   gcc -c a.c -o a.o
+```
+
+**静态模式规则**：以指定变量中值为目标，而不是在当前文件夹中搜索
+
+```makefile
+# 变量：目标：依赖
+#（Tab）命令
+$(obj):%.o:%.c
+    gcc -c $< -o %@
+```
+
+**clean**：清理文件
+
+```makefile
+clean: (没有依赖)
+    -rm -rf $(obj)
+# “-”：作用是，删除不存在文件时，不报错。顺序执行结束。
+```
+
+**目标**：第一个目标为总目标，该目标若不需要更新，就不会检查其他目标
+
+**伪目标：**当前目录若存在文件`ALL`，`clean`时，会导致`make`执行异常，使用伪目标可避免
+
+```makefile
+.PHONY: clean ALL
+```
+
+### Example
+
+```makefile
+src = $(wildcard ./src/*.c)
+obj = $(patsubst ./src/*.c ./src/*.o $(src))
+
+inc_path = ./include
+args = -Wall -std=c99
+
+ALL: main
+
+$(obj):./src/%.o:./src/%.c
+    gcc -c $< -o $@ $(args) -I $(inc_path)
+
+main:$(obj)
+    gcc $^ -o $@ $(args)
+
+clean:
+    -rm -rf $(obj) main
+```
 
 ## 相关工具
 
