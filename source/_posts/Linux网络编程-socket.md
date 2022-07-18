@@ -276,7 +276,7 @@ connect(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr));
 - addrlen：地址结构的大小 `sizeof(addr)`
 - 返回值：成功返囟 0，失败返囟 -1，并设置 errno
 
-### example
+### TCP example
 
 简单的 TCP 收发测试！
 
@@ -376,5 +376,5 @@ nc 192.168.0.8 10001
 
 ## 相关资料
 
-[listen 和 accpet 函数说明](https://www.bilibili.com/video/BV1iJ411S7UA?p=18&spm_id_from=pageDriver)
-
+- [listen 和 accpet 函数说明](https://www.bilibili.com/video/BV1iJ411S7UA?p=18&spm_id_from=pageDriver)
+- [TCP 三次握手与四次挥手](https://xiaolincoding.com/network/3_tcp/tcp_interview.html)
