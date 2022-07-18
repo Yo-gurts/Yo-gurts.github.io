@@ -229,14 +229,17 @@ RUN apt-get update \
 Dockerfile
 dpdk-stable-20.11.5 # DPDK的源码
 ovs-2.16.0          # OVS的源码
+bin					# 其他一些可执行文件
 ```
 
 `Dockerfile` 文件中的内容如下：
 
+*为了避免重复编译，不要使用`COPY . . `，并且COPY文件应该分别运行*
+
 ```Dockerfile
 FROM ubuntu:20.04 as build
 ARG dpdk_version=20.11.5
-ARG ovs_version=2.16.3
+ARG ovs_version=2.16.0
 
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get -y install build-essential python3-pip liblua5.3-dev \
@@ -246,16 +249,16 @@ RUN apt-get update \
 WORKDIR /opt
 
 # 将本地文件复制到docker中
-COPY . .
-
-# 编译 DPDK
+# 编译 DPDK，COPY 文件夹时必须指定目的文件夹名！
+COPY dpdk-stable-${dpdk_version} dpdk-stable-${dpdk_version}
 RUN cd dpdk-stable-${dpdk_version} \
     && meson build \
     && ninja -C build \
     && ninja -C build install \
     && cp -r build/lib /usr/local/
-
+    
 # 编译 OVS
+COPY ovs-${ovs_version} ovs-${ovs_version}
 RUN cd ovs-${ovs_version} \
     && sh boot.sh \
     && ./configure --with-dpdk=static CFLAGS="-Ofast -msse4.2 -mpopcnt" \
@@ -275,6 +278,9 @@ RUN apt-get update \
     && ldconfig \
     && echo 'export PATH=$PATH:/usr/local/share/openvswitch/scripts' | tee -a /root/.bashrc \
     && echo 'export DB_SOCK=/usr/local/var/run/openvswitch/db.sock' | tee -a /root/.bashrc
+
+# 复制其他可执行文件
+COPY bin/* /usr/bin/
 ```
 
 ### Pktgen 和 testpmd 的 Dockerfile
@@ -376,17 +382,17 @@ ovs-ctl --no-ovsdb-server --db-sock="$DB_SOCK" start
 ```bash
 # 创建数据库文件
 mkdir -p /usr/local/etc/openvswitch
-ovsdb-tool create /usr/local/etc/openvswitch/conf.db \\
+ovsdb-tool create /usr/local/etc/openvswitch/conf.db \
     /usr/local/share/openvswitch/vswitch.ovsschema
 
 # 启动数据库
 mkdir -p /usr/local/var/run/openvswitch
 mkdir -p /usr/local/var/log/openvswitch
-ovsdb-server --remote=punix:/usr/local/var/run/openvswitch/db.sock \\
-    --remote=db:Open_vSwitch,Open_vSwitch,manager_options \\
-    --private-key=db:Open_vSwitch,SSL,private_key \\
-    --certificate=db:Open_vSwitch,SSL,certificate \\
-    --bootstrap-ca-cert=db:Open_vSwitch,SSL,ca_cert \\
+ovsdb-server --remote=punix:/usr/local/var/run/openvswitch/db.sock \
+    --remote=db:Open_vSwitch,Open_vSwitch,manager_options \
+    --private-key=db:Open_vSwitch,SSL,private_key \
+    --certificate=db:Open_vSwitch,SSL,certificate \
+    --bootstrap-ca-cert=db:Open_vSwitch,SSL,ca_cert \
     --pidfile --detach --log-file
 
 # 初始化数据库
@@ -398,7 +404,7 @@ ovs-vsctl --no-wait set Open_vSwitch . other_config:dpdk-socket-mem="1024"
 ovs-vsctl --no-wait set Open_vSwitch . other_config:dpdk-init=true
 
 # 启动 Open vSwitch 守护进程
-ovs-vswitchd --pidfile --detach --log-file=/root/logfile/s1-vswitchd.log
+ovs-vswitchd --pidfile --detach --log-file=/root/logfile/ovs-vswitchd.log
 ```
 
 ## 相关资料
