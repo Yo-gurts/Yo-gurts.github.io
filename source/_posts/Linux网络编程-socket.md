@@ -28,6 +28,8 @@ description:
 - 小端法：（pc本地存储）高位存高地址，地位存低地址。
 - 大端法：（网络存储）高位存低地址，地位存高地址。
 
+字节序只影响不同字节间的顺序，如果只看单字节内部，大小端都一样。**不存在`00001111`变为`11110000`！**
+
 ```c
 #include <arpa/inet.h>
 
@@ -38,6 +40,13 @@ uint32_t htonl(uint32_t hostlong);
 uint16_t htons(uint16_t hostshort);
 uint32_t ntohl(uint32_t netlong);
 uint16_t ntohs(uint16_t netshort);
+
+// example1:
+unsigned int a = 0x00 00 00 01;
+htonl(a) = 0x01 00 00 00;
+// example2:
+unsigned int b = 0xff f0 00 00;
+htonl(b) = 0x00 00 f0 ff;
 ```
 
 ## inet_pton 函数
