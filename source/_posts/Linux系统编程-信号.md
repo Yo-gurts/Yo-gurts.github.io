@@ -458,6 +458,7 @@ int pause(void);
 
 void catch_chld(int signo) {
     pid_t wpid;
+    // 注意这里使用的阻塞的方式回收！当不存在待回收的子进程时，返回-1。
     while((wpid = waitpid(-1, NULL, 0)) != -1) {
         printf("catch child id: %d\n", wpid);
     }

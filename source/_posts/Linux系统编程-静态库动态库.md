@@ -15,6 +15,7 @@ description: Linux 下制件静态库和动态库的方法、流程
 动态库文件名格式为：`lib{name}.so`，只有 {name} 部分可自定义。
 
 静态库和动态库的区别：
+
 - 静态库会被链接到程序中，而动态库则只记录了库的名称，程序运行时才去对应的路径中加载库。
 - 静态库加载速度快，但较消耗内存，动态库则相反。
 
@@ -29,12 +30,16 @@ description: Linux 下制件静态库和动态库的方法、流程
 - `-D` 向程序中“动态”注册宏定义
 - `-l` 指定动态库库名
 - `-L` 指定动态库路径
+- `-O0` 关闭优化 (默认)
+- `-O1/-O` 让可执⾏⽂件更⼩，速度更快
+- `-O2` 采⽤⼏乎所有的优化⼿段
 
 ## 静态库
 
 静态库在生成时应提供一个头文件（包含函数声明），以便其他人知晓库提供的方法，方便使用库。
 
 1. 写好源代码 `mymath.c,  mymath.h`
+
     ```c
     // mymath.c
     int add(int a, int b) {
@@ -65,6 +70,7 @@ description: Linux 下制件静态库和动态库的方法、流程
         return 0;
     }
     ```
+
 2. 将 `.c` 生成 `.o` 文件 `gcc -c mymath.c -o mymath.o`
 3. 使用 `ar` 工具制作静态库 `ar rcs libmymath.a mymath.o`
 
@@ -84,14 +90,15 @@ gcc main.c ./lib/libmymath.a -I ./include -o static
 ```
 
 要点：
+
 - 通过相对或绝对路径指定静态库文件的位置
 - 通过 `-I` 指定静态库的头文件所在目录位置
 
 ## 动态库
 
-1.  将 `.c` 生成 `.o` 文件，（生成与位置无关的代码 `-fPIC`） `gcc -c mymath.c -o mymath.o -fPIC`
-2.  使用 `gcc -shared` 制作动态库 `gcc -shared -o libmymath.so mymath.o`
-3.  编译可执行文件时，指定所使用的动态库，`-l` 指定库名（去掉lib前缀与.so后缀），`-L `指定库路径
+1. 将 `.c` 生成 `.o` 文件，（生成与位置无关的代码 `-fPIC`） `gcc -c mymath.c -o mymath.o -fPIC`
+2. 使用 `gcc -shared` 制作动态库 `gcc -shared -o libmymath.so mymath.o`
+3. 编译可执行文件时，指定所使用的动态库，`-l` 指定库名（去掉lib前缀与.so后缀），`-L`指定库路径
 
 **使用方法：**下面就可以指定动态库名称和路径生成可执行文件了，但运行会出错！
 
@@ -112,15 +119,16 @@ $ ./dynamic
 ```
 
 **原因：**编译和运行时的链接器不同！
-  - 链接器：工作于链接阶段，用`-l -L`指定动态库路径
-  - 动态链接器：工作于程序运行阶段，工作时需要提供动态库所在目录位置，通过环境变量：`export LD_LIBRARY_PATH=/path`
+
+- 链接器：工作于链接阶段，用`-l -L`指定动态库路径
+- 动态链接器：工作于程序运行阶段，工作时需要提供动态库所在目录位置，通过环境变量：`export LD_LIBRARY_PATH=/path`
 
 **解决办法：**设置 `LD_LIBRARY_PATH` 指定动态库的目录（建议使用绝对路径），环境变量是进程的概念，要让动态库地址一直生效：
 
-1.  通过环境变量 `export LD_LIBRARY_PATH=/path`，退出该终端后失效
-2.  在`.bashrc`中添加环境变量，每次打开终端自动加载环境变量
-3.  将库文件复制到 `/lib` 目录下，标准c库所在目录
-4.  在`/etc/ld.so.conf`中添加 `include /path/lib.so`，使用 `ldconfig -v` 使修改生效
+1. 通过环境变量 `export LD_LIBRARY_PATH=/path`，退出该终端后失效
+2. 在`.bashrc`中添加环境变量，每次打开终端自动加载环境变量
+3. 将库文件复制到 `/lib` 目录下，标准c库所在目录
+4. 在`/etc/ld.so.conf`中添加 `include /path/lib.so`，使用 `ldconfig -v` 使修改生效
 
 ## Makefile
 
@@ -292,7 +300,20 @@ exit_group(0)                           = ?
 +++ exited with 0 +++
 ```
 
+### Valgrind 内存泄露
+
+Valgrind 是运行在Linux上一套基于仿真技术的程序调试和分析工具，是公认的最接近Purify的产品，它包含一个内核——一个软件合成的CPU，和一系列的小工具，每个工具都可以完成一项任务——调试，分析，或测试等。Valgrind可以**检测内存泄漏和内存越界**，还可以分析cache的使用等，灵活轻巧而又强大。
+
+1. `memcheck`：检查程序中的内存问题，如泄漏、越界、非法指针等。
+2. `callgrind`：检测程序代码覆盖，以及分析程序性能。
+3. `cachegrind`：分析CPU的cache命中率、丢失率，用于进行代码优化。
+4. `helgrind`：用于检查多线程程序的竞态条件。
+5. `massif`：堆栈分析器，指示程序中使用了多少堆内存等信息。
+6. `lackey`：
+7. `nulgrind`：
+
 ## 参考资料
 
 > [bilibili黑马程序员-Linux系统编程](https://www.bilibili.com/video/BV1KE411q7ee)
 > 参考笔记：[https://github.com/ABottomCoder/Linux-system-programming](https://github.com/ABottomCoder/Linux-system-programming)
+> [Valgrind使用说明](https://www.cnblogs.com/wangkangluo1/archive/2011/07/20/2111248.html)
