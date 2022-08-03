@@ -68,9 +68,9 @@ inet_pton(AF_INET, ip, &ip_int);
 - src：要转换的IP地址，如：`"192.168.1.1"`
 - dst：转换后的网络字节序的IP地址，整数，如：`&ipv4_addr`
 - 返回值：
-    - 1，成功
-    - 0，异常，说明 `src` 不是一个合法的ip地址
-    - -1，`af` 不是一个合法的地址族
+  - 1，成功
+  - 0，异常，说明 `src` 不是一个合法的ip地址
+  - -1，`af` 不是一个合法的地址族
 
 ## inet_ntop 函数
 
@@ -150,14 +150,16 @@ addr.sin_addr.s_addr = htonl(INADDR_ANY); // 表示取出系统中任意有效�
 
 ![image-20220509201419178](../images/Linux%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-socket/image-20220509201419178.png)
 
-**服务器端：**
+**服务器端**：
+
 1. `socket()` 创建一个 socket（socket1）
 2. `bind()` 绑定 IP + port（设置 socket1）
 3. `listen()` 设置**同时**监听上限（socket1用于监听）
 4. `accept()` 阻塞监听客户端连接（传入socket1以建立连接，创建socket2用于通信）
 5. `read()/write()` 文件处理的系统调用函数，这里就直接像访问正常文件一样访问socket2
 
-**客户端：**
+**客户端**：
+
 1. `socket()` 创建一个 socket（socket3）
 2. `connect()` 指定服务器的地址结构（IP+port）连接服务器（设置socket3）
 3. `read()/write()`
@@ -256,8 +258,8 @@ again:
 - addr：传出参数，返回成功建立连接的**客户端**的地址结构
 - addrlen：传入传出参数，传入为参2 addr 的大小，传出为客户端的 addr 的实际大小
 - 返回值：成功返回新建的 socket2 文件描述符，失败返回 -1，并设置 errno：
-    - EINTR：被信号中断
-    - ECONNABORTED：连接被拒绝
+  - EINTR：被信号中断
+  - ECONNABORTED：连接被拒绝
 
 ### connect 函数
 
@@ -382,6 +384,17 @@ int main() {
 ```bash
 nc 192.168.0.8 10001
 ```
+
+## read 函数
+
+在网络编程中，read 函数的返回值需要仔细区分：
+
+1. `>0` 实际读到的字节数；
+2. `=0` 已经读到结尾，说明**对端socket已关闭**（重点！！）；
+3. `-1` 应该进下一步判断 `errno` 的值：
+   - `EAGAIN/ENOULDBLOCK` 设置了非阻塞方式读，没有数据到达
+   - `EINTR` 慢速系统调用被 中断
+   - 其他情况，异常
 
 ## 相关资料
 

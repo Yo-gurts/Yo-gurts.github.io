@@ -50,11 +50,13 @@ Linux 下，线程又称为`LWP: light weight process`，轻量级进程。
 ### 线程的优缺点
 
 优点：
+
 1. 提高程序并发性
 2. 开销小
 3. 数据通信、共享数据方便
 
 缺点：
+
 1. 库函数，不稳定
 2. 调试、编写困难、gdb 不支持
 3. 对信号支持不好。
@@ -93,6 +95,7 @@ int pthread_create(pthread_t *thread, const pthread_attr_t *attr,
 - 返回值：0 成功，非 0 失败，返回的是 errno
 
 循环创建多个线程：
+
 ```c
 #include <stdio.h>
 #include <stdlib.h>
@@ -136,10 +139,9 @@ int main() {
     fprintf(stderr, "pthread_create error: %s\n", strerror(ret));
 ```
 
-
 ## pthread_exit 函数
 
-退出调用该函数的线程。
+在线程函数函数内部调用，直接结束当前线程，可设置线程退出值。
 
 ```c
 #include <pthread.h>
@@ -167,7 +169,7 @@ void *thread_func(void *arg)
 
 ## pthread_join 函数
 
-阻塞回收线程，类似于进程中的 `waitpid()`！
+阻塞回收线程，类似于进程中的 `waitpid()`！**注意，回收线程不一定是由父线程完成，兄弟线程之间可互相回收！**
 
 ```c
 #include <pthread.h>
@@ -293,7 +295,7 @@ int main() {
     ret = pthread_join(tid, NULL);
     if (ret != 0) // 报错说明设置线程分离状态成功
         printf("pthread join error: %s\n", strerror(ret));
-	// 主线程结束，子线程也被 结束！
+    // 主线程结束，子线程也被 结束！
     return 0;
 }
 ```

@@ -13,7 +13,9 @@ ln ${src}/Linux系统编程-进程通信.md ${dst}/Linux系统编程-进程通�
 ln ${src}/Linux系统编程-静态库动态库.md ${dst}/Linux系统编程-静态库动态库.md
 ln ${src}/Linux网络编程-socket.md ${dst}/Linux网络编程-socket.md
 ln ${src}/Linux网络编程-分析工具.md ${dst}/Linux网络编程-分析工具.md
+ln ${src}/Linux网络编程-并发服务器.md ${dst}/Linux网络编程-并发服务器.md
 ln ${src}/Linux网络编程-线程池.md ${dst}/Linux网络编程-线程池.md
+ln ${src}/Linux网络编程-网卡收包.md ${dst}/Linux网络编程-网卡收包.md
 ln ${src}/OpenVSwitch-DPDK-区分服务.md ${dst}/OpenVSwitch-DPDK-区分服务.md
 ln ${src}/OpenVSwitch-控制器ONOS.md ${dst}/OpenVSwitch-控制器ONOS.md
 ln ${src}/OpenVSwitch-测试拓扑.md ${dst}/OpenVSwitch-测试拓扑.md

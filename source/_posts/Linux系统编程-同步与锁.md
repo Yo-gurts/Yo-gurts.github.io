@@ -30,7 +30,7 @@ sudo apt install manpages-posix-dev
 
 互斥锁实质上是操作系统提供的一把“建议锁”（又称“协同锁”），建议程序中有多线程访问共享资源的时候使用该机制。但，并没有强制限定。因此，即使有了 mutex，如果有线程不按规则来访问数据，依然会造成数据混乱。
 
-**尽量保证锁的粒度，越小越好（访问共享数据前，加锁。访问结束立即解锁）**
+**尽量保证锁的粒度，越小越好（访问共享数据前，加锁。访问结束立即解锁）**。
 
 ```c
 #include <pthread.h>
@@ -76,7 +76,7 @@ int pthread_mutex_init(pthread_mutex_t *restrict mutex,
 ### 死锁
 
 1. 线程试图对同一个互斥量 A 加锁两次。
-2. 线程 1 拥有 A 锁，请求获得 B 锁；线程 2 拥有 B 锁，请求获得 A 锁
+2. 线程 1 拥有 A 锁，请求获得 B 锁；线程 2 拥有 B 锁，请求获得 A 锁。
 
 ### example
 
@@ -245,6 +245,7 @@ int pthread_cond_wait(pthread_cond_t *restrict cond,
 - 返回值：0（成功），非 0（失败）
 
 函数作用：
+
 1. 阻塞等待条件变量 `cond` 满足
 2. 释放已掌握的互斥锁（解锁互斥量）相当于 `pthread_mutex_unlock(&mutex)`; **1.2.两步为一个原子操作**。
 3. 当被唤醒，`pthread_cond_wait` 函数返回时，**解除阻塞并重新申请获取互斥锁** `pthread_mutex_lock(&mutex)`;
@@ -396,11 +397,9 @@ int sem_init(sem_t *sem, int pshared, unsigned int value);
 
 ### 生产者消费者实现
 
-这个与上面基于条件变量的实现逻辑不同，建议先看视频[基于信号量实现生产者消费者模型](https://www.bilibili.com/video/BV1KE411q7ee?p=183&spm_id_from=pageDriver)
-理解实现的原理，再看具体实现代码。
+这个与上面基于条件变量的实现逻辑不同，建议先看视频[基于信号量实现生产者消费者模型](https://www.bilibili.com/video/BV1KE411q7ee?p=183&spm_id_from=pageDriver)理解实现的原理，再看具体实现代码。
 
-注意，对信号量初始化时，将 `product_num` 初始化为0，但仍然可以调用`sem_post`, `sem_wait`
-等函数，这与上面所说的最多只能有 N (这里为0) 是不是矛盾？怎么实现多个消费者？
+注意，对信号量初始化时，将 `product_num` 初始化为0，但仍然可以调用`sem_post`, `sem_wait`等函数，这与上面所说的最多只能有 N (这里为0) 是不是矛盾？怎么实现多个消费者？
 
 ```c
 #include <pthread.h>
@@ -477,13 +476,13 @@ int main() {
 下面的方法有助于理解其实现原理，但不是真实情况：
 
 - `mutex`可以看作一个整数，且只有两种取值：0和1。
-    - init ：将 `i` 的值设置为1。
-    - lock ：相当于 `i--`，将 `i` 的值从 1 变为 0。如果 `i` 为0，则阻塞。
-    - unlock ：相当于 `i++`，若 i 已经为 1，i 将不会变化。
+  - init ：将 `i` 的值设置为1。
+  - lock ：相当于 `i--`，将 `i` 的值从 1 变为 0。如果 `i` 为0，则阻塞。
+  - unlock ：相当于 `i++`，若 i 已经为 1，i 将不会变化。
 - `sem` 相当于初值为 N 的互斥量
-    - init ：初始化 `i`，初始值为 N。
-    - wait ：相当于 `i--`，若 `i` 为0，则阻塞。
-    - post ：相当于 `i++`，若 `i` 已经达到 N，还是会 `++`！（注意与 mutex 区分）
+  - init ：初始化 `i`，初始值为 N。
+  - wait ：相当于 `i--`，若 `i` 为0，则阻塞。
+  - post ：相当于 `i++`，若 `i` 已经达到 N，还是会 `++`！（注意与 `mutex` 区分）
 
 ```c
 // mutex
@@ -511,9 +510,30 @@ int main() {
 }
 ```
 
+## 内核锁
+
+上面几种锁都是在用户态使用，在内核中，也有类似的实现。
+
+| 头文件               | 结构                  | 描述          |
+| -------------------- | --------------------- | ------------- |
+| ` <asm/semaphore.h>` | ` struct semaphore`   | 信号量/互斥量 |
+| `<linux/rwsem.h>`    | `struct rw_semaphore` | 读写锁        |
+| `<linux/completion.h>` | `struct completion` | 类似条件变量 |
+| `<linux/spinlock.h>` | `spinlock_t` | 自旋锁 |
+| `<linux/spinlock.h>` | `rwlock_t` | 自旋读写锁 |
+
+加锁总会影响系统的性能，在一些场景下可以考虑不加锁的算法！如：环形队列、原子变量、位操作、`seqlock`、读取-拷贝-更新(RCU)。
+
+## 锁陷阱
+
+1. 不允许一个持锁者第 2 次请求锁！
+2. 获得多个锁可能是危险的，当多个锁必须获得时，它们应当一直以同样顺序获得！
+3. 尽量保证锁的粒度，越小越好（访问共享数据前，加锁，访问结束立即解锁）。
+
 ## 相关资料
 
 - [读写锁优先级](https://www.bilibili.com/video/BV1KE411q7ee?p=172&spm_id_from=pageDriver)
 - [条件变量原理](https://www.bilibili.com/video/BV1KE411q7ee?p=176&t=290.8)
 - [生产者-多个消费者](https://www.bilibili.com/video/BV1KE411q7ee?p=180&t=471.6)
 - [基于信号量实现生产者消费者模型](https://www.bilibili.com/video/BV1KE411q7ee?p=183&spm_id_from=pageDriver)
+- 《Linux 设备驱动程序》
