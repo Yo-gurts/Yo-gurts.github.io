@@ -13,17 +13,18 @@ description: 介绍Linux进程通信的几种方式
 
 进程间通信的方式有：
 
-- 管道 pipe：简单，但只能用于有血缘关系的进程间
-- 命名管道 fifo：可以用于任意进程间
-- 文件：和 fifo 类似
-- 消息队列：可以设置订阅 topic，只接收订阅的消息
-- 本地套接字：最稳定
+- 管道 `pipe`：简单，但只能用于有血缘关系的进程间
+- 命名管道 `fifo`：可以用于任意进程间
+- 文件：和 `fifo` 类似
+- 消息队列：可以设置订阅 `topic`，只接收订阅的消息
+- 套接字：最稳定
 - 信号：使用最简单
-- 存储映射：可重复读数据
+- 共享内存：可重复读数据
+- 信号量：配合共享内存使用，用作同步
 
 ## pipe 管道
 
-fork之前创建管道，这样每个子进程都有读端fd[0]和写端fd[1]。
+fork之前创建管道，这样每个子进程都有读端`fd[0]`和写端`fd[1]`。
 
 **同时只能有一个读端和一个写端，要关闭其他不用的端口，以保证数据的一致性**。
 
@@ -39,7 +40,7 @@ int fd[2];
 pipe(fd); // 创建 pipe
 
 char *str = "child write date!\n";
-char buf[100];// = "";	// 不设置为空可能会出现异常
+char buf[100];// = "";  // 不设置为空可能会出现异常
 if (fork() == 0) { // child process
     printf("child: %d, %d\n", fd[0], fd[1]);
     close(fd[0]);
@@ -51,14 +52,14 @@ if (fork() == 0) { // child process
     close(fd[1]); sleep(1);
     int ret = read(fd[0], buf, 18);
     printf("ret: %d, len: %ld\n", ret, strlen(buf));
-    printf("read buf: %s", buf);	// 对比两种输出方式
+    printf("read buf: %s", buf);  // 对比两种输出方式
     write(STDOUT_FILENO, buf, ret);
     close(fd[0]);
 }
 ```
 
-- pipefd[0] 读端
-- pipefd[1] 写端
+- `pipefd[0]` 读端
+- `pipefd[1]` 写端
 - 返回值：
   - 0 成功
   - -1 失败并设置 errno
@@ -70,18 +71,18 @@ if (fork() == 0) { // child process
 - 读管道：
   1. 管道中有数据，read 返回实际读取的字节数，并将数据写入缓冲区
   2. 管道无数据：
-    - 无写端：read 返回 0（类似读到文件末尾）
-    - 有写端：read 阻塞等待，直到有数据写入管道
+      - 无写端：read 返回 0（类似读到文件末尾）
+      - 有写端：read 阻塞等待，直到有数据写入管道
 
 - 写管道：
   1. 无读端：异常终止。(SIGPIPE 导致)
   2. 有读端：
-    - 管道已满，write 阻塞等待，直到管道有空间
-    - 管道未满，write 返回实际写入的字节数
+      - 管道已满，write 阻塞等待，直到管道有空间
+      - 管道未满，write 返回实际写入的字节数
 
 ## mkfifo 命名管道
 
-会真的创建一个管道类型(p)的文件，一个进程以**只读方式**打开，另一个进程以**只写方式**打开。
+**会真的创建一个管道类型(p)的文件**，一个进程以**只读方式**打开，另一个进程以**只写方式**打开。
 
 ```c
 #include <sys/types.h>
@@ -90,23 +91,23 @@ if (fork() == 0) { // child process
 int mkfifo(const char *pathname, mode_t mode);
 ```
 
-- pathname：管道文件的路径
-- mode：管道文件的权限
+- `pathname`：管道文件的路径
+- `mode`：管道文件的权限
 - 返回值：
-  - 0 成功
-  - -1 失败并设置 errno
+  - `0` 成功
+  - `-1` 失败并设置 errno
 
 ## 文件
 
-与 fifo 行为类似，两个进程分别以只读和只写方式打开文件。
+与 `fifo` 行为类似，两个进程分别以只读和只写方式打开文件。
 
-只有通过 write 写入到磁盘文件中的内容才可读取。
+只有通过 `write` 写入到磁盘文件中的内容才可读取。
 
 ## mmap 存储映射
 
-存储映射 I/O(Memory-mapped I/O) 使一个磁盘文件与存储空间中的一个缓冲区相映射。于是从缓冲区中取数据，就相当于读文件中的相应字节。与此类似，将数据存入缓冲区，则相应的字节就自动写入文件。这样，就可在不使用 read 和 write 函数的情况下，使地址指针完成 I/O 操作。
+存储映射 I/O(Memory-mapped I/O) 使一个磁盘文件与存储空间中的一个缓冲区相映射。于是从缓冲区中取数据，就相当于读文件中的相应字节。与此类似，将数据存入缓冲区，则相应的字节就自动写入文件。这样，就可在不使用 `read` 和 `write` 函数的情况下，使地址指针完成 I/O 操作。
 
-使用这种方法，首先应该通知内核，将一个指定文件映射到存储区域中。这个映射工作可以通过 mmap 函数来实现。
+使用这种方法，首先应该通知内核，将一个指定文件映射到存储区域中。这个映射工作可以通过 `mmap` 函数来实现。
 
 ```c
 #include <sys/mman.h>
@@ -115,12 +116,12 @@ void *mmap(void *addr, size_t length, int prot, int flags,
             int fd, off_t offset);
 ```
 
-- addr：映射的起始地址，通常传 NULL，让系统会自动选择一个合适的地址
-- length：共享内存映射区的大小（要 <= 文件的实际大小）
-- prot：共享内存映射区的读写属性。PROT_READ、PROT_WRITE、PROT_READ|PROT_WRITE
-- flags：标注共享内存的共享属性。MAP_SHARED、MAP_PRIVATE（修改不会反应到磁盘上，很少用）
-- fd：用于创建共享内存映射区的那个文件的 文件描述符。
-- offset：偏移位置，需是 4k 的整数倍。默认 0，表示映射文件全部。
+- `addr`：映射的起始地址，通常传 NULL，让系统会自动选择一个合适的地址
+- `length`：共享内存映射区的大小（要 <= 文件的实际大小）
+- `prot`：共享内存映射区的读写属性。PROT_READ、PROT_WRITE、PROT_READ|PROT_WRITE
+- `flags`：标注共享内存的共享属性。MAP_SHARED、MAP_PRIVATE（修改不会反应到磁盘上，很少用）
+- `fd`：用于创建共享内存映射区的那个文件的 文件描述符。
+- `offset`：偏移位置，需是 4k 的整数倍。默认 0，表示映射文件全部。
 - 返回值：
   - 成功：映射区的首地址。
   - 失败：MAP_FAILED (void*(-1))， errno
@@ -135,11 +136,11 @@ void *mmap(void *addr, size_t length, int prot, int flags,
 int munmap(void *addr, size_t length);
 ```
 
-- addr：映射区的首地址
-- length：映射区的大小
+- `addr`：映射区的首地址
+- `length`：映射区的大小
 - 返回值：
-  - 0：成功
-  - -1：失败，errno
+  - `0`：成功
+  - `-1`：失败，errno
 
 ### mmap 注意事项
 
@@ -188,7 +189,7 @@ int main() {
         printf("mmap error\n");
         exit(1);
     }
-    close(fd);	// 映射区建立完毕,即可关闭文件
+    close(fd);  // 映射区建立完毕,即可关闭文件
     if (fork() == 0) {
         char str[100] = "asdfghjkl\0";
         memcpy(p, str, strlen(str)); // 将内容写入指针地址！而不是让指针指向内容！
