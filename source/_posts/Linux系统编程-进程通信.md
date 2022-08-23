@@ -2,7 +2,7 @@
 title: Linux系统编程-进程通信
 top_img: transparent
 date: 2022-04-25 21:24:09
-updated: 2022-04-25 21:24:09
+updated: 2022-08-23 23:09:09
 tags:
   - Linux
   - 进程
@@ -26,76 +26,168 @@ description: 介绍Linux进程通信的几种方式
 
 fork之前创建管道，这样每个子进程都有读端`fd[0]`和写端`fd[1]`。
 
-**同时只能有一个读端和一个写端，要关闭其他不用的端口，以保证数据的一致性**。
-
-**总之，数据通路要形成一个环，不能有多余的端口**。
-
 ```c
 #include <unistd.h>
 
 int pipe(int pipefd[2]);
 
 // example
-int fd[2];
-pipe(fd); // 创建 pipe
+#include <stdio.h>
+#include <sys/types.h>
+#include <string.h>
+#include <time.h>
+#include <unistd.h>
 
-char *str = "child write date!\n";
-char buf[100];// = "";  // 不设置为空可能会出现异常
-if (fork() == 0) { // child process
-    printf("child: %d, %d\n", fd[0], fd[1]);
-    close(fd[0]);
-    int ret = write(fd[1], str, strlen(str));
-    printf("ret: %d, len: %ld\n", ret, strlen(str));
-    close(fd[1]);
-} else {
-    printf("parent: %d, %d\n", fd[0], fd[1]);
-    close(fd[1]); sleep(1);
-    int ret = read(fd[0], buf, 18);
-    printf("ret: %d, len: %ld\n", ret, strlen(buf));
-    printf("read buf: %s", buf);  // 对比两种输出方式
-    write(STDOUT_FILENO, buf, ret);
-    close(fd[0]);
+int main() {
+    int fd[2];
+    pipe(fd);   // 创建 pipe
+
+    char *str = "child write date!\n";
+    char buf[100];  // = "";  // 不设置为空可能会出现异常
+    if (fork() == 0) {  // child process
+        printf("child: %d, %d\n", fd[0], fd[1]);
+        close(fd[0]);   // 关闭读端
+        int ret = write(fd[1], str, strlen(str));
+        printf("child write bytes ret: %d, len: %ld\n", ret, strlen(str));
+        close(fd[1]);
+    } else {
+        printf("parent: %d, %d\n", fd[0], fd[1]);
+        close(fd[1]);   // 关闭写端
+        sleep(1);
+        int ret = read(fd[0], buf, 18);
+        printf("parent read bytes ret: %d, len: %ld\n", ret, strlen(buf));
+        printf("read buf: %s", buf);    // 对比两种输出方式
+        write(STDOUT_FILENO, buf, ret);
+        close(fd[0]);
+    }
+    return 0;
 }
 ```
 
 - `pipefd[0]` 读端
 - `pipefd[1]` 写端
 - 返回值：
-  - 0 成功
-  - -1 失败并设置 errno
+  - `0` 成功
+  - `-1` 失败并设置 `errno`
 
 ### 管道的读写行为
 
-- 管道的大小：管道有容量限制，一般为 64k (65536byte)。
-
+- 一个管道是一个字节流，不存在消息或消息边界的概念。
+- 通过管道传递的数据是顺序的，在管道中无法使用 `lseek()` 来随机地访问数据。
+- **管道的容量是有限的**，一般为 `64k` (65536byte)。
 - 读管道：
-  1. 管道中有数据，read 返回实际读取的字节数，并将数据写入缓冲区
+  1. 管道中有数据，`read` 返回实际读取的字节数，并将数据写入缓冲区
   2. 管道无数据：
-      - 无写端：read 返回 0（类似读到文件末尾）
-      - 有写端：read 阻塞等待，直到有数据写入管道
-
+      - 无写端：`read` 返回 0（类似读到文件末尾）
+      - 有写端：`read` 阻塞等待，直到有数据写入管道
 - 写管道：
-  1. 无读端：异常终止。(SIGPIPE 导致)
+  1. 无读端：异常终止。(`SIGPIPE` 导致)
   2. 有读端：
-      - 管道已满，write 阻塞等待，直到管道有空间
-      - 管道未满，write 返回实际写入的字节数
+      - 管道已满，`write` **阻塞等待，直到管道有空间**
+      - 管道未满，`write` 返回实际写入的字节数
+- 如果多个进程写入同一个管道，那么如果它们在一个时刻写入的数据量不超过 `PIPE_BUF` (Linux为4096)字节，那么就可以确保写入的数据不会发生相互混合的情况。当写入管道的数据块的大小超过了 `PIPE_BUF` 字节，那么内核可能会将数据分割成几个较小的片段来传输，就容易出现数据交叉，导致数据混乱。
+
+虽然父进程和子进程都可以从管道中读取和写入数据，但这种做法并不常见。也可以有多个进程向单个管道中写入数据，但通常只存在一个写者。**同时只有一个读端和一个写端，关闭其他不用的端口**。否则可能出现以下情况：
+
+- 占用文件描述符；
+- 多个进程同时读，竞争带来不确定性；
+- 其他进程都关闭后，如果写入进程没有关闭管道的读取端，它仍然能够写入；
 
 ## mkfifo 命名管道
 
-**会真的创建一个管道类型(p)的文件**，一个进程以**只读方式**打开，另一个进程以**只写方式**打开。
+**该函数会在文件系统上创建一个管道类型(p)的文件**（创建`FIFO`的进程不一定会使用该管道，也可以使用`mkfifo`命令手动创建管道文件供其他进程使用该文件）。
 
 ```c
 #include <sys/types.h>
 #include <sys/stat.h>
 
 int mkfifo(const char *pathname, mode_t mode);
+
+// example
+const char *pathname = "/tmp/myfifo";
+int res = mkfifo(pathname, 0664);
 ```
 
 - `pathname`：管道文件的路径
-- `mode`：管道文件的权限
+- `mode`：管道文件的权限，类似`0644`
 - 返回值：
   - `0` 成功
-  - `-1` 失败并设置 errno
+  - `-1` 失败并设置 `errno`
+
+打开FIFO文件和普通文件的区别有2点：
+
+1. 第一**不能以`O_RDWR`模式打开**`FIFO`文件进行读写操作。这样做的行为是未定义的。只能一个进程以**只读方式`O_RDONLY`**打开，另一个进程以**只写方式`O_WRONLY`**打开该文件。与管道一样，当所有引用 `FIFO` 的描述符都被关闭之后，所有未被读取的数据会被丢弃。
+
+2. 第二是对标志位的`O_NONBLOCK`选项的用法，使用这个选项不仅改变`open`调用的处理方式，还会改变对这次`open`调用返回的文件描述符进行的读写请求的处理方式。`O_RDONLY`、`O_WRONLY`和`O_NONBLOCK`标志共有四种合法的组合方式：
+
+- `flags=O_RDONLY`：`open`将会调用阻塞，除非有另外一个进程以写的方式打开同一个`FIFO`，否则一直等待。
+- `flags=O_WRONLY`：`open`将会调用阻塞，除非有另外一个进程以读的方式打开同一个`FIFO`，否则一直等待。
+- `flags=O_RDONLY|O_NONBLOCK`：如果此时没有其他进程以写的方式打开`FIFO`，此时`open`也会成功返回，此时`FIFO`被读打开，而不会返回错误。
+- `flags=O_WRONLY|O_NONBLOCK`：立即返回，如果此时没有其他进程以读的方式打开，`open`会失败打开，此时`FIFO`没有被打开，返回-1。
+
+当管道的其中一端关闭后，另一端也会同时关闭，可以通过下面的例子测试：
+
+```c
+// write fifo
+#include <stdio.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <string.h>
+#include <time.h>
+#include <fcntl.h>
+#include <unistd.h>
+
+int main() {
+    const char *pathname = "/tmp/myfifo";
+    int fd = open(pathname, O_WRONLY);
+
+    char buf[100] = "hello, fifo!\n";
+    while(1) {
+        write(fd, buf, strlen(buf));
+        sleep(1);
+    }
+
+    return 0;
+}
+
+// read fifo
+#include <stdio.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <string.h>
+#include <time.h>
+#include <fcntl.h>
+#include <unistd.h>
+
+int main() {
+    const char *pathname = "/tmp/myfifo";
+    int fd = open(pathname, O_RDONLY);
+
+    char buf[100] = "";
+    int bytes = 0;
+    while(1) {
+        memset(buf, 0, 100);
+        bytes = read(fd, buf, 100);
+        if (bytes == 0) break;
+        printf("read from fifo: %s\n", buf);
+    }
+
+    return 0;
+}
+```
+
+管道文件也可以直接使用命令行进行输入输出：
+
+```bash
+# 首先用cat命令读取刚才创建的FIFO文件：
+# 这个时候，cat命令将一直挂起，直到终端或者有数据发送到FIFO中。
+cat < /tmp/myfifo
+
+
+# 然后尝试向FIFO中写数据（在另外一个终端执行这个命令）
+# 这个时候cat将会输出内容。
+echo "FIFO test" > /tmp/myfifo
+```
 
 ## 文件
 
@@ -209,3 +301,4 @@ int main() {
 ## 参考资料
 
 - [进程通信常用方式](https://www.bilibili.com/video/BV1KE411q7ee?p=100)
+- [进程间通信-命名管道FIFO](https://blog.csdn.net/xiajun07061225/article/details/8471777)

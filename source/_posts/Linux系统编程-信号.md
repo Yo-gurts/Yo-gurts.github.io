@@ -2,7 +2,7 @@
 title: Linux系统编程-信号
 top_img: transparent
 date: 2022-05-02 21:49:35
-updated: 2022-05-02 21:49:35
+updated: 2022-08-23 21:49:35
 tags:
   - Linux
 categories: Linux
@@ -60,7 +60,7 @@ struct task_struct {
 
 **编号、名称、事件、默认处理动作**！
 
-总计有64个信号（可通过`kill -l`查看信号名称及编号），`man 7 signal`也可查看信号。前32个为常规信号，后32个为实时信号。
+总计有64个信号（**可通过`kill -l`查看信号名称及编号**），`man 7 signal`也可查看信号。前32个为常规信号，后32个为实时信号。
 
 信号到达后，进程视具体信号执行如下默认操作之一：
 
@@ -129,6 +129,47 @@ SIGALRM     14   Term   定时器超时
 SIGTERM     15   Term   结束信号，kill缺省发送此信号，与KILLSIG不同，可以阻塞、忽略
 SIGCHLD     17   Ign    子进程状态发生变化时，默认忽略此信号
 ```
+
+### SIGSEGV
+
+段错误，进行了**非法的内存**访问！什么为非法呢？进程中使用的地址是虚拟地址，虚拟地址是按页划分的，每个虚拟页对应一个实际的物理页，但并不是一开始就为没一个虚拟页分配了一个物理页，而是用到了才分配。申请内存时也同样只申请虚拟内存，只要虚拟内存地址有效，就是合法的。
+
+以堆内为例，堆是一段长度可变的**连续虚拟内存**，始于进程的**未初始化数据段末尾**，通常将堆的内存边界（堆顶）称为`program break`，最初，`program break` 正好位于未初始化数据段末尾之后。在堆上分配内存那首先得扩展堆的大小，也就是抬升堆顶`program break`，这样程序就可以访问**新分配区域内**的任何内存地址。（试想一下，如果一开始直接访问堆区域外的地址会发生什么？）
+
+```c
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
+
+int main() {
+    printf("program break: %p\n", sbrk(0)); // sbrk(0) 返回堆顶的地址
+    getchar();  getchar();
+    printf("访问堆顶以上的内存: %d\n", (int *)(sbrk(0) + 100));
+
+    int *t = malloc(20000*sizeof(int)); // 可以看到堆顶提升
+    t[10000] = 10000;
+    printf("access array t: %p\n", t);
+    printf("access array t[10000]: %d, addr: %p\n", t[10000], t+10000);
+    printf("program break: %p\n", sbrk(0));
+
+    getchar();  getchar();
+
+    // 超过128k 不会调整program break, 而是使用mmap
+    int *t2 = malloc(50000*sizeof(int));
+    t2[10000] = 10000;
+    printf("access array t2: %p\n", t2);
+    printf("access array t2[10000]: %d, %p\n", t2[10000], t2+10000);
+    printf("program break: %p\n", sbrk(0));
+    getchar();  getchar();
+
+    return 0;
+}
+```
+
+通过 `/proc/pid/maps` 文件可以查看进程的内存布局（显示的是虚拟地址）。如果**指针指向的地址不在该文件中任何一个内存段范围内**，就说明该内存地址是“非法的、无效的”。不过即使内存地址合法，如果**没有对应内存段的访问权限**，也会报“非法的内存访问”。使用该地址时，会先通过MMU中查询，如果是出现了页的权限错误，或者是操作系统发现并没有页面可以换入（未分配的），那么它会触发一个“软中断”。在Linux中，所谓的软中断其实就是一个信号(`signal`)，由于访问非法内存地址导致的错误叫作段错误`(segment fault)`，它会发射一个`SIGSEGV`信号，默认的行为就是终止这个程序。
+
+在上面的测试代码中，在并没有调用任何`malloc()`时，通过 `/proc/pid/maps` 文件可以看到堆顶的位置在一个大小为`132k`的内存端的起始位置，此时哪怕直接访问堆顶以上的数据（只要不超过`132k`的范围）都不会报段错误！而进行任何大小的`malloc(1)`调用，使得堆顶提升`132k`。也就是说虽然堆大小为0，但实际上操作系统已经为该进程分配了`132k`的堆内存。
 
 ## kill 函数
 
