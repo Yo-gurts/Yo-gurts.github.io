@@ -22,6 +22,8 @@ description: 介绍Linux进程通信的几种方式
 - 共享内存：可重复读数据
 - 信号量：配合共享内存使用，用作同步
 
+![processIPC](../images/Linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B-%E8%BF%9B%E7%A8%8B%E9%80%9A%E4%BF%A1/processIPC.png)
+
 ## pipe 管道
 
 fork之前创建管道，这样每个子进程都有读端`fd[0]`和写端`fd[1]`。
@@ -116,14 +118,14 @@ int res = mkfifo(pathname, 0664);
 
 打开FIFO文件和普通文件的区别有2点：
 
-1. 第一**不能以`O_RDWR`模式打开**`FIFO`文件进行读写操作。这样做的行为是未定义的。只能一个进程以**只读方式`O_RDONLY`**打开，另一个进程以**只写方式`O_WRONLY`**打开该文件。与管道一样，当所有引用 `FIFO` 的描述符都被关闭之后，所有未被读取的数据会被丢弃。
+1. 第一**不能以`O_RDWR`模式打开**`FIFO`文件进行读写操作。这样做的行为是未定义的。只能一个进程以**只读方式`O_RDONLY`打开**，另一个进程以**只写方式`O_WRONLY`打开**该文件。与管道一样，当所有引用 `FIFO` 的描述符都被关闭之后，所有未被读取的数据会被丢弃。
 
 2. 第二是对标志位的`O_NONBLOCK`选项的用法，使用这个选项不仅改变`open`调用的处理方式，还会改变对这次`open`调用返回的文件描述符进行的读写请求的处理方式。`O_RDONLY`、`O_WRONLY`和`O_NONBLOCK`标志共有四种合法的组合方式：
 
-- `flags=O_RDONLY`：`open`将会调用阻塞，除非有另外一个进程以写的方式打开同一个`FIFO`，否则一直等待。
-- `flags=O_WRONLY`：`open`将会调用阻塞，除非有另外一个进程以读的方式打开同一个`FIFO`，否则一直等待。
-- `flags=O_RDONLY|O_NONBLOCK`：如果此时没有其他进程以写的方式打开`FIFO`，此时`open`也会成功返回，此时`FIFO`被读打开，而不会返回错误。
-- `flags=O_WRONLY|O_NONBLOCK`：立即返回，如果此时没有其他进程以读的方式打开，`open`会失败打开，此时`FIFO`没有被打开，返回-1。
+   - `flags=O_RDONLY`：`open`将会调用阻塞，除非有另外一个进程以写的方式打开同一个`FIFO`，否则一直等待。
+   - `flags=O_WRONLY`：`open`将会调用阻塞，除非有另外一个进程以读的方式打开同一个`FIFO`，否则一直等待。
+   - `flags=O_RDONLY|O_NONBLOCK`：如果此时没有其他进程以写的方式打开`FIFO`，此时`open`也会成功返回，此时`FIFO`被读打开，而不会返回错误。
+   - `flags=O_WRONLY|O_NONBLOCK`：立即返回，如果此时没有其他进程以读的方式打开，`open`会失败打开，此时`FIFO`没有被打开，返回-1。
 
 当管道的其中一端关闭后，另一端也会同时关闭，可以通过下面的例子测试：
 
@@ -189,13 +191,145 @@ cat < /tmp/myfifo
 echo "FIFO test" > /tmp/myfifo
 ```
 
+## UNIX Domain Socket
+
+`UNIX Domain Socket`是一种专门用于**同一主机上进程间**相互通信的`Socket`，同样可使用流`Socket`和数据包`Socket`。使用`UNIX Domain`发送的报文不会经过协议栈，效率更高。
+
+### sockaddr_un
+
+在 `UNIX domain` 中，`socket` 地址以**路径名**来表示，而不是传统的`IP+PORT`。会在指定的路径上创建一个文件，以便其他进程建立连接。
+
+为将一个 `UNIX domain socket` 绑定到一个地址上，需要初始化一个 `sockaddr_un` 结构，然后将指向这个结构的一个（转换）指针作为 `addr` 参数传入 `bind()`并将 `addrlen` 指定为这个结构的大小。
+
+```c
+#include <sys/un.h>
+
+struct sockaddr_un {
+    sa_family_t sun_family;   /* Always AF_UNIX */
+    char sun_path[108];       /* socket 对应的路径名字（最好小于92字节） */
+}
+
+// example
+const char *path = "/tmp/test.sock";
+int sfd = socket(AF_UNIX, SOCK_STREAM, 0);    // 指定domain 为 AF_UNIX
+
+struct sockaddr_un addr;
+memset(&addr, 0, sizeof(struct sockaddr_un)); // 清零
+addr.sun_family = AF_UNIX;
+strncpy(addr.sun_path, path, sizeof(addr.sun_path)-1);  // 最好使用 strncpy
+
+bind(sfd, (struct sockaddr *)&addr, sizoef(addr));  // 会在文件系统中创建一个条目
+
+listen(sfd, 128);
+
+int client_fd = accept(sfd, NULL, NULL); // 注意这里传入参数为NULL
+```
+
+在调用`bind()`时，会依据`sun_path`创建`socket`类型的文件，该目录需要可访问可写。此外还需注意：
+
+- 无法将一个 `socket` 绑定到一个既有路径名上（`bind()`会失败并返回 `EADDRINUSE` 错误）。
+- 通常会将一个 `socket` 绑定到一个**绝对路径名**上。
+- 一个 `socket` 只能绑定到一个路径名上，相应地，一个路径名只能被一个 `socket` 绑定。
+- 无法使用 `open()` 打开一个 `socket`。
+- 当不再需要一个 `socket` 时可以使用 `unlink()`（或 `remove()`）**删除其路径名条目**（通常也应该这样做）。
+
+### Example
+
+**服务端**：
+
+```c
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <string.h>
+#include <sys/un.h>
+
+int main() {
+    int bytes, res, sfd, cfd;
+    char buf[1024];
+    const char *path = "/tmp/test.sock";
+
+    sfd = socket(AF_UNIX, SOCK_STREAM, 0);  // stream
+    if (sfd == -1) perror("socket() 调用失败");
+
+    struct sockaddr_un addr;    // 设置地址（文件路径标识）
+    memset(&addr, 0, sizeof(struct sockaddr_un));
+    addr.sun_family = AF_UNIX;
+    strncpy(addr.sun_path, path, sizeof(addr.sun_path)-1);
+
+    res = bind(sfd, (struct sockaddr *)&addr, sizeof(addr));  // 绑定地址（创建文件）
+    if (res == -1) perror("bind() 调用失败");
+
+    res = listen(sfd, 128);     // 设置监听上限
+    if (res == -1) perror("listen() 调用失败");
+
+    cfd = accept(sfd, NULL, NULL);  // 等待连接，这里只演示了一个连接的情况
+
+    while(1) {
+        memset(buf, 0, 1024);
+        bytes = read(cfd, buf, 1024);
+        if (bytes > 0) {
+            printf("recv msg: %s\n", buf);
+            buf[0] = 'S';
+            write(cfd, buf, sizeof(buf));
+        } else
+            break;
+    }
+
+    res = unlink(path);     // 用完后，就删掉绑定的文件
+    if (res == -1) perror("unlink() 调用失败");
+
+    return 0;
+}
+```
+
+**客户端**：
+
+```c
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <string.h>
+#include <sys/un.h>
+
+int main() {
+    int res, bytes, cfd;
+    char buf[1024];
+    const char *path = "/tmp/test.sock";
+
+    cfd = socket(AF_UNIX, SOCK_STREAM, 0);  // stream
+    if (cfd == -1) perror("socket() 调用失败");
+
+    struct sockaddr_un addr;
+    memset(&addr, 0, sizeof(struct sockaddr_un));
+    addr.sun_family = AF_UNIX;
+    strncpy(addr.sun_path, path, sizeof(addr.sun_path)-1);
+
+    res = connect(cfd, (struct sockaddr*)&addr, sizeof(addr));
+    if (res == -1) perror("connect() 调用失败");
+
+    while(1) {
+        scanf("%s", buf);
+        write(cfd, buf, sizeof(buf));
+        read(cfd, buf, 1024);
+        printf("client recv msg: %s\n", buf);
+    }
+
+    return 0;
+}
+```
+
 ## 文件
 
-与 `fifo` 行为类似，两个进程分别以只读和只写方式打开文件。
+与 `fifo` 行为类似，两个进程分别以只读和只写方式打开文件。理论上可行，但不推荐。效率低下，而且共享偏移量可能导致问题。
 
 只有通过 `write` 写入到磁盘文件中的内容才可读取。
 
-## mmap 存储映射
+## mmap 内存映射
+
+内存映射也称**共享内存**，映射的方式分为**文件映射**和**匿名映射**。
 
 存储映射 I/O(Memory-mapped I/O) 使一个磁盘文件与存储空间中的一个缓冲区相映射。于是从缓冲区中取数据，就相当于读文件中的相应字节。与此类似，将数据存入缓冲区，则相应的字节就自动写入文件。这样，就可在不使用 `read` 和 `write` 函数的情况下，使地址指针完成 I/O 操作。
 
@@ -210,13 +344,13 @@ void *mmap(void *addr, size_t length, int prot, int flags,
 
 - `addr`：映射的起始地址，通常传 NULL，让系统会自动选择一个合适的地址
 - `length`：共享内存映射区的大小（要 <= 文件的实际大小）
-- `prot`：共享内存映射区的读写属性。PROT_READ、PROT_WRITE、PROT_READ|PROT_WRITE
-- `flags`：标注共享内存的共享属性。MAP_SHARED、MAP_PRIVATE（修改不会反应到磁盘上，很少用）
+- `prot`：共享内存映射区的读写属性。`PROT_READ`、`PROT_WRITE`、`PROT_READ|PROT_WRITE`
+- `flags`：标注共享内存的共享属性。`MAP_SHARED`、`MAP_PRIVATE`（修改不会反应到磁盘上，很少用）
 - `fd`：用于创建共享内存映射区的那个文件的 文件描述符。
 - `offset`：偏移位置，需是 4k 的整数倍。默认 0，表示映射文件全部。
 - 返回值：
   - 成功：映射区的首地址。
-  - 失败：MAP_FAILED (void*(-1))， errno
+  - 失败：`MAP_FAILED (void*(-1))`， errno
 
 ### munmap 函数
 
