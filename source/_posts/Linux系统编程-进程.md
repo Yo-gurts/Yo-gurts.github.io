@@ -45,6 +45,80 @@ description: Linux 中的进程创建、回收。
 
 ![img](../images/Linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B-%E8%BF%9B%E7%A8%8B/3a6cb4e3f27241d3b09b4766bb0b1124.png)
 
+### /proc 文件系统
+
+对于系统中每个进程，内核都提供了相应的目录，命名为`/proc/PID`，其中 `PID` 是进程的ID。在此目录中的各种文件和子目录包含了进程的相关信息。
+
+**可通过`man 5 proc`查看具体介绍**！描述的所有文件的作用以及其内容的含义。
+
+| 文件    | 描述                                                         |
+| ------- | ------------------------------------------------------------ |
+| cmdline | 以\0 分隔的命令行参数                                        |
+| cwd     | 指向当前工作目录的符号链接                                   |
+| Environ | NAME=value 键值对环境列表，以\0 分隔                         |
+| exe     | 指向正在执行文件的符号链接                                   |
+| fd      | 文件目录，包含了指向由进程打开文件的符号链接                 |
+| maps    | **内存映射**                                                 |
+| mem     | 进程虚拟内存（在 I/O 操作之前必须调用 `lseek()`移至有效偏移量） |
+| mounts  | 进程的安装点                                                 |
+| root    | 指向根目录的符号链接                                         |
+| status  | 各种信息（比如，进程 ID、凭证、内存使用量、信号）            |
+| task    | 为进程中的**每个线程均包含一个子目录**（始自 Linux 2.6）     |
+
+#### maps
+
+| 名称            | 描述                                                         |
+| --------------- | ------------------------------------------------------------ |
+| `address`       | 部分显示的是该段映射的虚拟地址。                             |
+| `perms`         | 内存块权限 `READ|WRITE|EXEC`，可见性：`p(Private)`，`s(Share)` |
+| `offset`        | 该段映射在文件/其它设备上的偏移量                            |
+| `dev`           | 设备号                                                       |
+| `inode`         | 文件或者设备的`inode`节点，0表示没有`inode`与该段内存关联    |
+| `pathname`      | 路径名是与该段内存关联的文件路径，若为空，可能是通过`mmap`创建的匿名映射 |
+| `[stack]`       | 进程（主线程）的栈空间                                       |
+| `[stack:<tid>]` | 对应线程`tid`的栈空间                                        |
+| `[heap]`        | 进程的堆空间                                                 |
+| `[vdso]`        | virtual dynamic shared object，`man 7 vdso`查看介绍          |
+
+```bash
+$ ldd debug
+linux-vdso.so.1 (0x00007ffc60be6000)
+libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007f4b7c418000)
+/lib64/ld-linux-x86-64.so.2 (0x00007f4b7c662000)
+
+$ cat /proc/19898/maps
+# The format of the file is:
+# address                 perms offset  dev    inode        pathname
+562bc9b9e000-562bc9b9f000 r--p 00000000 103:07 3422919      /tmp/debug
+562bc9b9f000-562bc9ba0000 r-xp 00001000 103:07 3422919      /tmp/debug
+562bc9ba0000-562bc9ba1000 r--p 00002000 103:07 3422919      /tmp/debug
+562bc9ba1000-562bc9ba2000 r--p 00002000 103:07 3422919      /tmp/debug
+562bc9ba2000-562bc9ba3000 rw-p 00003000 103:07 3422919      /tmp/debug
+562bc9cb2000-562bc9cd3000 rw-p 00000000 00:00  0             [heap]
+7f94721de000-7f94721e1000 rw-p 00000000 00:00  0
+7f94721e1000-7f9472209000 r--p 00000000 103:07 12847599     /usr/lib/x86_64-linux-gnu/libc.so.6
+7f9472209000-7f947239e000 r-xp 00028000 103:07 12847599     /usr/lib/x86_64-linux-gnu/libc.so.6
+7f947239e000-7f94723f6000 r--p 001bd000 103:07 12847599     /usr/lib/x86_64-linux-gnu/libc.so.6
+7f94723f6000-7f94723fa000 r--p 00214000 103:07 12847599     /usr/lib/x86_64-linux-gnu/libc.so.6
+7f94723fa000-7f94723fc000 rw-p 00218000 103:07 12847599     /usr/lib/x86_64-linux-gnu/libc.so.6
+7f94723fc000-7f9472409000 rw-p 00000000 00:00  0
+7f9472424000-7f9472426000 rw-p 00000000 00:00  0
+7f9472426000-7f9472428000 r--p 00000000 103:07 12847231     /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2
+7f9472428000-7f9472452000 r-xp 00002000 103:07 12847231     /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2
+7f9472452000-7f947245d000 r--p 0002c000 103:07 12847231     /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2
+# 自己添加的文件映射
+7f947245d000-7f947245e000 rw-p 00000000 103:07 12066390     /tmp/mmap_file1.c
+
+7f947245e000-7f9472460000 r--p 00037000 103:07 12847231     /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2
+7f9472460000-7f9472462000 rw-p 00039000 103:07 12847231     /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2
+
+7fff5f37d000-7fff5f39e000 rw-p 00000000 00:00  0             [stack]
+7fff5f3df000-7fff5f3e3000 r--p 00000000 00:00  0             [vvar]
+7fff5f3e3000-7fff5f3e5000 r-xp 00000000 00:00  0             [vdso]
+
+ffffffffff600000-ffffffffff601000 --xp 00000000 00:00 0     [vsyscall]
+```
+
 ### 进程状态
 
 操作系统中，进程是​资源分配的基本单位，每个进程都有自己的内存空间（虚拟内存），进程的状态，进程的资源，进程的输入输出等。这些信息被记录在操作系统中称为进程控制块（PCB）的结构中，在 `linux` 中的 `task_struct` 结构体中。
@@ -429,3 +503,4 @@ int main(int argc, char *argv[])
 - [小林coding--为什么要有虚拟内存？](https://xiaolincoding.com/os/3_memory/vmem.html#linux-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86)
 - [小林coding--进程管理](https://xiaolincoding.com/os/4_process/process_base.html)
 - 《Linux系统编程——6.4虚拟内存管理》
+- [/proc/pid/maps文件格式](https://blog.csdn.net/sunao2002002/article/details/84132505)

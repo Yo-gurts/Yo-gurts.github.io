@@ -6,6 +6,7 @@ updated: 2022-05-04 21:19:30
 tags:
   - Linux
   - 线程
+  - 进程
 categories: Linux
 keywords:
 description: Linux 中线程的相关知识
@@ -64,6 +65,8 @@ Linux 下，线程又称为`LWP: light weight process`，轻量级进程。
 优点相对突出，缺点均不是硬伤。Linux 下由于实现方法导致进程、线程差别不是很大。
 
 ## pthread_self 函数
+
+线程相关的函数的`man page`可能需要额外下载，`sudo apt install manpages-posix manpages-posix-dev`，也可通过`man -k pthread`查看相关的函数。
 
 获取线程 id，类似与进程中的 `getpid()`！
 
@@ -262,10 +265,10 @@ int pthread_attr_setdetachstate(pthread_attr_t *attr, int detachstate);
 int pthread_attr_getdetachstate(const pthread_attr_t *attr, int *detachstate);
 ```
 
-- attr：线程属性结构体指针
-- detachstate：线程分离状态，可以是以下值：
-  - PTHREAD_CREATE_JOINABLE：线程分离状态为非分离（默认选项）
-  - PTHREAD_CREATE_DETACHED：线程分离状态为分离
+- `attr`：线程属性结构体指针
+- `detachstate`：线程分离状态，可以是以下值：
+  - `PTHREAD_CREATE_JOINABLE`：线程分离状态为非分离（默认选项）
+  - `PTHREAD_CREATE_DETACHED`：线程分离状态为分离
 - 返回值：0 成功，非 0 失败，返回的是 errno
 
 ```c
@@ -300,6 +303,42 @@ int main() {
 }
 ```
 
+### CPU亲和性
+
+设置进程在某一个核或一组核上运行，在某些情况下可以提升性能。如果该进程有多个线程，它们都只能在指定的一组核上面运行。也可单独为某一个线程设置亲和性。
+
+```c
+#include <sched.h>
+
+int sched_setaffinity(pid_t pid, size_t cpusetsize,
+                        const cpu_set_t *mask);
+
+int sched_getaffinity(pid_t pid, size_t cpusetsize,
+                        cpu_set_t *mask);
+```
+
+- `pid`：要设置的进程号，也可简单的用`0`来表示调用进程，也可用`gettid()`传入线程号
+- `cpusetsize`：应该指定 `mask` 参数的字节数，通常设定为`sizeof(cpu_set_t)`
+- `mask`：核的掩码。
+- 返回值：成功返回0，失败返回`-1`，并设置`errno`
+  - 如果`mask`中指定的 CPU 与系统中的所有 CPU 都不匹配，返回`EINVAL`错误
+
+虽然 `cpu_set_t` 数据类型实现为一个位掩码，但应该将其看成是一个不透明的结构。所有对这个结构的操作都应该使用宏来完成，下面是部分常用的：
+
+```c
+#include <sched.h>
+
+void CPU_ZERO(cpu_set_t *set);  // 将 set 初始化为空
+
+void CPU_SET(int cpu, cpu_set_t *set);  // 将 CPU cpu 添加到 set 中
+void CPU_CLR(int cpu, cpu_set_t *set);  // 从 set 中删除 CPU cpu
+int  CPU_ISSET(int cpu, cpu_set_t *set);// 在 CPU cpu 是 set 的一个成员时返回 true
+```
+
+注意上面宏参数`cpu`编号是从0开始。
+
+`taskset -p PID` 可查看当前进程的`mask`，可通过 `taskset -pc $pid` 来获取某线程与CPU核心的亲和性。
+
 ## 线程注意事项
 
 1. 主线程退出其他线程不退出，主线程应调用 pthread_exit
@@ -316,3 +355,4 @@ int main() {
 
 - [线程原理--三级页表](https://www.bilibili.com/video/BV1KE411q7ee?p=148&spm_id_from=pageDriver)
 - [循环创建子线程](https://www.bilibili.com/video/BV1KE411q7ee?p=153&spm_id_from=pageDriver)
+- [线程/进程和核绑定（CPU亲和性）](https://blog.csdn.net/qq_38232598/article/details/114263105)

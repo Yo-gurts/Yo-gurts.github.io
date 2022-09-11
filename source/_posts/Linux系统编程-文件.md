@@ -313,6 +313,9 @@ lseek(fd，orig，SEEK_SET);       /# Restore original file offset *#/
 #include <unistd.h>
 
 int stat(const char *pathname, struct stat *statbuf);
+
+int fstat(int fd, struct stat *statbuf);
+int lstat(const char *pathname, struct stat *statbuf);
 ```
 
 - pathname：文件路径
@@ -320,6 +323,10 @@ int stat(const char *pathname, struct stat *statbuf);
 - 返回值：
   - 0，成功；
   - -1，失败，错误码存储在errno中；
+
+`fstat`与`stat`等价，只是传入参数为文件描述符。
+
+`lstat`与`stat`等价，只是传入的文件类型为**符号链接**时，返回的文件信息是符号链接本身的信息。
 
 ```c
 struct stat {
