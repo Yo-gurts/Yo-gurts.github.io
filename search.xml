@@ -159,9 +159,9 @@
       
         <tags>
             
-            <tag> Docker </tag>
-            
             <tag> Redis </tag>
+            
+            <tag> Docker </tag>
             
         </tags>
       
@@ -354,9 +354,9 @@
             
             <tag> Linux </tag>
             
-            <tag> 进程 </tag>
-            
             <tag> 线程 </tag>
+            
+            <tag> 进程 </tag>
             
         </tags>
       
@@ -512,9 +512,9 @@
       
         <tags>
             
-            <tag> STL </tag>
-            
             <tag> C++ </tag>
+            
+            <tag> STL </tag>
             
         </tags>
       
