@@ -21,7 +21,7 @@ docker pull onosproject/onos
 启动，做端口映射，不需要的可以去掉
 
 ```bash
-docker run -t -d -p 8181:8181 -p 8101:8101 -p 5005:5005 -p 830:830 -p 6653:6653 -p 6640:6640 --name onos onosproject/onos
+docker run -t -d -p 8181:8181 -p 8101:8101 -p 6653:6653 -p 6640:6640 --name onos onosproject/onos
 ```
 
 - 8181 - REST API 和 GUI
@@ -44,6 +44,50 @@ cd bin
 ```
 
 `lldpprovider` 是用于拓扑发现的，启用该应用后，在 `UI/topology` 可以看到节点是否有链路直连。
+
+## 编译 ONOS 镜像
+
+[onos](https://github.com/Yo-gurts/onos/blob/master/Dockerfile)仓库中已有写好了的`Dockerfile`，将整个项目`clone`到本地后，即可直接编译镜像。该`Dockerfile`不是从网上下载源码，而是从当前目录`COPY`，所以修改源码后直接编译就行。
+
+但是 `ONOS` 编译过程需要从`github`或一些外网地址下载相关编译工具，导致编译缓慢或者直接失败。需要配置代理使用：
+
+```bash
+docker build --network=host --build-arg http_proxy=http://127.0.0.1:8889 --build-arg https_proxy=http://127.0.0.1:8889  -t onos .
+```
+
+上面的方式在某些情况下已经够用了，但可能卡在`onos-gui-npm-install`，需要进一步处理。
+
+- 一种方式是修改 `Dockerfile`，增加 `--action_env` 指定代理。
+
+```Dockerfile
+RUN cat WORKSPACE-docker >> WORKSPACE && bazelisk build onos \
++    --action_env=https_proxy=http://127.0.0.1:8889 \
+     --jobs ${JOBS} \
+     --verbose_failures \
+     --java_runtime_version=dockerjdk_11
+```
+
+- 另一种方式是修改`web/gui/BUILD`。
+
+```bash
+cd onos/web/gui
+sudo vi BUILD
+#修改 onos-gui-npm-install
+在$$NPM $$NPM_ARGS install后面加上
+--registry https://registry.npm.taobao.org
+
+#修改 onos-gui-npm-build
+在$$ROOT/$$NPM $$NPM_ARGS run build --no-cache后加上
+--registry https://registry.npm.taobao.org
+
+cd onos/web/gui2-fw-lib
+sudo vi BUILD
+#修改 onos-gui2-fw-npm-install
+在npm $$NPM_ARGS install后面加上
+--registry https://registry.npm.taobao.org
+```
+
+也可以尝试两种方法都用。此外，也可以先将`bazelisk build onos`之前的编译为一个镜像（免去安装编译工具的步骤），启动容器，再慢慢编译，通过`docker commit`将完成编译的容器保存为镜像，再参考`Dockerfile`进行二阶段的编译过程（此法最可靠）。
 
 ## 常用页面
 
@@ -121,11 +165,11 @@ ovs-vsctl set-controller s2 tcp:172.17.0.2:6653
 
 ## 参考资料
 
--   [onos 官网预编译的下载页面](https://wiki.onosproject.org/display/ONOS/Downloads)
--   [onos github](https://github.com/opennetworkinglab/onos)
--   [「ONOS x Mininet」从0开始搭建环境 ](https://chentingz.github.io/2019/10/28/%E3%80%8CONOS%20x%20Mininet%E3%80%8D%E4%BB%8E0%E5%BC%80%E5%A7%8B%E6%90%AD%E5%BB%BA%E7%8E%AF%E5%A2%83/#0x05-%E6%B5%8B%E8%AF%95%E7%8E%AF%E5%A2%83)
--   [ONOS介绍](https://feisky.gitbooks.io/sdn/content/sdn/onos.html)
--   [ONOS架构分析](http://developer.huawei.com/ict/cn/site-sdn-onos/article/onos-paradigm)
--   [ONOS白皮书上篇之ONOS简介](http://www.sdnlab.com/6371.html)
--   [ONOS白皮书中篇之ONOS架构](http://www.sdnlab.com/6800.html)
-
+- [onos 官网预编译的下载页面](https://wiki.onosproject.org/display/ONOS/Downloads)
+- [onos github](https://github.com/opennetworkinglab/onos)
+- [「ONOS x Mininet」从0开始搭建环境](https://chentingz.github.io/2019/10/28/%E3%80%8CONOS%20x%20Mininet%E3%80%8D%E4%BB%8E0%E5%BC%80%E5%A7%8B%E6%90%AD%E5%BB%BA%E7%8E%AF%E5%A2%83/#0x05-%E6%B5%8B%E8%AF%95%E7%8E%AF%E5%A2%83)
+- [ONOS介绍](https://feisky.gitbooks.io/sdn/content/sdn/onos.html)
+- [ONOS架构分析](http://developer.huawei.com/ict/cn/site-sdn-onos/article/onos-paradigm)
+- [ONOS白皮书上篇之ONOS简介](http://www.sdnlab.com/6371.html)
+- [ONOS白皮书中篇之ONOS架构](http://www.sdnlab.com/6800.html)
+- [ONOS编译过程的问题](https://zhuanlan.zhihu.com/p/387616511?utm_id=0)
