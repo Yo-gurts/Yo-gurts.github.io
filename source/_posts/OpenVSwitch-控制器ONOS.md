@@ -161,7 +161,13 @@ ovs-vsctl set-controller s2 tcp:172.17.0.2:6653
 
 下发的`ARP`流表只能匹配`MAC`地址，但一般不需要手动下发。网络拓扑比较小时，也可以通过`arp -s {ip} {mac}`手动配置。
 
-**限制**：匹配的以太类型不为IP时，无法匹配目的IP或源IP！即ARP和MPLS类型的，只能和MAC地址一起作为匹配域。
+**限制**：匹配的以太类型不为IP时，无法匹配目的IP或源IP！即ARP和MPLS类型的，只能和MAC地址一起作为匹配域。实际上这才是正确的，比如MPLS类型的数据包，OVS解析时，并不会解析三层的协议。MPLS是一种隧道协议，并不关心也不会记录下一层的协议类型，因此无法解析。`ovs-ofctl`并不会提示这种既匹配MPLS标签又匹配IP这种“逻辑”错误。
+
+## 源码编译
+
+https://gerrit.onosproject.org/plugins/gitiles/onos
+
+https://bazel.build/install/ubuntu
 
 ## 参考资料
 

@@ -46,6 +46,14 @@ git submodule update
 # g++ test.cpp -o debug -lfmt -lfmtlog-static # 好像只能使用静态库
 ```
 
+## spdlog
+
+同样支持`fmt`格式输出的日志库，相对更成熟一点。
+
+https://zhuanlan.zhihu.com/p/427038912
+
+https://www.modb.pro/db/251872
+
 ## hiredis
 
 `C`语言版本的`Redis Client`！
@@ -106,7 +114,7 @@ if (c == NULL || c->err) {
 }
 
 /* 使用 timeout */
-struct timeval timeout = {2, 0}; 	// {s, us}; 
+struct timeval timeout = {2, 0}; 	// {s, us};
 redisContext *c = redisConnectWithTimeout("127.0.0.1", 6379, timeout);
 ```
 
@@ -182,3 +190,58 @@ Install the project...
 ```
 
 > [httplib.h 直接看该文件找API](https://github.com/yhirose/cpp-httplib/blob/master/httplib.h)
+>
+> [一点解读](https://segmentfault.com/a/1190000022419921)
+
+常用类和一些结构：
+
+```c++
+class Server;       // 服务端类
+class ThreadPool;   // 线程池类
+class Client;       // 客户端类
+struct Request;     // 请求数据类
+class Result;       // 请求返回类，包含 Response
+struct Response;    // 响应数据类
+
+class Result {
+    std::unique_ptr<Response> res_;
+    Error err_;
+    Headers request_headers_;
+}
+
+struct Response {
+    std::string version;
+    int status = -1;        // 状态位，200/403...
+    std::string reason;
+    Headers headers;
+    std::string body;       // 响应 body
+    std::string location;   // Redirect location
+}
+```
+
+常用方法：
+
+```c++
+#include <httplib.h>
+
+/* 创建Client对象 */
+explicit Client(const std::string &scheme_host_port);
+httplib::Client cli("http://192.168.1.147:18181");
+
+explicit Client(const std::string &host, int port);
+httplib::Client cli("http://192.168.1.147", 18181);
+
+/* get 请求 */
+httplib::Headers headers = {{ "Authorization", "Basic b25vczpyb2Nrcw==" }};
+
+Result Get(const std::string &path);
+Result Get(const std::string &path, const Headers &headers);
+Result res = cli.Get("/onos/v1/flows/of:0000000000001111", headers);
+
+// cli.set_default_headers({{ "Accept-Encoding", "gzip, deflate" }});
+cli.set_default_headers(headers);
+Result res = cli.Get("/onos/v1/flows/of:0000000000001111");
+cout << res.value().body << endl;
+cout << res->status << endl;    // 通过->实际访问的是Response的成员
+```
+
