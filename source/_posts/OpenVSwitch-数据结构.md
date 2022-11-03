@@ -1280,7 +1280,7 @@ struct simap_node {
 
 ## shash
 
-**a map from string to `void*`**。
+**a map from string to** `void *`。
 
 ```c
 struct shash_node {
@@ -1341,7 +1341,7 @@ sset_add__(struct sset *set, const char *name, size_t length, size_t hash)
 
 ## hmapx
 
-**A set of "void *" pointers.**
+**A set of** `void *` **pointers**.
 
 在`hmap`上进行了扩展，实现了一个`set`。
 
