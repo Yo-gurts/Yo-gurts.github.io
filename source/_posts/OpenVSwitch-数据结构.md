@@ -334,6 +334,8 @@ int main() {
 >
 > [深入分析Hmap](https://www.sdnlab.com/15552.html)
 
+**A hash map.**
+
 一种哈希桶实现。
 
 - 桶的数量可自动扩容、收缩，且总是`2^n`。
@@ -378,6 +380,18 @@ bool hmap_contains(const struct hmap *, const struct hmap_node *); /* 判断hmap
 
 void hmap_destroy(struct hmap *);  /* 销毁hmap，释放buckets的内存，但不负责销毁hmap_node对应的资源 */
 void hmap_clear(struct hmap *);    /* 将 buckets 数组清0，大小不变，只是所有指针置为 NULL(0) */
+
+static inline void
+hmap_remove(struct hmap *hmap, struct hmap_node *node)
+{
+    struct hmap_node **bucket = &hmap->buckets[node->hash & hmap->mask];
+
+    while (*bucket != node) {
+        bucket = &(*bucket)->next;
+    }
+    *bucket = node->next;
+    hmap->n--;
+}
 ```
 
 **HMAP_FOR_EACH_WITH_HASH**：遍历 `HMAP` 中所有 `hash_node->hash` 值等于 `HASH` 的节点，`Node`实际`struct`的指针；
@@ -419,7 +433,11 @@ hmap_next_with_hash(const struct hmap_node *node)
          ASSIGN_CONTAINER(NODE, hmap_next(HMAP, &(NODE)->MEMBER), MEMBER))
 ```
 
-**HMAP_FOR_EACH_SAFE**：同上。
+**HMAP_FOR_EACH_SAFE**：遍历`HMAP`中的所有节点。
+
+与`HMAP_FOR_EACH`相比，在进行循环条件判断时，会通过`NEXT`预取下一个节点，这意味着即使在循环过程中将`NODE`从`HMAP`中移除，仍然可正确遍历后续节点。
+
+其实如果只是从`HMAP`中移除，上面的`HMAP_FOR_EACH`也可以，不过要是还调用了`free(NODE)`，上面的就会导致段错误，或者一些奇怪的值。
 
 ```c
 #define HMAP_FOR_EACH_SAFE(NODE, NEXT, MEMBER, HMAP) \
@@ -448,87 +466,1057 @@ hmap_next_with_hash(const struct hmap_node *node)
 
 一个例子：
 
-- 将该代码放在`ovs`源码根目录下，编译时指定头文件路径：~~`gcc test.c lib/hmap.c -o test -I include`~~。
-- 将宏定义展开：` gcc -E -P test.c -o test.p -I include -I .` ，直接跳转到最后看。
+- 将该代码放在`ovs`源码根目录下，编译时指定头文件路径：`gcc test.c -o test -I include`，`hmap.h`也需要一点修改才能编译。
+- 将宏定义展开：`gcc -E -P test.c -o test.p -I include -I .` ，直接跳转到最后看。
 
 ```c
 #include "openvswitch/hmap.h"
 
 #include <stdio.h>
-#include <assert.h>
-#include <errno.h>
 #include <stdlib.h>
-#include <unistd.h>
 
 struct element {
     int value;
     struct hmap_node node;
 };
 
-/* Tests basic hmap insertion and deletion. */
-static void
-test_hmap_insert_delete(void)
+int main()
 {
-    enum { N_ELEMS = 100 };
-
-    /* 定义n个元素数组 */
-    struct element elements[N_ELEMS];
+    size_t i, N_ELEMS = 100;
     int values[N_ELEMS];
+    struct element *elem;
     struct hmap hmap;
-    size_t i;
     struct hmap_node *data = NULL;
 
     hmap_init(&hmap);
-
     for (i = 0; i < N_ELEMS; i++) {
-        elements[i].value = i+1;    /* 设置每个元素的hash为 下标+1 */
-        hmap_insert(&hmap, &elements[i].node, i+1);
+        /* 动态分配元素，设置每个元素的hash为 下标+1 */
+        elem = malloc(sizeof(struct element));
+        elem->value = i+1;
+        hmap_insert(&hmap, &elem->node, i+1);
         /* 查看 hmap 自动扩容 */
-        printf("i+1 = %d, hmap.mask = %d, .n = %d\n", i, hmap.mask, hmap.n);
-        values[i] = i;
+        printf("i+1 = %ld, hmap.mask = %ld, .n = %ld\n", i, hmap.mask, hmap.n);
     }
 
-    for (i = 0; i < hmap.mask; i++) {
-        data = hmap.buckets[i];
-        while(1) {
-            printf("hash=%d,next=%p\n", data->hash, data->next);
-            if (data->next == NULL) break;
-            data = data->next;
-        }
-        printf("--------------------\n");
+    printf("--------------------遍历 hash 值为3的节点 \n");
+    HMAP_FOR_EACH_WITH_HASH(elem, node, 3, &hmap) {
+        printf("elem .value = %d, .hash = %ld\n", elem->value, elem->node.hash);
     }
+
+    printf("--------------------遍历 hash 值为3 所在 buckets 的全部节点 \n");
+    HMAP_FOR_EACH_IN_BUCKET(elem, node, 3, &hmap) {
+        printf("elem .value = %d, .hash = %ld\n", elem->value, elem->node.hash);
+    }
+
+    printf("--------------------遍历 map，删除值为10的节点 \n");
+    struct element *next;
+    HMAP_FOR_EACH_SAFE(elem, next, node, &hmap) {
+        printf("elem .value = %d, .hash = %ld\n", elem->value, elem->node.hash);
+        if (elem->value == 10) {
+            printf("free elem\n");
+            free(elem);
+        }
+    }
+
+    printf("--------------------遍历 hmap，删除值为11的节点 \n");
+    HMAP_FOR_EACH(elem, node, &hmap) {
+        printf("elem .value = %d, .hash = %ld\n", elem->value, elem->node.hash);
+        if (elem->value == 11) {
+            printf("free elem\n");
+            free(elem);
+        }
+    }
+
     hmap_destroy(&hmap);
-}
-int main()
-{
-    test_hmap_insert_delete();
     return 0;
 }
 ```
 
+> include/openvswitch/hmap.h 需要将`hmap.c`中的实现暂时放到`hmap.h`中才能正确编译，而且还注释了一些其他外部函数调用。
+
+```c
+#ifndef HMAP_H
+#define HMAP_H 1
+
+#include <stdbool.h>
+#include <stdlib.h>
+#include "openvswitch/util.h"
+#include <string.h>
+#include "util.h"
+
+#ifdef  __cplusplus
+extern "C" {
+#endif
+
+/* A hash map node, to be embedded inside the data structure being mapped. */
+/* 一个哈希映射节点，用于嵌入到被映射的数据结构中。 */
+struct hmap_node {
+    size_t hash;                /* Hash value. */
+    struct hmap_node *next;     /* Next in linked list. */
+};
+
+/* Returns the hash value embedded in 'node'. */
+static inline size_t hmap_node_hash(const struct hmap_node *node)
+{
+    return node->hash;
+}
+
+#define HMAP_NODE_NULL ((struct hmap_node *) 1)
+#define HMAP_NODE_NULL_INITIALIZER { 0, HMAP_NODE_NULL }
+
+/* Returns true if 'node' has been set to null by hmap_node_nullify() and has
+ * not been un-nullified by being inserted into an hmap. */
+static inline bool
+hmap_node_is_null(const struct hmap_node *node)
+{
+    return node->next == HMAP_NODE_NULL;
+}
+
+/* Marks 'node' with a distinctive value that can be tested with
+ * hmap_node_is_null().  */
+static inline void
+hmap_node_nullify(struct hmap_node *node)
+{
+    node->next = HMAP_NODE_NULL;
+}
+
+/* A hash map. */
+struct hmap {
+    /* buckets 就是哈希桶，本质为指针数组（hmap_node *）
+     * 如果 mask == 0, buckets = &one */
+    struct hmap_node **buckets;
+    /* one 只有当 mask == 0 时才存储数据，mask != 0, 则 one = NULL; */
+    struct hmap_node *one;
+    /* buckets 数组的大小为 mask + 1, mask总是 2^n - 1.
+    * (节点hash值 & mask)：该节点在buckets数组中的下标 */
+    size_t mask;
+    /* buckets 中实际有效 hmap_node 节点个数，当 n > 2*mask + 1时才会扩容 */
+    size_t n;
+};
+
+/* Initializer for an empty hash map. */
+/* 初始化 hmap {buckets = &one, one = NULL, mask = 0, n = 0} */
+#define HMAP_INITIALIZER(HMAP) \
+    { (struct hmap_node **const) &(HMAP)->one, NULL, 0, 0 }
+
+/* Initializer for an immutable struct hmap 'HMAP' that contains 'N' nodes
+ * linked together starting at 'NODE'.  The hmap only has a single chain of
+ * hmap_nodes, so 'N' should be small. */
+#define HMAP_CONST(HMAP, N, NODE) {                                 \
+        CONST_CAST(struct hmap_node **, &(HMAP)->one), NODE, 0, N }
+
+/* Initialization. */
+void hmap_init(struct hmap *);
+void hmap_destroy(struct hmap *);
+void hmap_clear(struct hmap *);
+void hmap_swap(struct hmap *a, struct hmap *b);
+void hmap_moved(struct hmap *hmap);
+static inline size_t hmap_count(const struct hmap *);
+static inline bool hmap_is_empty(const struct hmap *);
+
+/* Adjusting capacity. */
+void hmap_expand_at(struct hmap *, const char *where);
+#define hmap_expand(HMAP) hmap_expand_at(HMAP, OVS_SOURCE_LOCATOR)
+
+void hmap_shrink_at(struct hmap *, const char *where);
+#define hmap_shrink(HMAP) hmap_shrink_at(HMAP, OVS_SOURCE_LOCATOR)
+
+void hmap_reserve_at(struct hmap *, size_t capacity, const char *where);
+#define hmap_reserve(HMAP, CAPACITY) \
+    hmap_reserve_at(HMAP, CAPACITY, OVS_SOURCE_LOCATOR)
+
+/* Insertion and deletion. */
+static inline void hmap_insert_at(struct hmap *, struct hmap_node *,
+                                  size_t hash, const char *where);
+#define hmap_insert(HMAP, NODE, HASH) \
+    hmap_insert_at(HMAP, NODE, HASH, OVS_SOURCE_LOCATOR)
+
+static inline void hmap_insert_fast(struct hmap *,
+                                    struct hmap_node *, size_t hash);
+static inline void hmap_remove(struct hmap *, struct hmap_node *);
+
+void hmap_node_moved(struct hmap *, struct hmap_node *, struct hmap_node *);
+static inline void hmap_replace(struct hmap *, const struct hmap_node *old,
+                                struct hmap_node *new_node);
+
+struct hmap_node *hmap_random_node(const struct hmap *);
+
+/* Search.
+ *
+ * HMAP_FOR_EACH_WITH_HASH 遍历 HMAP 中所有hash值等于HASH的 NODE。
+ *
+ * HMAP_FOR_EACH_IN_BUCKET 在HMAP中所有与HASH属于同一桶的节点上迭代 NODE。
+ * iterates NODE over all of the nodes in HMAP that would fall in the same bucket as HASH.
+ *
+ * NODE 是包含 'struct hmap_node' 的结构体名称。
+ * MEMBER 必须是 NODE中 'struct hmap_node' 成员的名称。
+ *
+ * These macros may be used interchangeably to search for a particular value in
+ * an hmap, see, e.g. shash_find() for an example.  Usually, using
+ * HMAP_FOR_EACH_WITH_HASH provides an optimization, because comparing a hash
+ * value is usually cheaper than comparing an entire hash map key.  But for
+ * simple hash map keys, it makes sense to use HMAP_FOR_EACH_IN_BUCKET because
+ * it avoids doing two comparisons when a single simple comparison suffices.
+ *
+ * The loop should not change NODE to point to a different node or insert or
+ * delete nodes in HMAP (unless it "break"s out of the loop to terminate
+ * iteration).
+ *
+ * HASH is only evaluated once.
+ *
+ * When the loop terminates normally, meaning the iteration has completed
+ * without using 'break', NODE will be NULL.  This is true for all of the
+ * HMAP_FOR_EACH_*() macros.
+ */
+#define HMAP_FOR_EACH_WITH_HASH(NODE, MEMBER, HASH, HMAP)               \
+    for (INIT_CONTAINER(NODE, hmap_first_with_hash(HMAP, HASH), MEMBER); \
+         (NODE != OBJECT_CONTAINING(NULL, NODE, MEMBER))                \
+         || ((NODE = NULL), false);                                     \
+         ASSIGN_CONTAINER(NODE, hmap_next_with_hash(&(NODE)->MEMBER),   \
+                          MEMBER))
+#define HMAP_FOR_EACH_IN_BUCKET(NODE, MEMBER, HASH, HMAP)               \
+    for (INIT_CONTAINER(NODE, hmap_first_in_bucket(HMAP, HASH), MEMBER); \
+         (NODE != OBJECT_CONTAINING(NULL, NODE, MEMBER))                \
+         || ((NODE = NULL), false);                                     \
+         ASSIGN_CONTAINER(NODE, hmap_next_in_bucket(&(NODE)->MEMBER), MEMBER))
+
+static inline struct hmap_node *hmap_first_with_hash(const struct hmap *,
+                                                     size_t hash);
+static inline struct hmap_node *hmap_next_with_hash(const struct hmap_node *);
+static inline struct hmap_node *hmap_first_in_bucket(const struct hmap *,
+                                                     size_t hash);
+static inline struct hmap_node *hmap_next_in_bucket(const struct hmap_node *);
+
+bool hmap_contains(const struct hmap *, const struct hmap_node *);
+
+/* Iteration.
+ *
+ * The *_INIT variants of these macros additionally evaluate the expressions
+ * supplied following the HMAP argument once during the loop initialization.
+ * This makes it possible for data structures that wrap around hmaps to insert
+ * additional initialization into their iteration macros without having to
+ * completely rewrite them.  In particular, it can be a good idea to insert
+ * BUILD_ASSERT_TYPE checks for map and node types that wrap hmap, since
+ * otherwise it is possible for clients to accidentally confuse two derived
+ * data structures that happen to use the same member names for struct hmap and
+ * struct hmap_node. */
+
+/* Iterates through every node in HMAP. */
+#define HMAP_FOR_EACH(NODE, MEMBER, HMAP) \
+    HMAP_FOR_EACH_INIT(NODE, MEMBER, HMAP, (void) 0)
+#define HMAP_FOR_EACH_INIT(NODE, MEMBER, HMAP, ...)                     \
+    for (INIT_CONTAINER(NODE, hmap_first(HMAP), MEMBER), __VA_ARGS__;   \
+         (NODE != OBJECT_CONTAINING(NULL, NODE, MEMBER))                \
+         || ((NODE = NULL), false);                                     \
+         ASSIGN_CONTAINER(NODE, hmap_next(HMAP, &(NODE)->MEMBER), MEMBER))
+
+/* Safe when NODE may be freed (not needed when NODE may be removed from the
+ * hash map but its members remain accessible and intact). */
+#define HMAP_FOR_EACH_SAFE(NODE, NEXT, MEMBER, HMAP) \
+    HMAP_FOR_EACH_SAFE_INIT(NODE, NEXT, MEMBER, HMAP, (void) 0)
+#define HMAP_FOR_EACH_SAFE_INIT(NODE, NEXT, MEMBER, HMAP, ...)          \
+    for (INIT_CONTAINER(NODE, hmap_first(HMAP), MEMBER), __VA_ARGS__;   \
+         ((NODE != OBJECT_CONTAINING(NULL, NODE, MEMBER))               \
+          || ((NODE = NULL), false)                                     \
+          ? INIT_CONTAINER(NEXT, hmap_next(HMAP, &(NODE)->MEMBER), MEMBER), 1 \
+          : 0);                                                         \
+         (NODE) = (NEXT))
+
+/* Continues an iteration from just after NODE. */
+#define HMAP_FOR_EACH_CONTINUE(NODE, MEMBER, HMAP) \
+    HMAP_FOR_EACH_CONTINUE_INIT(NODE, MEMBER, HMAP, (void) 0)
+#define HMAP_FOR_EACH_CONTINUE_INIT(NODE, MEMBER, HMAP, ...)            \
+    for (ASSIGN_CONTAINER(NODE, hmap_next(HMAP, &(NODE)->MEMBER), MEMBER), \
+         __VA_ARGS__;                                                   \
+         (NODE != OBJECT_CONTAINING(NULL, NODE, MEMBER))                \
+         || ((NODE = NULL), false);                                     \
+         ASSIGN_CONTAINER(NODE, hmap_next(HMAP, &(NODE)->MEMBER), MEMBER))
+
+static inline struct hmap_node *
+hmap_pop_helper__(struct hmap *hmap, size_t *bucket) {
+
+    for (; *bucket <= hmap->mask; (*bucket)++) {
+        struct hmap_node *node = hmap->buckets[*bucket];
+
+        if (node) {
+            hmap_remove(hmap, node);
+            return node;
+        }
+    }
+
+    return NULL;
+}
+
+#define HMAP_FOR_EACH_POP(NODE, MEMBER, HMAP)                               \
+    for (size_t bucket__ = 0;                                               \
+         INIT_CONTAINER(NODE, hmap_pop_helper__(HMAP, &bucket__), MEMBER),  \
+         (NODE != OBJECT_CONTAINING(NULL, NODE, MEMBER))                    \
+         || ((NODE = NULL), false);)
+
+static inline struct hmap_node *hmap_first(const struct hmap *);
+static inline struct hmap_node *hmap_next(const struct hmap *,
+                                          const struct hmap_node *);
+
+struct hmap_position {
+    unsigned int bucket;
+    unsigned int offset;
+};
+
+struct hmap_node *hmap_at_position(const struct hmap *,
+                                   struct hmap_position *);
+
+/* Returns the number of nodes currently in 'hmap'. */
+static inline size_t
+hmap_count(const struct hmap *hmap)
+{
+    return hmap->n;
+}
+
+/* Returns the maximum number of nodes that 'hmap' may hold before it should be
+ * rehashed. */
+static inline size_t
+hmap_capacity(const struct hmap *hmap)
+{
+    return hmap->mask * 2 + 1;
+}
+
+/* Returns true if 'hmap' currently contains no nodes,
+ * false otherwise.
+ * Note: While hmap in general is not thread-safe without additional locking,
+ * hmap_is_empty() is. */
+static inline bool
+hmap_is_empty(const struct hmap *hmap)
+{
+    return hmap->n == 0;
+}
+
+/* Inserts 'node', with the given 'hash', into 'hmap'.  'hmap' is never
+ * expanded automatically. */
+static inline void
+hmap_insert_fast(struct hmap *hmap, struct hmap_node *node, size_t hash)
+{
+    struct hmap_node **bucket = &hmap->buckets[hash & hmap->mask];
+    node->hash = hash;
+    node->next = *bucket;
+    *bucket = node;
+    hmap->n++;
+}
+
+/* 用给定的'hash'值将'node'插入到'hmap'中，并在必要时扩容'hmap'以优化搜索性能
+ *
+ * 'where'用于调试日志记录。通常使用 hmap_insert() 自动提供
+ * 调用者的源文件和where的行号。*/
+static inline void
+hmap_insert_at(struct hmap *hmap, struct hmap_node *node, size_t hash,
+               const char *where)
+{
+    hmap_insert_fast(hmap, node, hash);
+    /* 如果hmap中实际节点的数量超过容量的一半时，进行翻倍扩容 */
+    if (hmap->n / 2 > hmap->mask) {
+        hmap_expand_at(hmap, where);
+    }
+}
+
+/* Removes 'node' from 'hmap'.  Does not shrink the hash table; call
+ * hmap_shrink() directly if desired. */
+static inline void
+hmap_remove(struct hmap *hmap, struct hmap_node *node)
+{
+    struct hmap_node **bucket = &hmap->buckets[node->hash & hmap->mask];
+    while (*bucket != node) {
+        bucket = &(*bucket)->next;
+    }
+    *bucket = node->next;
+    hmap->n--;
+}
+
+/* Puts 'new_node' in the position in 'hmap' currently occupied by 'old_node'.
+ * The 'new_node' must hash to the same value as 'old_node'.  The client is
+ * responsible for ensuring that the replacement does not violate any
+ * client-imposed invariants (e.g. uniqueness of keys within a map).
+ *
+ * Afterward, 'old_node' is not part of 'hmap', and the client is responsible
+ * for freeing it (if this is desirable). */
+static inline void
+hmap_replace(struct hmap *hmap,
+             const struct hmap_node *old_node, struct hmap_node *new_node)
+{
+    struct hmap_node **bucket = &hmap->buckets[old_node->hash & hmap->mask];
+    while (*bucket != old_node) {
+        bucket = &(*bucket)->next;
+    }
+    *bucket = new_node;
+    new_node->hash = old_node->hash;
+    new_node->next = old_node->next;
+}
+
+static inline struct hmap_node *
+hmap_next_with_hash__(const struct hmap_node *node, size_t hash)
+{
+    while (node != NULL && node->hash != hash) {
+        node = node->next;
+    }
+    return CONST_CAST(struct hmap_node *, node);
+}
+
+/* Returns the first node in 'hmap' with the given 'hash', or a null pointer if
+ * no nodes have that hash value. */
+static inline struct hmap_node *
+hmap_first_with_hash(const struct hmap *hmap, size_t hash)
+{
+    return hmap_next_with_hash__(hmap->buckets[hash & hmap->mask], hash);
+}
+
+/* Returns the first node in 'hmap' in the bucket in which the given 'hash'
+ * would land, or a null pointer if that bucket is empty. */
+static inline struct hmap_node *
+hmap_first_in_bucket(const struct hmap *hmap, size_t hash)
+{
+    return hmap->buckets[hash & hmap->mask];
+}
+
+/* Returns the next node in the same bucket as 'node', or a null pointer if
+ * there are no more nodes in that bucket.
+ *
+ * If the hash map has been reallocated since 'node' was visited, some nodes
+ * may be skipped; if new nodes with the same hash value have been added, they
+ * will be skipped.  (Removing 'node' from the hash map does not prevent
+ * calling this function, since node->next is preserved, although freeing
+ * 'node' of course does.) */
+static inline struct hmap_node *
+hmap_next_in_bucket(const struct hmap_node *node)
+{
+    return node->next;
+}
+
+/* Returns the next node in the same hash map as 'node' with the same hash
+ * value, or a null pointer if no more nodes have that hash value.
+ *
+ * If the hash map has been reallocated since 'node' was visited, some nodes
+ * may be skipped; if new nodes with the same hash value have been added, they
+ * will be skipped.  (Removing 'node' from the hash map does not prevent
+ * calling this function, since node->next is preserved, although freeing
+ * 'node' of course does.) */
+static inline struct hmap_node *
+hmap_next_with_hash(const struct hmap_node *node)
+{
+    return hmap_next_with_hash__(node->next, node->hash);
+}
+
+static inline struct hmap_node *
+hmap_next__(const struct hmap *hmap, size_t start)
+{
+    size_t i;
+    for (i = start; i <= hmap->mask; i++) {
+        struct hmap_node *node = hmap->buckets[i];
+        if (node) {
+            return node;
+        }
+    }
+    return NULL;
+}
+
+/* Returns the first node in 'hmap', in arbitrary order, or a null pointer if
+ * 'hmap' is empty. */
+static inline struct hmap_node *
+hmap_first(const struct hmap *hmap)
+{
+    return hmap_next__(hmap, 0);
+}
+
+/* Returns the next node in 'hmap' following 'node', in arbitrary order, or a
+ * null pointer if 'node' is the last node in 'hmap'.
+ *
+ * If the hash map has been reallocated since 'node' was visited, some nodes
+ * may be skipped or visited twice.  (Removing 'node' from the hash map does
+ * not prevent calling this function, since node->next is preserved, although
+ * freeing 'node' of course does.) */
+static inline struct hmap_node *
+hmap_next(const struct hmap *hmap, const struct hmap_node *node)
+{
+    return (node->next
+            ? node->next
+            : hmap_next__(hmap, (node->hash & hmap->mask) + 1));
+}
+
+
+/* Initializes 'hmap' as an empty hash table. */
+void
+hmap_init(struct hmap *hmap)
+{
+    hmap->buckets = &hmap->one;
+    hmap->one = NULL;
+    hmap->mask = 0;
+    hmap->n = 0;
+}
+
+/* Frees memory reserved by 'hmap'.  It is the client's responsibility to free
+ * the nodes themselves, if necessary. */
+/* 释放 hmap 分配的内存，但仅仅释放 hmap 自身的指针数组的内存，
+ * 并不负责释放 嵌入hmap_node的结构 的内存 */
+void
+hmap_destroy(struct hmap *hmap)
+{
+    if (hmap && hmap->buckets != &hmap->one) {
+        free(hmap->buckets);
+    }
+}
+
+/* 移除 hmap 的 buckets 中的所有节点，留出空间接收新的节点，没有释放hamp的内存
+ *
+ * This function is appropriate when 'hmap' will soon have about as many
+ * elements as it did before.  If 'hmap' will likely have fewer elements than
+ * before, use hmap_destroy() followed by hmap_init() to save memory and
+ * iteration time.
+ * 当'hmap'很快将拥有和以前一样多的元素时，此函数是合适的。如果'hmap'可能比以前有更少的元素，
+ * 使用hmap_destroy()和hmap_init()来节省内存和迭代时间。*/
+void
+hmap_clear(struct hmap *hmap)
+{
+    if (hmap->n > 0) {
+        hmap->n = 0;
+        /* 将 buckets 数组清0 */
+        memset(hmap->buckets, 0, (hmap->mask + 1) * sizeof *hmap->buckets);
+    }
+}
+
+/* Exchanges hash maps 'a' and 'b'. */
+/* 注意此处不是指针赋值！！而是结构体赋值（每个成员赋值）*/
+void
+hmap_swap(struct hmap *a, struct hmap *b)
+{
+    struct hmap tmp = *a;
+    *a = *b;
+    *b = tmp;
+    hmap_moved(a);
+    hmap_moved(b);
+}
+
+/* Adjusts 'hmap' to compensate for having moved position in memory (e.g. due
+ * to realloc()). */
+void
+hmap_moved(struct hmap *hmap)
+{
+    if (!hmap->mask) {
+        hmap->buckets = &hmap->one;
+    }
+}
+
+/* 1. 先以新的容量大小new_mask+1创建一个临时hmap，
+ * 2. 再遍历原hmap中的节点，调用hmap_insert 插入到临时hmap中。
+ * 3. 交换两个hmap, swap(hmap, tmp);
+ * 4. 销毁tmp(即原来的hmap)
+ */
+static void
+resize(struct hmap *hmap, size_t new_mask, const char *where)
+{
+    struct hmap tmp;
+    size_t i;
+
+    /* 再次检查指定的mask是否合理（2^n - 1） */
+    // ovs_assert(is_pow2(new_mask + 1));
+
+    /* 1. 先以新的容量大小new_mask+1创建一个临时hmap */
+    hmap_init(&tmp);
+    if (new_mask) {
+        tmp.buckets = malloc(sizeof *tmp.buckets * (new_mask + 1));
+        tmp.mask = new_mask;
+        for (i = 0; i <= tmp.mask; i++) {
+            tmp.buckets[i] = NULL;
+        }
+    }
+
+    int n_big_buckets = 0;
+    int biggest_count = 0;
+    int n_biggest_buckets = 0;
+    /* 2. 再遍历原hmap中的节点，调用hmap_insert 插入到临时hmap中 */
+    for (i = 0; i <= hmap->mask; i++) {
+        struct hmap_node *node, *next;
+        int count = 0;
+        for (node = hmap->buckets[i]; node; node = next) {
+            next = node->next;
+            hmap_insert_fast(&tmp, node, node->hash);
+            count++;
+        }
+        if (count > 5) {
+            n_big_buckets++;
+            if (count > biggest_count) {
+                biggest_count = count;
+                n_biggest_buckets = 1;
+            } else if (count == biggest_count) {
+                n_biggest_buckets++;
+            }
+        }
+    }
+    /* 3. 交换两个hmap, swap(hmap, tmp); */
+    hmap_swap(hmap, &tmp);
+    /* 4. 销毁tmp (即原来的hmap) */
+    hmap_destroy(&tmp);
+
+    // if (n_big_buckets) {
+    //     static struct vlog_rate_limit rl = VLOG_RATE_LIMIT_INIT(10, 10);
+    //     COVERAGE_INC(hmap_pathological);
+    //     VLOG_DBG_RL(&rl, "%s: %d bucket%s with 6+ nodes, "
+    //                 "including %d bucket%s with %d nodes "
+    //                 "(%"PRIuSIZE" nodes total across %"PRIuSIZE" buckets)",
+    //                 where,
+    //                 n_big_buckets, n_big_buckets > 1 ? "s" : "",
+    //                 n_biggest_buckets, n_biggest_buckets > 1 ? "s" : "",
+    //                 biggest_count,
+    //                 hmap->n, hmap->mask + 1);
+    // }
+}
+
+/* hmap的buckets的大小必须是2^n，capacity只是一个参考值，
+ * 经过计算，实际取的大小是 <= capacity 的一个2^n 的数，而mask则是2^n - 1.
+ */
+static size_t
+calc_mask(size_t capacity)
+{
+    size_t mask = capacity / 2;
+    mask |= mask >> 1;
+    mask |= mask >> 2;
+    mask |= mask >> 4;
+    mask |= mask >> 8;
+    mask |= mask >> 16;
+#if SIZE_MAX > UINT32_MAX
+    mask |= mask >> 32;
+#endif
+
+    /* If we need to dynamically allocate buckets we might as well allocate at
+     * least 4 of them. */
+    mask |= (mask & 1) << 1;
+
+    return mask;
+}
+
+/* 如果需要，扩容“hmap”以优化搜索的性能。
+ *
+ * 'where' 用于DEBUG日志记录。通常使用 hmap_insert() 自动提供调用者的源文件
+ * 和 'where' 的行号。*/
+void
+hmap_expand_at(struct hmap *hmap, const char *where)
+{
+    size_t new_mask = calc_mask(hmap->n);
+    if (new_mask > hmap->mask) {
+        // COVERAGE_INC(hmap_expand);
+        resize(hmap, new_mask, where);
+    }
+}
+
+/* 如果需要，收缩“hmap”以优化迭代的性能
+ *
+ * 'where' 用于DEBUG日志记录。通常使用 hmap_insert() 自动提供调用者的源文件
+ * 和 'where' 的行号。*/
+void
+hmap_shrink_at(struct hmap *hmap, const char *where)
+{
+    size_t new_mask = calc_mask(hmap->n);
+    if (new_mask < hmap->mask) {
+        // COVERAGE_INC(hmap_shrink);
+        resize(hmap, new_mask, where);
+    }
+}
+
+/* 如果有必要，扩容'hmap'，以优化当它有'n'个元素时的搜索性能。
+ * (但是在一个已分配容量远远高于当前节点数量的哈希映射中，迭代速度会很慢)
+ *
+ * 'where' 用于DEBUG日志记录。通常使用 hmap_insert() 自动提供调用者的源文件
+ * 和 'where' 的行号。*/
+void
+hmap_reserve_at(struct hmap *hmap, size_t n, const char *where)
+{
+    size_t new_mask = calc_mask(n);
+    if (new_mask > hmap->mask) {
+        // COVERAGE_INC(hmap_reserve);
+        resize(hmap, new_mask, where);
+    }
+}
+
+/* Adjusts 'hmap' to compensate for 'old_node' having moved position in memory
+ * to 'node' (e.g. due to realloc()). */
+void
+hmap_node_moved(struct hmap *hmap,
+                struct hmap_node *old_node, struct hmap_node *node)
+{
+    struct hmap_node **bucket = &hmap->buckets[node->hash & hmap->mask];
+    while (*bucket != old_node) {
+        bucket = &(*bucket)->next;
+    }
+    *bucket = node;
+}
+
+/* 从'hmap'中选择并返回一个随机选择的节点，该 hmap 不能为空
+ *
+ * I wouldn't depend on this algorithm to be fair, since I haven't analyzed it.
+ * But it does at least ensure that any node in 'hmap' can be chosen. */
+struct hmap_node *
+hmap_random_node(const struct hmap *hmap)
+{
+    struct hmap_node *bucket, *node;
+    size_t n, i;
+
+    /* Choose a random non-empty bucket. */
+    // for (;;) {
+    //     bucket = hmap->buckets[random_uint32() & hmap->mask];
+    //     if (bucket) {
+    //         break;
+    //     }
+    // }
+
+    /* Count nodes in bucket. */
+    // n = 0;
+    // for (node = bucket; node; node = node->next) {
+    //     n++;
+    // }
+
+    /* Choose random node from bucket. */
+    // i = random_range(n);
+    // i = n-1;
+    // for (node = bucket; i-- > 0; node = node->next) {
+    //     continue;
+    // }
+    return NULL;
+}
+
+/* Returns the next node in 'hmap' in hash order, or NULL if no nodes remain in
+ * 'hmap'.  Uses '*pos' to determine where to begin iteration, and updates
+ * '*pos' to pass on the next iteration into them before returning.
+ *
+ * It's better to use plain HMAP_FOR_EACH and related functions, since they are
+ * faster and better at dealing with hmaps that change during iteration.
+ *
+ * Before beginning iteration, set '*pos' to all zeros. */
+struct hmap_node *
+hmap_at_position(const struct hmap *hmap,
+                 struct hmap_position *pos)
+{
+    size_t offset;
+    size_t b_idx;
+
+    offset = pos->offset;
+    for (b_idx = pos->bucket; b_idx <= hmap->mask; b_idx++) {
+        struct hmap_node *node;
+        size_t n_idx;
+
+        for (n_idx = 0, node = hmap->buckets[b_idx]; node != NULL;
+             n_idx++, node = node->next) {
+            if (n_idx == offset) {
+                if (node->next) {
+                    pos->bucket = node->hash & hmap->mask;
+                    pos->offset = offset + 1;
+                } else {
+                    pos->bucket = (node->hash & hmap->mask) + 1;
+                    pos->offset = 0;
+                }
+                return node;
+            }
+        }
+        offset = 0;
+    }
+
+    pos->bucket = 0;
+    pos->offset = 0;
+    return NULL;
+}
+
+/* Returns true if 'node' is in 'hmap', false otherwise. */
+bool
+hmap_contains(const struct hmap *hmap, const struct hmap_node *node)
+{
+    struct hmap_node *p;
+
+    for (p = hmap_first_in_bucket(hmap, node->hash); p; p = p->next) {
+        if (p == node) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+#ifdef  __cplusplus
+}
+#endif
+
+#endif /* hmap.h */
+```
+
 ## smap
 
+**a map from string to string.**
 
+同样是在`hmap`上进行扩展，该结构的`key`和`value`均为字符串，`hash`由`key`计算得到。
+
+```c
+struct smap {
+    struct hmap map;           /* Contains "struct smap_node"s. */
+};
+
+struct smap_node {
+    struct hmap_node node;     /* In struct smap's 'map' hmap. */
+    char *key;
+    char *value;
+};
+```
 
 ## simap
 
+**A map from strings to unsigned integers.**
 
+与`smap`类似，`hash`值是由字符串`name`计算得到，只不过`value`变为了`unsigned int`。
 
-## cmap
+```c
+struct simap {
+    struct hmap map;            /* Contains "struct simap_node"s. */
+};
 
-
-
-## skiplist
-
-
-
-## sset
-
-
-
-## hash
-
-
+struct simap_node {
+    struct hmap_node node;      /* In struct simap's 'map' hmap. */
+    char *name;
+    unsigned int data;
+};
+```
 
 ## shash
 
+**a map from string to `void*`**。
+
+```c
+struct shash_node {
+    struct hmap_node node;
+    char *name;
+    void *data;
+};
+
+struct shash {
+    struct hmap map;
+};
+```
+
+------
+
+## sset
+
+**A set of strings.**
+
+`hash`值是由`name`计算得到。
+
+```c
+struct sset_node {
+    struct hmap_node hmap_node;
+    char name[1];   /* 不定长结构 */
+};
+
+struct sset {
+    struct hmap map;
+};
+```
+
+**sset_add**：添加一个字符串`name`到`sset`中，如果`name`已经存在，则返回`NULL`，否则返回新建的`sset_node`节点。
+
+注意传递的字符串会进行拷贝，`malloc` 的大小是基于字符串的长度。
+
+```c
+struct sset_node *
+sset_add(struct sset *set, const char *name)
+{
+    size_t length = strlen(name);
+    uint32_t hash = hash_name__(name, length);
+
+    return (sset_find__(set, name, hash)
+            ? NULL
+            : sset_add__(set, name, length, hash));
+}
+
+static struct sset_node *
+sset_add__(struct sset *set, const char *name, size_t length, size_t hash)
+{
+    struct sset_node *node = xmalloc(length + sizeof *node); /* malloc的大小是基于字符串的长度 */
+    memcpy(node->name, name, length + 1);
+    hmap_insert(&set->map, &node->hmap_node, hash);
+    return node;
+}
+```
+
+## hmapx
+
+**A set of "void *" pointers.**
+
+在`hmap`上进行了扩展，实现了一个`set`。
+
+`hmap`在使用时，往往是将`hmap_node`嵌入到某个结构体中，结构体是可以用户自定义的。而且该节点的`key`也就是`hash`值是用户指定的。
+
+`hmapx`就没有`hmap`那样的通用性，`hmapx_node`就是上面描述的嵌入了`hmap_node`的结构体，该结构体只有一个成员`void *data`。另一个特殊在于节点的`hash`值不能指定，而是基于`data`的地址自动计算。
+
+`hmapx`也可以看作`key-value`，`key`是`void *data`，`value`也是，所以不会存在两个节点相同，也就是实现了`set`。
+
+```c
+struct hmapx_node {
+    struct hmap_node hmap_node;
+    void *data;
+};
+
+struct hmapx {
+    struct hmap map;
+};
+
+struct hmapx_node *
+hmapx_add(struct hmapx *map, void *data)
+{
+    uint32_t hash = hash_pointer(data, 0);  /* 基于data存储的地址计算hash */
+    return (hmapx_find__(map, data, hash)
+            ? NULL
+            : hmapx_add__(map, data, hash));
+}
+```
+
+`hmapx`查找是否存在某个`data`时，是通过直接比较`data`指针是否相等。
+
+```c
+struct hmapx_node *
+hmapx_find(const struct hmapx *map, const void *data)
+{
+    return hmapx_find__(map, data, hash_pointer(data, 0));
+}
+
+static struct hmapx_node *
+hmapx_find__(const struct hmapx *map, const void *data, size_t hash)
+{
+    struct hmapx_node *node;
+
+    HMAP_FOR_EACH_IN_BUCKET (node, hmap_node, hash, &map->map) {
+        if (node->data == data) {   /* 比较指针是否相等 */
+            return node;
+        }
+    }
+    return NULL;
+}
+```
+
+**HMAPX_FOR_EACH**：遍历`hmapx`中的每一个`hmapx_node`节点。`struct hmap_node *NODE;`
+
+```c
+#define HMAPX_FOR_EACH(NODE, HMAPX)                                     \
+    HMAP_FOR_EACH_INIT(NODE, hmap_node, &(HMAPX)->map,                  \
+                       BUILD_ASSERT_TYPE(NODE, struct hmapx_node *),    \
+                       BUILD_ASSERT_TYPE(HMAPX, struct hmapx *))
+```
+
+**HMAPX_FOR_EACH_SAFE**：与`HMAP_FOR_EACH_SAFE`类似。
+
+```c
+#define HMAPX_FOR_EACH_SAFE(NODE, NEXT, HMAPX)                          \
+    HMAP_FOR_EACH_SAFE_INIT(NODE, NEXT, hmap_node, &(HMAPX)->map,       \
+                            BUILD_ASSERT_TYPE(NODE, struct hmapx_node *), \
+                            BUILD_ASSERT_TYPE(NEXT, struct hmapx_node *), \
+                            BUILD_ASSERT_TYPE(HMAPX, struct hmapx *))
+```
+
+## hash
+
+------
+
+## cmap
+
+> [How Cuckoo Hashing Work Part 1 (Introduction to Cuckoo Hashing)](https://www.youtube.com/watch?v=GPiJUtdiUlo)
+> [How Cuckoo Hashing Work Part 2 - Introduction to Cuckoo Hashing](https://www.youtube.com/watch?v=wGjOZhK11ms)
+>
+> [五大类共13种哈希算法](https://jishuin.proginn.com/p/763bfbd338d0)
+
+**Concurrent hash map.**
+
+实现不再是基于`hmap`，完全是另一套方式，最主要的特点是**支持并发操作**。
+
+基本结构与`hmap`类似，也是一种哈希桶，`mask`和`n`的意义也相同。
+
+```c
+struct cmap {
+    OVSRCU_TYPE(struct cmap_impl *) impl;
+};
+
+struct cmap_impl {
+    PADDED_MEMBERS_CACHELINE_MARKER(CACHE_LINE_SIZE, cacheline0,
+        unsigned int n;             /* Number of in-use elements. */
+        unsigned int max_n;         /* Max elements before enlarging. */
+        unsigned int min_n;         /* Min elements before shrinking. */
+        uint32_t mask;              /* Number of 'buckets', minus one. */
+        uint32_t basis;             /* Basis for rehashing client's
+                                       hash values. */
+    );
+
+    PADDED_MEMBERS_CACHELINE_MARKER(CACHE_LINE_SIZE, cacheline1,
+        struct cmap_bucket buckets[1];
+    );
+};
+```
+
+------
+
+## skiplist
+
+> [Skip List--跳表](https://www.jianshu.com/p/9d8296562806)
+
+![img](../images/OpenVSwitch-数据结构/webp.webp)
+
+------
+
+## pvector
+
+> lib/pvector.h
+
+**Concurrent Priority Vector**.
+
+优先级`vector`，支持并发操作。
+
+```c
+struct pvector_entry {
+    int priority;
+    void *ptr;
+};
+
+struct pvector_impl {
+    atomic_size_t size;   /* Number of entries in the vector. */
+    size_t allocated;     /* Number of allocated entries. */
+    struct pvector_entry vector[];
+};
+
+/* Concurrent priority vector. */
+struct pvector {
+    OVSRCU_TYPE(struct pvector_impl *) impl;
+    struct pvector_impl *temp;
+};
+```
+
+------
+
+## svec
+
+> lib/svec.h
+
+字符串`vector`，可自动扩容。
+
+```c
+struct svec {
+    char **names;
+    size_t n;
+    size_t allocated;
+};
+```
+
+------
+
+## pbytes
+
+> lib/byteq.h
+
+**General-purpose circular queue of bytes.** 以字节为单位的循环队列。
+
+```c
+struct byteq {
+    uint8_t *buffer;            /* Circular queue. */
+    unsigned int size;          /* Number of bytes allocated for 'buffer'. */
+    unsigned int head;          /* Head of queue. */
+    unsigned int tail;          /* Chases the head. */
+};
+```

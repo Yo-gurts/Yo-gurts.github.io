@@ -89,6 +89,8 @@ gcc main.c ./lib/libmymath.a -I ./include -o static
 └── static      # 生成的可执行文件
 ```
 
+虽然通过上面的方式，让`mymath`这个库静态链接到了目标文件中，但用`ldd static`可以看到还是有一些标准库是动态链接的。`gcc -static` 选项可使所有库都通过静态链接。
+
 要点：
 
 - 通过相对或绝对路径指定静态库文件的位置

@@ -30,6 +30,8 @@ sudo make install
 ```
 
 > [github 仓库，README中文档也较详细、使用简单](https://github.com/fmtlib/fmt)
+>
+> [官方文档、有代码示例](https://hackingcpp.com/cpp/libs/fmt.html)
 
 ## fmtlog
 
@@ -45,6 +47,8 @@ git submodule update
 
 # g++ test.cpp -o debug -lfmt -lfmtlog-static # 好像只能使用静态库
 ```
+
+> [官方仓库，也只有这里的README作为官方文档](https://github.com/MengRao/fmtlog)
 
 ## spdlog
 
@@ -82,8 +86,8 @@ Hiredis提供了同步、异步以及回复解析三种API。
 
 ```c
 /* 两个重要结构体 */
-redisContext *ctx;	// 连接上下文，建立连接时创建
-redisReply *reply;	// redisCommand返回值，注意释放内存
+redisContext *ctx;  // 连接上下文，建立连接时创建
+redisReply *reply;  // redisCommand返回值，注意释放内存
 
 /* 和redis服务器建立TCP连接 */
 redisContext *redisConnect(const char *ip, int port);
@@ -114,7 +118,7 @@ if (c == NULL || c->err) {
 }
 
 /* 使用 timeout */
-struct timeval timeout = {2, 0}; 	// {s, us};
+struct timeval timeout = {2, 0};    // {s, us};
 redisContext *c = redisConnectWithTimeout("127.0.0.1", 6379, timeout);
 ```
 
@@ -219,7 +223,7 @@ struct Response {
 }
 ```
 
-常用方法：
+### 客户端
 
 ```c++
 #include <httplib.h>
@@ -230,7 +234,11 @@ httplib::Client cli("http://192.168.1.147:18181");
 
 explicit Client(const std::string &host, int port);
 httplib::Client cli("http://192.168.1.147", 18181);
+```
 
+#### Get请求
+
+```c
 /* get 请求 */
 httplib::Headers headers = {{ "Authorization", "Basic b25vczpyb2Nrcw==" }};
 
@@ -238,10 +246,50 @@ Result Get(const std::string &path);
 Result Get(const std::string &path, const Headers &headers);
 Result res = cli.Get("/onos/v1/flows/of:0000000000001111", headers);
 
-// cli.set_default_headers({{ "Accept-Encoding", "gzip, deflate" }});
-cli.set_default_headers(headers);
+cli.set_default_headers(headers);   // 设置默认Header
 Result res = cli.Get("/onos/v1/flows/of:0000000000001111");
-cout << res.value().body << endl;
-cout << res->status << endl;    // 通过->实际访问的是Response的成员
 ```
 
+#### 返回值
+
+```c
+Result res = cli.Get("/onos/v1/flows/of:0000000000001111");
+
+/* Result重载了 bool() 和 ->，可直接使用->访问Response的值 */
+if (res) {
+    cout << res->status << endl;
+    cout << res->get_header_value("Content-Type") << endl;
+    cout << res->body << endl;
+} else {
+    cout << res.error() << endl;
+    auto err = res.error();
+    std::cout << "HTTP error: " << httplib::to_string(err) << std::endl;
+}
+```
+
+#### Post请求
+
+```c
+Result Post(const std::string &path);
+Result Post(const std::string &path, const std::string &body,
+            const std::string &content_type);
+Result Post(const std::string &path, const Headers &headers,
+            const std::string &body, const std::string &content_type);
+```
+
+## json
+
+解析json字符串，返回json对象。
+
+```bash
+git clone --depth=1 https://github.com/nlohmann/json.git
+
+cd json/
+mkdir build
+cd build
+cmake ..
+make -j
+sudo make install
+```
+
+> [文档 API](https://json.nlohmann.me/api/basic_json/)

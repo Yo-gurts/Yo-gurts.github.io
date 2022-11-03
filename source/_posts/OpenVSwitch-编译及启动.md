@@ -26,7 +26,7 @@ wget https://github.com/openvswitch/ovs/archive/refs/tags/v2.16.0.zip && unzip v
 
 # 安装依赖包
 sudo apt install build-essential fakeroot
-dpkg-checkbuilddeps	# 检查依赖并手动安装缺少的模块
+dpkg-checkbuilddeps # 检查依赖并手动安装缺少的模块
 #####################################################
 
 cd ovs-2.16.0
@@ -71,7 +71,7 @@ sudo apt install libnuma-dev libpcap-dev libfdt-dev
 
 cd dpdk-stable-20.11.3
 # 编译 使用`| tee file`是将日志显示在终端的同时，保存到文件中
-meson build	| tee ../meson.build
+meson build | tee ../meson.build
 ninja -C build
 # 安装库 将DPDK的相关库文件复制到根目录下的相关引用目录
 sudo ninja -C build install
@@ -91,7 +91,7 @@ sudo ninja uninstall
 wget https://github.com/openvswitch/ovs/archive/refs/tags/v2.16.0.zip
 # 安装依赖包
 sudo apt install build-essential fakeroot
-dpkg-checkbuilddeps	# 检查依赖并手动安装缺少的模块
+dpkg-checkbuilddeps # 检查依赖并手动安装缺少的模块
 #####################################################
 
 cd ovs-2.16.0
@@ -101,11 +101,18 @@ make -j     # 多线程编译
 
 # 单元测试（可以跳过）
 make check TESTSUITEFLAGS=-j8
+
+# 安装 ovs
 sudo make install
 
 # 启动工具 ovs-ctl
-echo 'export PATH=$PATH:/usr/local/share/openvswitch/scripts' | tee -a /root/.bashrc \
+echo 'export PATH=$PATH:/usr/local/share/openvswitch/scripts' | tee -a /root/.bashrc
 echo 'export DB_SOCK=/usr/local/var/run/openvswitch/db.sock' | tee -a /root/.bashrc
+
+# 查看是否启用了 dpdk
+ovs-vswitchd --version
+# ovs-vswitchd (Open vSwitch) 2.16.0
+# DPDK 20.11.5
 ```
 
 ## 生成Docker镜像
@@ -122,7 +129,7 @@ nice: cannot set niceness: Permission denied
  * Starting ovsdb-server
  * system ID not configured, please use --system-id
  * Configuring Open vSwitch system IDs
-/usr/local/share/openvswitch/scripts/ovs-kmod-ctl: 112: modprobe: not found	############# !!!! ################
+/usr/local/share/openvswitch/scripts/ovs-kmod-ctl: 112: modprobe: not found ############# !!!! ################
  * Inserting openvswitch module
 /usr/local/share/openvswitch/scripts/ovs-kmod-ctl: 112: rmmod: not found
  * removing bridge module
@@ -166,7 +173,7 @@ WORKDIR /root
 
 RUN apt-get update \
   && apt-get -y --no-install-recommends install python3-all iproute2 net-tools \
-  	 vim iperf iftop tcpdump \
+     vim iperf iftop tcpdump \
   && ldconfig \
   && echo 'export PATH=$PATH:/usr/local/share/openvswitch/scripts' | tee -a /root/.bashrc \
   && echo 'export DB_SOCK=/usr/local/var/run/openvswitch/db.sock' | tee -a /root/.bashrc
@@ -198,7 +205,7 @@ RUN cd dpdk-stable-${dpdk_version} \
 
 # 下载编译 OVS
 RUN wget https://codeload.github.com/openvswitch/ovs/zip/refs/tags/v${ovs_version} -O ovs-${ovs_version}.zip \
-	&& unzip ovs-${ovs_version}.zip
+    && unzip ovs-${ovs_version}.zip
 
 RUN cd ovs-${ovs_version} \
     && ./boot.sh \
@@ -229,12 +236,12 @@ RUN apt-get update \
 Dockerfile
 dpdk-stable-20.11.5 # DPDK的源码
 ovs-2.16.0          # OVS的源码
-bin					# 其他一些可执行文件
+bin                 # 其他一些可执行文件
 ```
 
 `Dockerfile` 文件中的内容如下：
 
-*为了避免重复编译，不要使用`COPY . . `，并且COPY文件应该分别运行*
+*为了避免重复编译，不要使用`COPY . .`，并且COPY文件应该分别运行*
 
 ```Dockerfile
 FROM ubuntu:20.04 as build
@@ -256,7 +263,7 @@ RUN cd dpdk-stable-${dpdk_version} \
     && ninja -C build \
     && ninja -C build install \
     && cp -r build/lib /usr/local/
-    
+
 # 编译 OVS
 COPY ovs-${ovs_version} ovs-${ovs_version}
 RUN cd ovs-${ovs_version} \
@@ -281,6 +288,13 @@ RUN apt-get update \
 
 # 复制其他可执行文件
 COPY bin/* /usr/bin/
+```
+
+若使用 `apt-get update` 时比较慢，可以在上方更换阿里云源。
+
+```dockerfile
+RUN sed -i s@/archive.ubuntu.com/@/mirrors.aliyun.com/@g /etc/apt/sources.list \
+    && apt-get clean
 ```
 
 ### Pktgen 和 testpmd 的 Dockerfile
