@@ -106,3 +106,7 @@ deploy:
   repo: git@github.com:Yo-gurts/Yo-gurts.github.io.git
   branch: main
 
+# sitemap
+sitemap:
+  path: sitemap.xml
+
