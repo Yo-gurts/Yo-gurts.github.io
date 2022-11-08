@@ -187,14 +187,22 @@ printf("obj addr from i: %p\n", OBJECT_CONTAINING(p, &obj.i, i)); /* p == &obj *
     ((OBJECT) = NULL, ASSIGN_CONTAINER(OBJECT, POINTER, MEMBER))
 ```
 
+## BUILD_ASSERT_TYPE
+
+编译过程做类型一致性检查。如果`PIINTER`与指定的类型`TYPE`不匹配的话，会报编译错误。但如果给定的`TYPE`是`void *`，则可以与任意类型的`POINTER`匹配。
+
+`POINTER`**可以是表达式**，所以这里用`sizeof`**来确保表达式不会被执行**。
+
+```c
+#define BUILD_ASSERT_TYPE(POINTER, TYPE) \
+    ((void) sizeof ((int) ((POINTER) == (TYPE) (POINTER))))
+```
+
 ### CONST_CAST
 
 将`const`修饰的指针转为`non-const`类型。当指定的类型`TYPE`与指针`POINTER`类型不匹配时，编译会有警告。
 
 ```c
-#define BUILD_ASSERT_TYPE(POINTER, TYPE) \
-    ((void) sizeof ((int) ((POINTER) == (TYPE) (POINTER))))
-
 #define CONST_CAST(TYPE, POINTER)                               \
     (BUILD_ASSERT_TYPE(POINTER, TYPE),                          \
      (TYPE) (POINTER))
@@ -226,6 +234,8 @@ int main(void)
     return 0;
 }
 ```
+
+### ovs
 
 ## ovs_list
 
@@ -1520,3 +1530,25 @@ struct byteq {
     unsigned int tail;          /* Chases the head. */
 };
 ```
+
+------
+
+## ovs-rcu
+
+> lib/ovs-rcu.h
+>
+> [Linux RCU机制](https://blog.csdn.net/qq_33095733/article/details/123708142)
+
+ 原子指针变量可以很方便地实现一个无锁算法；但有一个大问题：当 writer 将这个针指向一个新的数据结构时，其他线程可能正在读旧的版本，问题是，当所有用到这个旧的版本的线程完成操作后，怎么 free 这个旧的版本！
+
+```c
+
+
+```
+
+------
+
+## poll-loop
+
+> include/openvswitch/poll-loop.h
+
