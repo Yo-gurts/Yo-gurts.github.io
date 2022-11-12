@@ -7,14 +7,16 @@ tags:
   - OpenVSwitch
 categories: OpenVSwitch
 keywords:
-description: OVS中常用的数据结构分析
+description: OVS中常用的数据结构分析。本文中不会列出某个数据结构的所有方法，如果需要还是看对应的头文件。
 ---
 
 ## 常用宏
 
 > include/openvswitch/util.h #119
 
-**typeof**：typeof不是C语言本身的关键词或运算符，它是GCC的一个扩展，作用正如其字面意思，用某种已有东西（变量、函数等）的类型去定义新的变量类型。
+### typeof
+
+typeof不是C语言本身的关键词或运算符，它是GCC的一个扩展，作用正如其字面意思，用某种已有东西（变量、函数等）的类型去定义新的变量类型。
 
 ```c
 typeof(int *)a, b;     // 等价于 int *a, *b;
@@ -23,7 +25,9 @@ typeof(a) c;           // 等价于 int *c
 #define OVS_TYPEOF(OBJECT) typeof(OBJECT)
 ```
 
-**offsetof**：获取结构体`TYPE`中某个成员`MEMBER`的偏移量（相对于结构体地址）。
+### offsetof
+
+获取结构体`TYPE`中某个成员`MEMBER`的偏移量（相对于结构体地址）。
 
 ```c
 /* /usr/lib/gcc/x86_64-linux-gnu/9/include/stddef.h */
@@ -126,7 +130,7 @@ int main(void)
 
 已知某个结构体对象中某个成员`MEMBER`的地址为`POINTER`，返回该对象的地址。
 
-与`CONTAINER_OF`类似，只是由`STRUCT`替换为指向该结构体的指针`OBJECT`，且`OBJECT`是否为空无影响，只是用于获取结构体类型。
+与`CONTAINER_OF`类似，**只是由`STRUCT`替换为指向该结构体的指针`OBJECT`，且`OBJECT`是否为空无影响，只是用于通过`type_of`获取结构体类型。**
 
 ```c
 #define OBJECT_CONTAINING(POINTER, OBJECT, MEMBER)                      \
@@ -166,7 +170,7 @@ int main(void)
 
 #### ASSIGN_CONTAINER
 
-同上，已知某个结构体对象中某个成员`MEMBER`的地址为`POINTER`，但是将该结构体的地址赋值给`OBJECT`，返回`(void)0`。
+同上，已知某个结构体对象中某个成员`MEMBER`的地址为`POINTER`，但是**将该结构体的地址赋值给`OBJECT`，返回`(void)0`**。
 
 `,`逗号运算符的优先级最低！所以这里是先对`OBJECT`赋值。
 
@@ -175,7 +179,8 @@ int main(void)
     ((OBJECT) = OBJECT_CONTAINING(POINTER, OBJECT, MEMBER), (void) 0)
 
 struct s *p = NULL; /* p 为空，但无影响 */
-printf("obj addr from i: %p\n", OBJECT_CONTAINING(p, &obj.i, i)); /* p == &obj */
+ASSIGN_CONTAINER(p, &obj.i, i)
+printf("obj addr from i: %p\n", p); /* p == &obj */
 ```
 
 #### INIT_CONTAINER
@@ -187,9 +192,9 @@ printf("obj addr from i: %p\n", OBJECT_CONTAINING(p, &obj.i, i)); /* p == &obj *
     ((OBJECT) = NULL, ASSIGN_CONTAINER(OBJECT, POINTER, MEMBER))
 ```
 
-## BUILD_ASSERT_TYPE
+### BUILD_ASSERT_TYPE
 
-编译过程做类型一致性检查。如果`PIINTER`与指定的类型`TYPE`不匹配的话，会报编译错误。但如果给定的`TYPE`是`void *`，则可以与任意类型的`POINTER`匹配。
+编译过程做类型一致性检查。如果`POINTER`与指定的类型`TYPE`不匹配的话，会报编译错误。但如果给定的`TYPE`是`void *`，则可以与任意类型的`POINTER`匹配。
 
 `POINTER`**可以是表达式**，所以这里用`sizeof`**来确保表达式不会被执行**。
 
@@ -200,7 +205,7 @@ printf("obj addr from i: %p\n", OBJECT_CONTAINING(p, &obj.i, i)); /* p == &obj *
 
 ### CONST_CAST
 
-将`const`修饰的指针转为`non-const`类型。当指定的类型`TYPE`与指针`POINTER`类型不匹配时，编译会有警告。
+将`const`修饰的指针转为指定`TYPE`的`non-const`类型。当指定的类型`TYPE`与指针`POINTER`类型不匹配时，编译会有警告。
 
 ```c
 #define CONST_CAST(TYPE, POINTER)                               \
@@ -235,7 +240,16 @@ int main(void)
 }
 ```
 
-### ovs
+### ovs_assert
+
+当条件不满足时，会报错并输出发生错误的位置信息，用于调试阶段。
+
+```c
+#define ovs_assert(CONDITION)                                           \
+    (OVS_LIKELY(CONDITION)                                              \
+     ? (void) 0                                                         \
+     : ovs_assert_failure(OVS_SOURCE_LOCATOR, __func__, #CONDITION))
+```
 
 ## ovs_list
 
@@ -472,6 +486,33 @@ hmap_next_with_hash(const struct hmap_node *node)
          (NODE != OBJECT_CONTAINING(NULL, NODE, MEMBER))                \
          || ((NODE = NULL), false);                                     \
          ASSIGN_CONTAINER(NODE, hmap_next(HMAP, &(NODE)->MEMBER), MEMBER))
+```
+
+**hmap_insert**：向`HMAP`中插入节点`NODE`，新节点的哈希值为`HASH`。
+
+该插入函数在插入节点时不会检查是否已经有同样哈希值的节点，也就是说`hmap`中可能存在哈希值相同的节点
+
+```c
+#define hmap_insert(HMAP, NODE, HASH) \
+    hmap_insert_at(HMAP, NODE, HASH, OVS_SOURCE_LOCATOR)
+
+static inline void
+hmap_insert_at(struct hmap *hmap, struct hmap_node *node, size_t hash,
+               const char *where)
+{
+    hmap_insert_fast(hmap, node, hash);
+    if (hmap->n / 2 > hmap->mask) {
+        hmap_expand_at(hmap, where);
+    }
+}
+hmap_insert_fast(struct hmap *hmap, struct hmap_node *node, size_t hash)
+{
+    struct hmap_node **bucket = &hmap->buckets[hash & hmap->mask];
+    node->hash = hash;
+    node->next = *bucket;
+    *bucket = node;
+    hmap->n++;
+}
 ```
 
 一个例子：
@@ -1290,7 +1331,7 @@ struct simap_node {
 
 ## shash
 
-**a map from string to** `void *`。
+**a map from string(char *name) to** `void *data`。
 
 ```c
 struct shash_node {
@@ -1302,6 +1343,33 @@ struct shash_node {
 struct shash {
     struct hmap map;
 };
+```
+
+**SHASH_FOR_EACH**：遍历`SHASH`这个map中的节点，将节点地址赋值给`SHASH_NODE`。
+
+```c
+#define SHASH_FOR_EACH(SHASH_NODE, SHASH)                               \
+    HMAP_FOR_EACH_INIT (SHASH_NODE, node, &(SHASH)->map,                \
+                        BUILD_ASSERT_TYPE(SHASH_NODE, struct shash_node *), \
+                        BUILD_ASSERT_TYPE(SHASH, struct shash *))
+
+struct shash wanted_ports
+struct shash_node *port_node;
+SHASH_FOR_EACH (port_node, &wanted_ports) {
+    const struct ovsrec_port *port_cfg = port_node->data;
+}
+```
+
+其他方法：
+
+```c
+/* 向 shash 中插入一个elem，插入时先做检查，如果已经存在，就返回false，不存在才添加 */
+bool shash_add_once(struct shash *, const char *, const void *);
+/* 字面意思，如果sh中已经存在该key(name)，那就替换value为新的data，并返回旧的data（得free掉）。
+ * 如果sh中不存在该name，那就将其加进去。字符串name会被拷贝！！data不会被拷贝。 */
+void *shash_replace(struct shash *sh, const char *name, const void *data);
+/* 同上，但name也不会被拷贝 */
+void *shash_replace_nocopy(struct shash *, char *name, const void *data);
 ```
 
 ------
@@ -1465,9 +1533,26 @@ struct cmap_impl {
 
 ## skiplist
 
+> lib/skiplist.h
+> lib/skiplist.c
+>
 > [Skip List--跳表](https://www.jianshu.com/p/9d8296562806)
 
 ![img](../images/OpenVSwitch-数据结构/webp.webp)
+
+```c
+/* Skiplist container */
+struct skiplist {
+    struct skiplist_node *header; /* Pointer to head node (not first
+                                   * data node). */
+    skiplist_comparator *cmp;     /* Pointer to the skiplist's comparison
+                                   * function. */
+    void *cfg;                    /* Pointer to optional comparison
+                                   * configuration, used by the comparator. */
+    int level;                    /* Maximum level currently in use. */
+    uint32_t size;                /* Current number of nodes in skiplist. */
+};
+```
 
 ------
 
@@ -1500,6 +1585,22 @@ struct pvector {
 
 ------
 
+## ds
+
+> include/openvswitch/dynamic-string.h
+
+动态扩容的字符串结构。
+
+```c
+struct ds {
+    char *string;       /* Null-terminated string. */
+    size_t length;      /* Bytes used, not including null terminator. */
+    size_t allocated;   /* Bytes allocated, not including null terminator. */
+};
+```
+
+------
+
 ## svec
 
 > lib/svec.h
@@ -1513,6 +1614,8 @@ struct svec {
     size_t allocated;
 };
 ```
+
+`svec`中的字符串可能是无序的，提供了方法`svec_sort`对其按字典序排序（快排），调用其某些方法要求先对其排序。
 
 ------
 
@@ -1543,7 +1646,6 @@ struct byteq {
 
 ```c
 
-
 ```
 
 ------
@@ -1552,3 +1654,199 @@ struct byteq {
 
 > include/openvswitch/poll-loop.h
 
+------
+
+## json
+
+> include/openvswitch/json.h
+> lib/json.c
+>
+> [JSON 语法](https://www.runoob.com/json/json-syntax.html)
+
+**JSON 的两种结构**：
+
+**1、对象：**大括号 **{}** 保存的对象是一个无序的**名称/值**对集合。一个对象以左括号 **{** 开始， 右括号 **}** 结束。每个"键"后跟一个冒号 **:**，**名称/值**对使用逗号 **,** 分隔。
+
+```json
+{
+    "name":"菜鸟教程" ,
+    "url":"www.runoob.com"
+}
+```
+
+**2、数组：**中括号 **[]** 保存的数组是值（value）的有序集合。一个数组以左中括号 **[** 开始， 右中括号 **]** 结束，值之间使用逗号 **,** 分隔。
+
+```json
+{
+    "sites": [
+        { "name":"菜鸟教程" , "url":"www.runoob.com" },
+        { "name":"google" , "url":"www.google.com" },
+        { "name":"微博" , "url":"www.weibo.com" }
+    ]
+}
+```
+
+一个`json`对象中，数据是以`key:value`的形式存在的，`key`总是字符串`"string"`，`value`是可以嵌套的，可以是：
+
+- 数字（整数或浮点数）`"key" : 3.14`
+- 字符串（在双引号中）`"key" : "value"`
+- 逻辑值（true 或 false）`"key" : true`
+- 数组（在中括号中，多个`value`）`"key" : [3.14, 6, 7, 8]`
+- 对象（在大括号中）`"key" : { "subkey": "subvalue" }`
+- null, `"key" : null`
+
+在`ovs`中，`json`的`value`的结构为：
+
+```c
+/* A JSON value. */
+struct json {
+    enum json_type type;
+    size_t count;  /* type为object时，表示对象中键值对的个数，其他类型时count=1 */
+    union {
+        struct shash *object;   /* Contains "struct json *"s. */
+        struct json_array array;
+        long long int integer;
+        double real;
+        char *string;
+    };
+};
+```
+
+`value`只可能是上面列举的几种类型之一，因此这里用`union`结构。并通过`json_type`指示`value`的类型，从而进行不同的操作。另外，对于逻辑值`true/false`以及`null`，只需要用`json_type`就足以说明，因此`union`中并不存在这三者的成员。
+
+```c
+/* Type of a JSON value. */
+enum json_type {
+    JSON_NULL,                  /* null */
+    JSON_FALSE,                 /* false */
+    JSON_TRUE,                  /* true */
+    JSON_OBJECT,                /* {"a": b, "c": d, ...} */
+    JSON_ARRAY,                 /* [1, 2, 3, ...] */
+    JSON_INTEGER,               /* 123. */
+    JSON_REAL,                  /* 123.456. */
+    JSON_STRING,                /* "..." */
+    JSON_N_TYPES                /* 没有实现 */
+};
+```
+
+`json`数组中存储的值也都是一个`value`，分配内存采用了`c++`中`vector`这些容器类似的策略，先预分配`n_allocated`大小的容量，当实际在使用的数量`n`变大后，再扩容。
+
+```c
+/* A JSON array. */
+struct json_array {
+    size_t n, n_allocated;
+    struct json **elems;
+};
+```
+
+**这里分析的都是`value`，`json`对象里面不还有字符串`key`吗？**其实已经看到了，只是比较隐蔽。
+
+在上面的`union`中，`json`对象是用`struct shash *object;`表示，而`shash`（看看前面）是**a map from string(char *name) to** `void *data`，这里的`name`就是`key`，`data`当然就是指向`struct json`了。
+
+**创建`value`**：
+
+> 这里都是几种`value`，严格来说它并不是`json`对象。因为它**不能单独存在**，没有`key`！。
+
+```c
+struct json *json_null_create(void);
+struct json *json_boolean_create(bool);
+struct json *json_string_create(const char *); /* 会复制传入的字符串 */
+struct json *json_string_create_nocopy(char *);
+struct json *json_integer_create(long long int);
+struct json *json_real_create(double);
+```
+
+**创建`array`类型的`json`对象**：
+
+> 这就是前面提到的`json`的两种结构之一：数组。可以单独存在，哪怕是一个空的，序列化为字符串为：
+>
+> ```json
+> []
+> ```
+>
+> 如果其中有对象（不是上面的`value`），序列化为字符串为：
+>
+> ```json
+> [
+>     {"key1": "value1"},
+>     {"key2": 3.14}
+> ]
+> ```
+
+```c
+/* 创建一个空的 array 对象 */
+struct json *json_array_create_empty(void);
+/* 向指定的 array 对象中插入一个成员element！并不会拷贝element */
+void json_array_add(struct json *, struct json *element);
+/* 如果分配的空间大小n_allocated > n, 就收缩到 n */
+void json_array_trim(struct json *);
+/* elements是json对象数组，长度为n，创建一个array对象来存储elements，不会进行拷贝，n_allocated=n */
+struct json *json_array_create(struct json **elements, size_t n);
+/* 下面三个函数类似，传入参数就是创建的array对象中的成员，n_allocated和n就是传入参数的数量 */
+struct json *json_array_create_1(struct json *);
+struct json *json_array_create_2(struct json *, struct json *);
+struct json *json_array_create_3(struct json *, struct json *, struct json *);
+```
+
+**创建`object`类型的`json`对象**：
+
+> 这是`json`的另一种结构，一个完整的对象！如果为空，序列化为字符串为：
+>
+> ```json
+> {}
+> ```
+>
+> 插入成员后，序列化为字符串为：
+>
+> ```json
+> {
+>     "key1":"value1" ,
+>     "key2": 3.14
+> }
+> ```
+
+```c
+/* 创建一个空的 json object 对象，是一个shash结构！ */
+struct json *json_object_create(void);
+/* 向 object 中插入一个键值对，键为name，值为一个json value.
+ * 如果该object中已经存在该name，则会用新的value替换旧的，并free旧的value
+ * name会被拷贝，value不会 */
+void json_object_put(struct json *object, const char *name, struct json *value);
+/* 同上，但name也不会被拷贝 */
+void json_object_put_nocopy(struct json *, char *name, struct json *value);
+/* 插入一个值为字符串的json值，是基于传入参数value创建 */
+void json_object_put_string(struct json *,
+                            const char *name, const char *value);
+/* 同上，只不过字符串是采用类似于printf的方式格式化得到的 */
+void json_object_put_format(struct json *,
+                            const char *name, const char *format, ...)
+    OVS_PRINTF_FORMAT(3, 4);
+```
+
+**创建`json`对象的其他方式**：函数名已经说得很清楚了！
+
+```c
+struct json *json_from_string(const char *string);
+struct json *json_from_file(const char *file_name);
+struct json *json_from_stream(FILE *stream);
+```
+
+还提供了一些其他有用的方法：
+
+```c
+/* 将type转为字符串并返回，注意是 const char *，不能修改字符串的内容 */
+const char *json_type_to_string(enum json_type);
+```
+
+> **const char \***与**char const \*** 效果一样，都是不允许修改指针指向的地址空间的值，即把值作为常量，而**char \* const**则是不允许修改指针自身，不能再指向其他地方，把指针自己当作常量使用。需要注意的是，使用**char \* const** 定一个常量指针的时候一定记得赋初始值，否则再其他地方就没法赋值了。
+
+```c
+/* 拿json实例计算hash值，该实例可以是上面的任何enum json_type */
+size_t json_hash(const struct json *, size_t basis);
+/* 判断两个json对象是否相等，也区分类型，如果是简单类型，整数、实数，
+ * 就判断值是否相等。如果是字符串类型，就通过 strcmp 进行比较。
+ * 如果是object或array，由于值可以嵌套，所以比较时也要嵌套地调用 json_equal 进行比较 */
+bool json_equal(const struct json *, const struct json *);
+```
+
+------
