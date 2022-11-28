@@ -39,6 +39,20 @@ description: 网络分析工具汇总
 ## iptables
 
 > - [iptables 中文文档](https://wangchujiang.com/linux-command/c/iptables.html)
+> - [iptables - Linux man page](https://linux.die.net/man/8/iptables)
+> - [Ubuntu iptables配置](https://blog.51cto.com/yangzhiming/1982814)
+
+**注意：规则的次序非常关键，`谁的规则越严格，应该放的越靠前`，而检查规则的时候，是按照从上往下的方式进行检查的。**
+
+1、`Ubuntu` 默认有装`iptables`，可通过`dpkg -l`或`which iptables`确认
+
+2、`Ubuntu` 默认没有`iptables`配置文件，需通过`iptables-save > /etc/network/iptables.up.rules`生成
+
+3、`iptables`配置文件路径及文件名建议为`/etc/network/iptables.up.rules`，因为执行`iptables-apply`默认指向该文件，也可以通过-w参数指定文件
+
+4、`Ubuntu` 没有重启`iptables`的命令，执行`iptables-apply`生效
+
+5、`Ubuntu iptables`默认重启服务器后清空，需在`/etc/network/interfaces`里写入`pre-up iptables-restore < /etc/network/iptables.up.rules`才会开机生效
 
 ## lsof
 
@@ -106,8 +120,6 @@ description: 网络分析工具汇总
 > - [推荐先看这个：全网最详细的 tcpdump 使用指南](https://www.cnblogs.com/wongbingming/p/13212306.html)
 > - [tcpdump简明教程](https://github.com/mylxsw/growing-up/blob/master/doc/tcpdump%E7%AE%80%E6%98%8E%E6%95%99%E7%A8%8B.md)
 > - [tcpdump 示例教程](https://colobu.com/2019/07/16/a-tcpdump-tutorial-with-examples/)
-
-## lsof
 
 ## netstat
 

@@ -170,7 +170,7 @@ int main(void)
 
 #### ASSIGN_CONTAINER
 
-同上，已知某个结构体对象中某个成员`MEMBER`的地址为`POINTER`，但是**将该结构体的地址赋值给`OBJECT`，返回`(void)0`**。
+同上，已知某个结构体对象中某个成员`MEMBER`的地址为`POINTER`，但是**将该结构体的地址赋值给`OBJECT`，返回**`(void)0`。
 
 `,`逗号运算符的优先级最低！所以这里是先对`OBJECT`赋值。
 
@@ -196,7 +196,8 @@ printf("obj addr from i: %p\n", p); /* p == &obj */
 
 编译过程做类型一致性检查。如果`POINTER`与指定的类型`TYPE`不匹配的话，会报编译错误。但如果给定的`TYPE`是`void *`，则可以与任意类型的`POINTER`匹配。
 
-`POINTER`**可以是表达式**，所以这里用`sizeof`**来确保表达式不会被执行**。
+- **sizeof**：`POINTER`**可以是表达式**，所以这里用`sizeof`**来确保表达式不会被执行**。
+- **(void)**：通过`(void)`**忽略**函数或表达式的值，这里是`sizeof`的返回值。
 
 ```c
 #define BUILD_ASSERT_TYPE(POINTER, TYPE) \
@@ -1331,7 +1332,7 @@ struct simap_node {
 
 ## shash
 
-**a map from string(char *name) to** `void *data`。
+**a map from string(char \*name) to** `void *data`。
 
 ```c
 struct shash_node {
@@ -1646,6 +1647,29 @@ struct byteq {
 
 ```c
 
+
+```
+
+------
+
+## ovs-thread
+
+> lib/ovs-thread.h
+> lib/ovs-thread.c
+
+### 一次性初始化
+
+在多线程环境下，某些初始化函数要求执行一次，并且也**只能执行一次**。所以需要一些机制来保证。
+
+在`pthread`库中，实现了函数`pthread_once(once,void (*init)(void)))`，其中`once`是一个静态变量，用于记录该初始化操作是否执行过，而`init`是进行初始化操作的函数。
+
+`ovs`对此进行了一点扩展，或者说实现了一套类似的机制：
+
+```c
+struct ovsthread_once {
+    bool done;               /* Non-atomic, false negatives possible. */
+    struct ovs_mutex mutex;
+};
 ```
 
 ------
@@ -1653,6 +1677,19 @@ struct byteq {
 ## poll-loop
 
 > include/openvswitch/poll-loop.h
+>
+> 这里也涉及到线程一次性初始化和线程特有数据，参见《Linux-Unix系统编程手册》第31章。
+
+------
+
+## coverage
+
+> lib/coverage.h
+> lib/coverage.c
+>
+> [gcov的例子](https://segmentfault.com/a/1190000011375770)
+
+**统计代码覆盖率**（用于检查某段代码执行了多少次），可以看看[gcov](https://segmentfault.com/a/1190000011375770)的例子，不过`OVS`中使用的`coverage`很轻量级，而且需要主动调用`COVERAGE_INC`才能进行统计。
 
 ------
 
@@ -1743,7 +1780,7 @@ struct json_array {
 
 在上面的`union`中，`json`对象是用`struct shash *object;`表示，而`shash`（看看前面）是**a map from string(char *name) to** `void *data`，这里的`name`就是`key`，`data`当然就是指向`struct json`了。
 
-**创建`value`**：
+**创建**`value`：
 
 > 这里都是几种`value`，严格来说它并不是`json`对象。因为它**不能单独存在**，没有`key`！。
 
