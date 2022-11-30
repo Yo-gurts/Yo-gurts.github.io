@@ -11,6 +11,8 @@ keywords:
 description: Linux 中的进程创建、回收。
 ---
 
+> 下面的内容如果想要深入、全面地了解，还是建议看书。书上解释得更全面，也可能会有更多例子方便理解，此博客只是为了方便我自己理解以及后续回顾。
+
 ## 进程
 
 **进程管理**、内存管理和文件管理是操作系统的三大核心功能。那么什么是进程呢？顾名思义，**进程就是进展中的程序，或者说进程是执行中的程序**。那么什么是程序？程序就是一段机器指令，它规定了计算机要做哪些事。
@@ -102,7 +104,7 @@ description: Linux 中的进程创建、回收。
 
 运行在内核态的程序可以访问的资源多，但**可靠性、安全性要求高，维护管理都较复杂**；
 
-> 那么计算机是如何知道现在正在运转的程序是内核态程序呢？
+> 那么计算机是如何知道现在正在运转的程序是内核态程序呢？或者说内核态的本质是？
 >
 > 而正确做出内核态或用户态的判断对系统的正确运行至关重要。显然做出这种判断需要某种标志。**这个标志就是处理器的一个状态位**。这个状态位是CPU状态字里面的一个字位。**也就是说，所谓的用户态、内核态实际上是处理器的一种状态，而不是程序的状态**。我们通过设置该状态字，可以将CPU设置为内核态、用户态或者其他的子态（有的CPU有更多种子态）。**一个程序运行时，CPU是什么态，这个程序就运行在什么态。**
 >
@@ -407,7 +409,7 @@ execvp("ls", argv); // 指定程序名，参数列表以 NULL 结尾。
 
 ### vfork
 
-在早期的 BSD 实现中，`fork()`会对父进程的数据段、堆和栈施行严格的复制。如前所述，这是一种浪费，尤其是在调用 `fork()`后立即执行 `exec()`的情况下。出于这一原因，BSD 的后期版本引入了 `vfork()`系统调用，尽管其运作含义稍微有些不同（实则有些怪异），但效率要远高于 BSD `fork()`。现代 UNIX 采用写时复制技术来实现 `fork()`，其效率较之于早期的 `fork()`实现要高出许多，进而将对 `vfork()`的需求剔除殆尽。虽然如此，Linux（如同许多其他的 UNIX 实现一样）还是提供了具有 BSD 语义的 `vfork()`系统调用，以期为程序提供尽可能快的 `fork` 功能。不过，鉴于 `vfork()`的怪异语义可能会导致一些难以察觉的程序缺陷（bug），除非能给性能带来重大提升（这种情况发生的概率极小），否则应当尽量避免使用这一调用。
+在早期的 BSD 实现中，`fork()`会对父进程的数据段、堆和栈施行严格的复制。如前所述，这是一种浪费，尤其是在调用 `fork()`后立即执行 `exec()`的情况下。出于这一原因，BSD 的后期版本引入了 `vfork()`系统调用，尽管其运作含义稍微有些不同（实则有些怪异），但效率要远高于 BSD `fork()`。现代 UNIX 采用写时复制技术来实现 `fork()`，其效率较之于早期的 `fork()`实现要高出许多，进而将对 `vfork()`的需求剔除殆尽。虽然如此，Linux（如同许多其他的 UNIX 实现一样）还是提供了具有 BSD 语义的 `vfork()`系统调用，以期为程序提供尽可能快的 `fork` 功能。不过，鉴于 `vfork()`的怪异语义可能会导致一些难以察觉的程序缺陷（bug），除非能给性能带来重大提升（这种情况发生的概率极小），否则**应当尽量避免使用这一调用**。
 
 ```c
 #include <sys/types.h>
@@ -420,47 +422,105 @@ pid_t vfork(void);
 
 `vfork()`因为如下两个特性而更具效率，这也是其与 `fork()`的区别所在。
 
-- 无需为子进程复制虚拟内存页或页表。相反，子进程共享父进程的内存，直至其成功执行了 `exec()`或是调用`_exit()`退出。
-- 在子进程调用 `exec()`或`_exit()`之前，将暂停执行父进程。
+- 无需为子进程复制虚拟内存页或页表。相反，**子进程共享父进程的内存**，直至其成功执行了 `exec()`或是调用`_exit()`退出。
+- 在子进程调用 `exec()`或`_exit()`之前，**将暂停执行父进程。**
 
 ## 进程组与会话
 
-进程组：进程组是一组进程的集合，每个进程组都有一个组长，与进程ID与组ID相同。
+进程组和会话在进程之间形成了一种两级层次关系：**进程组是一组相关进程的集合，会话是一组相关进程组的集合**。
 
-默认子进程与父进程属于同一进程组，进程组ID == 第一个进程ID
+### 进程组
 
-只要进程组中有一个进程存在，进程组就存在，与组长进程是否终止无关。
+**进程组由一个或多个共享同一进程组标识符（`PGID`）的进程组成**。进程组 ID 是一个数字，其类型与进程 ID 一样（pid_t）。一个进程组拥有一个进程组首进程，该进程是创建该组的进程，其进程 ID 为该进程组的 ID，**新进程会继承其父进程所属的进程组 ID**。
 
-```bash
-kill -9 -PGID # 给进程组中的所有进程发送 SIGKILL
+**进程组**拥有一个生命周期，其开始时间为首进程创建组的时刻，结束时间为最后一个成员进程退出组的时刻。一个进程可能会因为终止而退出进程组，也可能会因为加入了另外一个进程组而退出进程组。进程组首进程无需是最后一个离开进程组的成员（**当一个进程组的组长死亡时，只要有其他进程存在，则该进程组存在。并且组ID仍是已故的组长进程ID**）。**会话也类似**。
+
+> 进程组有什么作用呢？
+>
+> 一种用处为：可以通过组 ID 同时向该进程组中的所有进程发送信号。
+>
+> ```bash
+> kill -9 -{{group_id}} # 组ID前面要加负号`-`，就可以给该进程组中的所有进程发送信号
+> ```
+
+#### getpgrp/getpgid
+
+获取一个进程的进程组ID。
+
+```c
+#include <sys/types.h>
+#include <unistd.h>
+
+pid_t getpgid(pid_t pid);   /* 很少会检索调用者以外的进程的 PGID */
+pid_t getpgrp(void);        /* POSIX.1 version 首选方法 */
 ```
 
-会话：会话是一组**进程组**的集合，每个会话都有一个会话ID(SID)。
+`getpgrp`就是返回当前调用进程所属的进程组ID，**首选方法**。
 
-同样，也可以给会话中的所有进程发送信号！
+`getpgid`可以返回指定进程所属的进程组ID，如果`pid`为`0`，就是返回当前调用进程所属的进程组ID。
 
-终端中运行的程序其会话ID与该终端的进程ID相同，因此下面的命令会将终端也关闭！
+#### setpgrp/setpgid
 
-```bash
-cat | cat | cat | wc -l # 任意启动多个进程
+`setpgid()`系统调用将进程 ID 为 `pid` 的进程的进程组 ID 修改为 `pgid`。
 
-kill -9 -SID # 在另一个终端中发送 SIGKILL
+```c
+#include <sys/types.h>
+#include <unistd.h>
+
+int setpgid(pid_t pid, pid_t pgid);  /* 首选方法 */
+int setpgrp(void);                   /* System V version, 相当于 setpgid(0, 0) */
 ```
+
+如果 `pid` 和 `pgid` 参数指定了同一个进程（`pgid`为`0`或`pgid == pid`），就会**创建一个新进程组**，并且指定的进程会成为这个新组的首进程。
+
+如果两个参数的值不同，则会将指定进程从一个进程组中移到另一个进程组中。
+
+在调用`setpgid()`时存在以下限制：
+
+- `pid` 参数可以仅指定调用进程或其中一个子进程；
+- 在组之间移动进程时，调用进程、由 `pid` 指定的进程以及目标进程组必须要属于同一个会话；
+- `pid` 参数所指定的进程不能是会话首进程；
+- 一个进程在其子进程已经执行 `exec()` 后就无法修改该子进程的进程组 ID 了。
 
 ### 会话
 
-创建会话的 6 点注意事项：
+**会话是一组进程组的集合**。进程的会话成员关系是由其会话标识符（`SID`）确定的，会话标识符与进程组 ID 一样，是一个类型为 `pid_t` 的数字。会话首进程是创建该新会话的进程，其进程 ID 会成为会话 ID。**新进程会继承其父进程的会话 ID**。
 
-1. 调用进程不能是进程组组长，该进程变成新会话首进程
-2. 该进程成为一个新进程组的组长进程
-3. 需要 root 权限（ubuntu 不需要）
-4. 新会话丢弃原有的控制终端，该会话没有控制终端
-5. 该调用进程是组长进程，则出错返回
-6. 建立新会话时，先调用 `fork`，父进程终止，子进程调用 `setsid`
+**一个会话中的所有进程共享单个控制终端**。控制终端会在会话首进程首次打开一个终端设备时被建立。一个终端最多可能会成为一个会话的控制终端。
 
-### getsid 函数
+> **前台和后台进程组**
+>
+> 在终端中运行程序时（如`ls`），该程序产生的输出会显示在终端上，如果需要，也会从终端读入用户键盘输入的信息。
+> 有时希望将一个程序A启动后，在当前终端下继续运行程序B，这时一般会通过`A &`让程序后台运行，此时就还可以继续运行B。
+>
+> 总的来说，前台和后台的区别在于是否能中终端读入用户输入，或者说运行时是否使用了`&`。需要注意，后台进程组的输出仍然可以输出到终端，比如`sleep 2 && ls &`.
 
-获取进程的会话 id
+在任一时刻，会话中的其中一个进程组会成为终端的**前台进程组**，其他进程组会成为**后台进程组**。**只有前台进程组中的进程才能从控制终端中读取输入**。当用户在控制终端中输入其中一个信号生成终端字符之后，该信号会被发送到前台进程组中的**所有成员**。
+
+> 那么会话有什么用呢？
+>
+> 同样，也可以通过会话`SID`给会话中的所有进程发送信号！（当然，会话的主要用途不是这个...）
+>
+> ```bash
+> # 在一个终端中启动多个进程
+> $ cat | cat | cat | cat  # 启动多个进程
+>
+> # 在另一个终端中运行
+> $ ps aj
+>    PPID     PID    PGID     SID TTY        TPGID STAT   UID   TIME COMMAND
+>    5115   54152   54152   54152 pts/3      62248 Ss    1000   0:00 /bin/bash
+>   54152   62248   62248   54152 pts/3      62248 S+    1000   0:00 cat
+>   54152   62249   62248   54152 pts/3      62248 S+    1000   0:00 cat
+>   54152   62250   62248   54152 pts/3      62248 S+    1000   0:00 cat
+>   54152   62251   62248   54152 pts/3      62248 S+    1000   0:00 cat
+>
+> # 终端中运行的程序其会话 SID 与该终端的进程ID相同，因此下面的命令会将终端也关闭！
+> $ kill -9 -54152
+> ```
+
+#### getsid
+
+获取指定进程所属的会话 `SID` 。`pid`为0表示获取当前调用进程的会话 `SID` 。
 
 ```c
 #include <sys/types.h>
@@ -469,15 +529,11 @@ kill -9 -SID # 在另一个终端中发送 SIGKILL
 pid_t getsid(pid_t pid);
 ```
 
-- pid 参数：
-  - 如果 pid 为 0，则获取当前进程的会话 id；
-  - 如果 pid 为 > 0，则获取指定进程的会话 id；
-- 返回值：
-  - 返回会话 id，失败返回 -1，并设置 errno。
+- 返回值：成功返回调用进程的会话 ID，失败返回`-1`，设置 `errno`。
 
-### setsid 函数
+#### setsid
 
-创建一个新会话，并以自己的 ID 设置进程组 ID，同时也是新会话的 ID！
+创建一个新会话，并以自己的 `PID` 设置为进程组 `PGID`，同时也是新会话的 `SID` ！
 
 ```c
 #include <sys/types.h>
@@ -486,56 +542,345 @@ pid_t getsid(pid_t pid);
 pid_t setsid(void);
 ```
 
-- 返回值：成功返回调用进程的会话 ID，失败返回-1，设置 error
+- 返回值：成功返回调用进程的会话 `SID`，失败返回 `-1`，设置 `errno` 。
 
-## 守护进程
+`setsid()`系统调用会按照下列步骤创建一个新会话：
 
-`daemon` 进程。通常运行于操作系统后台，脱离控制终端。一般不与用户直接交互。周期性的等待某个事件发生或周期性执行某一动作。
+- 调用进程成为新会话的首进程和该会话中新进程组的首进程。调用进程的进程组 `PGID` 和会话 `SID` 会被设置成该进程的进程 ID。
+- **调用进程没有控制终端**。所有之前到控制终端的连接都会被断开。
 
-**不受用户登录注销影响**。通常采用以 d 结尾的命名方式。
+在调用`setsid()`时存在一个限制：**调用进程不能是一个进程组的首进程**。避免这个错误发生的最简单的方式是执行一个 `fork()`并让父进程终止以及让子进程调用 `setsid()`。进程组中，组长死亡后，不会再自动产生新组长。
 
-创建守护进程，最关键的一步是调用 `setsid` 函数创建一个新的 `Session`，并成为 Session Leader。
+> 为什么不能是进程组的首进程？
+>
+> 因为如果没有这个约束的话，进程组组长就能够将其自身迁移至另一个（新的）会话中了，而该进程组的其他成员则仍然位于原来的会话中。这会破坏会话和进程组之间严格的两级层次，因为一个进程组的所有成员必须属于同一个会话。
 
-创建守护进程的步骤：
+### 终端
 
-1. fork 子进程，让父进程终止。
-2. 子进程调用 `setsid()` 创建新会话。
-3. 通常根据需要，改变工作目录位置 `chdir()`，防止目录被卸载。
-4. 通常根据需要，重设 umask 文件权限掩码，影响新文件的创建权限。`022 -- 755`
-5. 通常根据需要，关闭/重定向 文件描述符（主要是针对 0, 1, 2，一般是重定向到 `/dev/null`）。
-6. 守护进程 业务逻辑。`while()`
+在UNIX系统中，用户通过终端登录系统后得到一个Shell进程，这个终端成为Shell进程的控制终端 (Controlling Terminal)。
+
+控制终端是保存在`PCB`中的信息，而我们知道`fork`会复制`PCB`中的信息，因此由Shell进程启动的其它进程的控制终端也是这个终端。
+
+默认情况下（没有重定向），每个进程的标准输入、标准输出和标准错误输出都指向控制终端，进程从标准输入读也就是读用户的键盘输入，进程往标准输出或标准错误输出写也就是输出到显示器上。
+
+每个进程都可以通过一个特殊的设备文件`/dev/tty`访问它的控制终端。`ttyname`函数可以由文件描述符查出对应的文件名，该文件描述符必须指向一个终端设备而不能是任意文件。
 
 ```c
-int main(int argc, char *argv[])
+#include <stdio.h>
+#include <unistd.h>
+
+int main() {
+    printf("stdin  tty: %s\n", ttyname(STDIN_FILENO));
+    printf("stdout tty: %s\n", ttyname(STDOUT_FILENO));
+    printf("stderr tty: %s\n", ttyname(STDERR_FILENO));
+}
+
+// stdin  tty: /dev/pts/2
+// stdout tty: /dev/pts/2
+// stderr tty: /dev/pts/2
+```
+
+### 守护进程
+
+守护进程`daemon`指的是具有特殊用途的进程，通常采用以`d`结尾的命名方式，系统创建和处理此类进程的方式与其他进程相同。
+
+但以下特征是其所独有的：
+
+- 长生不老，守护进程通常在系统引导时启动，直至系统关闭前，会一直“健在”，**不受用户登录注销影响**。
+- 守护进程在后台运行，且无控制终端供其读取或写入数据。周期性的等待某个事件发生或周期性执行某一动作。
+
+> 很多标准的 `daemon` 会作为特权进程运行，即有效用户 ID 为 0。
+
+**创建守护进程的步骤**：
+
+1. 执行一个 `fork()`，之后父进程退出，**子进程**继续执行（子进程被确保不会成为一个进程组首进程）。
+2. 子进程调用 `setsid()` 开启一个**新会话**并释放它与控制终端之间的所有关联关系。
+3. 清除进程的 `umask` 以确保当 `daemon` 创建文件和目录时拥有所需的**权限**`022 -- 755`。
+4. 修改进程的**当前工作目录**，通常会改为根目录`/`，防止工作目录被卸载，导致进程死亡。
+5. 关闭 `daemon` 从其父进程继承而来的所有打开着的文件描述符，主要是针对 `0, 1, 2`，一般是重定向到 `/dev/null`，防止了后面使用描述符 1 或 2 打开一个文件的情况，因为库函数会将这些描述符当做标准输出和标准错误来写入数据。
+6. 守护进程**业务逻辑**`while()`。
+
+```c
+int become_daemon()
 {
-    pid_t pid;
-    int ret, fd;
-    pid = fork();
-    if (pid > 0)    // 1. 创建子进程，父进程终止
-        exit(0);
+    int maxfd, fd;
+    switch (fork()) {
+        case -1: return -1;
+        case 0: break;      /* 1. 子进程继续，也就是守护进程 */
+        default: exit(EXIT_SUCESS); /* 父进程退出 */
+    }
 
-    pid = setsid(); // 2. 子进程调用 `setsid()` 创建新会话
-    if (pid == -1)
-        printf("setsid error");
+    if (setsid() == -1)     /* 2. 创建新会话 */
+        return -1;
 
-    ret = chdir("/home/zhcode/Code/code146"); // 3. 通常根据需要，改变工作目录位置
-    if (ret == -1)
-        printf("chdir error");
+    if (umask(0022) == -1)  /* 3. 重设文件权限掩码 */
+        return -1;
 
-    umask(0022);    // 4. 通常根据需要，重设 umask 文件权限掩码
+    if (chdir("/") == -1)   /* 4. 修改进程的当前工作目录 */
+        return -1;
 
-    close(STDIN_FILENO);    // 5. 通常根据需要，关闭/重定向 文件描述符
-    fd = open("/dev/null", O_RDWR); // fd --> 0
+    close(STDIN_FILENO);    /* 5. 通常根据需要，关闭/重定向 文件描述符 */
+    fd = open("/dev/null", O_RDWR); /* fd --> 0 */
     if (fd == -1)
         printf("open error");
 
-    dup2(fd, STDOUT_FILENO); // 重定向 stdout 和 stderr
+    dup2(fd, STDOUT_FILENO); /* 重定向 stdout 和 stderr */
     dup2(fd, STDERR_FILENO);
 
-    while(1);     // 6. 守护进程 业务逻辑
     return 0;
 }
 ```
+
+## 进程优先级
+
+操作系统上总是会有很多运行中的进程，而CPU却很有限，那么哪个进程能获得CPU的使用权呢？Linux 与大多数其他 UNIX 实现一样，调度进程使用 CPU 的**默认模型是循环时间共享**。在这种模型中，每个进程轮流使用 CPU 一段时间，这段时间被称为**时间片或量子**。
+
+但进程并不是完全平等的，某些重要进程应该被分配更多的CPU使用权。那么怎么描述进程的重要性呢？进程特性 `nice` 值允许进程间接地影响内核的调度算法。每个进程都拥有一个 `nice` 值，其取值范围为（高优先级）`−20～19`（低优先级），默认值为 0。非特权进程只能降低自己的优先级（不过这个说法已经不正确了），即赋一个大于默认值 0 的 `nice` 值。这样做之后它们就对其他进程“友好（nice）”了，这个特性的名称也由此而来。
+
+进程的调度不是严格按照 `nice` 值的层次进行的，相反，`nice` 值是一个权重因素，它导致内核调度器倾向于调度拥有高优先级的进程。给一个进程赋一个低优先级（即高 `nice` 值）并不会导致它完全无法用到 CPU，但会导致它使用 CPU 的时间变少。
+
+进程控制块`PCB`中就记录了进程的调度策略和优先级等值。
+
+```c
+struct task_struct {
+    /* 进程调度相关，优先级 */
+    int prio, static_prio, normal_prio;
+    unsigned int rt_priority;
+    const struct sched_class *sched_class;
+    struct sched_entity se;
+    struct sched_rt_entity rt;
+    unsigned int policy;            /* 进程的调度策略 SCHED_FIFO, SCHED_RR, SCHED_OTHER, etc */
+    ...
+}
+```
+
+### getpriority/set
+
+`getpriority()`和 `setpriority()`系统调用允许一个进程获取和修改自身或其他**进程的 `nice` 值**。
+
+```c
+#include <sys/time.h>
+#include <sys/resource.h>
+
+int getpriority(int which, id_t who);
+int setpriority(int which, id_t who, int prio);
+```
+
+`which`**用于确定`who`如何被解释**：
+
+- `PRIO_PROCESS`：操作进程 `PID` 为 who 的进程。如果 who 为 0，那么使用调用者的进程 ID。
+- `PRIO_PGRP`：操作进程组 `PGID` 为 who 的进程组中的所有成员。如果 who 为 0，那么使用调用者的进程组。
+- `PRIO_USER`：操作所有真实用户 `USRID` 为 who 的进程。如果 who 为 0，那么使用调用者的真实用户 ID。
+
+调用`getpriority`时，如果有多个进程符合指定的标准，那么将会返回**优先级最高**的进程的 `nice` 值（即最小的数值）。
+
+> 由于`getpriority`可能会在成功时返回`−1`，因此在调用这个函数之前必须要将 `errno` 设置为 0，接着在调用之后额外检查`errno`确认是否发生了错误。
+
+```c
+#include <stdio.h>
+#include <errno.h>
+#include <unistd.h>
+#include <sys/resource.h>
+
+int main() {
+    int nice;
+    errno = 0;
+    nice = getpriority(PRIO_PROCESS, 0);
+    if (nice == -1 && errno != 0) {
+        /* 说明调用时发生了错误 */
+        perror("getpriority failed!");
+    }
+    printf("current nice: %d\n", nice);
+}
+```
+
+调用`setpriority`时，试图将 `nice` 值设置为一个超出允许范围的值（`-20～+19`）时会直接将 `nice` 值设置为边界值（还存在其他限制）。
+
+> 需要说明一下，系统调用只能通过`syscall`直接发起，我们使用的`getpriority`等其实是`c`库函数对系统调用进行封装后的函数，库函数的返回结果并不一定是系统调用的直接返回值（虽然这种情况很少见，不过`getpriority`就是一个特例）。
+>
+> `getpriority()`系统调用服务例程不会返回实际的 nice 值，相反，它会返回一个范围在 1（低优先级）～40（高优先级）之间的数字，这个数字是通过公式 `unice=20-knice` 计算得来的。这样做是为了避免让系统调用服务例程返回一个负值，因为负值一般都表示错误。应用程序是不清楚系统调用服务例程对返回值所做的处理的，因为 C 库函数 `getpriority()`做了相反的计算操作，它将 `20-unice` 值返回给了调用程序。
+
+下面简单看一下这两个系统调用的实现：[linux-2.6.39 getpriority](https://elixir.bootlin.com/linux/v2.6.39/source/kernel/sys.c#L236)，[glibc 库函数 getpriority](https://elixir.bootlin.com/glibc/glibc-2.36/source/sysdeps/unix/sysv/linux/getpriority.c#L35)
+
+```c
+#define TASK_NICE(p)        PRIO_TO_NICE((p)->static_prio)
+int task_nice(const struct task_struct *p)
+{
+    return TASK_NICE(p);
+}
+SYSCALL_DEFINE2(getpriority, int, which, int, who)
+{
+    switch (which) {
+        case PRIO_PROCESS:
+            if (who)
+                p = find_task_by_vpid(who);
+            else
+                p = current;
+            if (p) {
+                niceval = 20 - task_nice(p); /* 将返回值设置为正数 */
+                if (niceval > retval)
+                    retval = niceval;
+            }
+        break;
+        ...
+    }
+}
+
+SYSCALL_DEFINE3(setpriority, int, which, int, who, int, niceval)
+{
+    if (niceval < -20) /* 上下界判断 */
+        niceval = -20;
+    if (niceval > 19)
+        niceval = 19;
+    switch (which) {
+        case PRIO_PROCESS:
+            if (who)
+                p = find_task_by_vpid(who);
+            else
+                p = current;
+            if (p)
+                error = set_one_prio(p, niceval, error);
+            break;
+    }
+}
+
+/* 库函数 getpriority */
+#define PZERO 20
+int __getpriority (enum __priority_which which, id_t who)
+{
+    int res;
+
+    res = INLINE_SYSCALL (getpriority, 2, (int) which, who);
+    if (res >= 0)
+        res = PZERO - res; /* 再次转换 */
+    return res;
+}
+```
+
+通过`nice`命令可以以指定的`nice`值运行程序。如`nice -3 ./test`，指定nice值为3，如果想指定为负数需要再加一个负号`nice --3 ./test`（需要特权）。
+
+`top` 中显示的 `NI` 一栏就是进程的 `nice` 值！`ps -l` 也可以查看。
+
+``` bash
+$ top
+   PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND
+275133 yogurt    20   0 8589112   4.5g   4.3g S  45.8  14.3 109:53.85 VirtualBoxVM
+  3894 yogurt    20   0 7470576 331140 125048 S   4.3   1.0  13:52.23 gnome-shell
+     3 root       0 -20       0      0      0 I   0.0   0.0   0:00.00 rcu_gp
+     4 root       0 -20       0      0      0 I   0.0   0.0   0:00.00 rcu_par_gp
+```
+
+从版本号为 `2.6.12` 的内核开始，Linux 提供了 `RLIMIT_NICE` 资源限制，即允许非特权进程提升 `nice` 值。非特权进程能够将自己的 `nice` 值最高提高到公式 `20−rlim_cur` 指定的值，其中 `rlim_cur` 是当前的 `RLIMIT_NICE` 软资源限制。如假设一个进程的 `RLIMIT_NICE` 软限制是 25，那么其 `nice`值可以被提高到−5。根据这个公式以及 `nice` 值的取值范围为（低）`+19～−20`（高）的事实可以得出 `RLIMIT_NICE` 的有效范围为（低）`1～40`（高）的结论。如何修改该值就涉及到下面的进程资源了。
+
+## 进程资源
+
+每个进程都用一组资源限值，它们可以用来限制进程能够消耗的各种系统资源。如在执行任意一个程序之前如果不想让它消耗太多资源，则可以设置该进程的资源限制。
+
+### getrlimit/set
+
+```c
+#include <sys/time.h>
+#include <sys/resource.h>
+
+int getrlimit(int resource, struct rlimit *rlim);
+int setrlimit(int resource, const struct rlimit *rlim);
+
+struct rlimit {
+    rlim_t rlim_cur;  /* Soft limit */
+    rlim_t rlim_max;  /* Hard limit (ceiling for rlim_cur) */
+};
+```
+
+`resource` 指定资源，这里有很多选项，查看`man page`等资料即可，下面只列几项内容：
+
+| resource 取值   | 说明                           |
+| --------------- | ------------------------------ |
+| `RLIMIT_NICE`   | 能够为进程设置的最大 `nice` 值 |
+| `RLIMIT_RTPRIO` | 能够为进程设置的最高实时优先级 |
+| `RLIMIT_STACK`  | 进程栈的最大字节数             |
+
+**软限制**规定了进程能够消耗的资源数量。一个进程可以将软限制调整为从 0 到硬限制之间的值。对于大多数资源来讲，**硬限制的唯一作用是为软限制设定了上限**。特权（`CAP_SYS_RESOURCE`）进程能够增大和缩小硬限制（只要其值仍然大于软限制），但非特权进程则只能缩小硬限制（这个行为是不可逆的）。取值为 `RLIM_INFINITY` 表示没有限制。`prlimit`可以打印出当前的资源限制情况。
+
+```c
+$ prlimit
+RESOURCE   DESCRIPTION                              SOFT       HARD UNITS
+AS         address space limit                 unlimited  unlimited bytes
+CORE       max core file size                          0  unlimited bytes
+CPU        CPU time                            unlimited  unlimited seconds
+DATA       max data size                       unlimited  unlimited bytes
+FSIZE      max file size                       unlimited  unlimited bytes
+LOCKS      max number of file locks held       unlimited  unlimited locks
+MEMLOCK    max locked-in-memory address space 4173918208 4173918208 bytes
+MSGQUEUE   max bytes in POSIX mqueues             819200     819200 bytes
+NICE       max nice prio allowed to raise              0          0
+NOFILE     max number of open files                 1024    1048576 files
+NPROC      max number of processes                127101     127101 processes
+RSS        max resident set size               unlimited  unlimited bytes
+RTPRIO     max real-time priority                      0          0
+RTTIME     timeout for real-time tasks         unlimited  unlimited microsecs
+SIGPENDING max number of pending signals          127101     127101 signals
+STACK      max stack size                        8388608  unlimited bytes
+```
+
+## 实时进程调度
+
+在一个系统上一般会同时运行交互式进程和后台进程，标准的内核调度算法一般能够为这些进程提供足够的性能和响应度。但实时应用对调度器有更加严格的要求：
+
+- 实时应用必须要为外部输入提供担保最大响应时间。为了满足这种要求，内核必须要提供工具让高优先级进程能快速地取得 CPU 的控制权，**抢占当前运行的所有进程**。
+- 高优先级进程应该能够保持互斥地访问 CPU **直至它完成**或自动释放 CPU。
+- 实时应用应该能够精确地控制其组件进程的调度顺序。
+
+SUSv3 规定的实时进程调度 API 提供了两个实时调度策略：`SCHED_RR` 和 `SCHED_FIFO`。使用这两种策略中任意一种策略进行调度的进程的优先级要高于默认的标准循环时间分享`SCHED_OTHER`策略来调度的进程。
+
+每个实时策略允许一个优先级范围。在每个调度策略中，拥有高优先级的可运行进程在尝试访问 CPU 时总是优先于优先级较低的进程。Linux 提供了 99 个实时优先级，**其数值从 1（最低）～99（最高）**，并且这个取值范围同时适用于两个实时调度策略。
+
+> 对于多处理器 Linux 系统（包括超线程系统）来讲，高优先级的可运行进程总是优先于优先级较低的进程的规则并不适用。在多处理器系统中，各个 CPU 拥有独立的运行队列（这种方式比使用一个系统层面的运行队列的性能要好），并且每个 CPU 的运行队列中的进程的优先级都局限于该队列。如假设一个双处理器系统中运行着三个进程，进程 A 的实时优先级为 20，并且它位于 CPU 0 的等待队列中，而该 CPU 当前正在运行优先级为 30 的进程 B，即使 CPU 1 正在运行优先级为 10 的进程 C，进程 A 还是需要等待 CPU 0。
+
+### CPU 亲和性
+
+设置进程的CPU亲和性用于限制进程在指定的CPU上运行，内核尝试了给进程保证**软 CPU 亲和力** — **在条件允许的情况下**进程重新被调度到原来的CPU 上运行。但这并不是强制性的，条件不允许仍然会将进程调度到其他CPU上运行。有时候需要为进程设置**硬 CPU 亲和力**，这样就能显式地将其限制在可用 CPU 中的一个或一组 CPU 上运行，原因如下：
+
+- 可以避免由使高速缓冲器中的数据失效所带来的性能影响。
+- 如果多个线程（或进程）访问同样的数据，那么当将它们限制在同样的 CPU 上的话可能会带来性能提升，因为它们无需竞争数据并且也不存在由此而产生的高速缓冲器未命中。
+- 对于时间关键的应用程序来讲，可能需要为此应用程序预留一个或更多 CPU，而将系统中大多数进程限制在其他 CPU 上。
+
+> 使用 isolcpus 内核启动参数能够将一个或更多 CPU 分离出常规的内核调度算法。将一个进程移到或移出被分离出来的 CPU 的唯一方式是使用本节介绍的 CPU 亲和力系统调用。isolcpus启动参数是实现上面列出的最后一种场景的首选方式，具体可参考内核源文件 Documentation/kernel-parameters.txt。
+
+#### sched_setaffinity/get
+
+```c
+#define _GNU_SOURCE             /* See feature_test_macros(7) */
+#include <sched.h>
+
+int sched_setaffinity(pid_t pid, size_t cpusetsize,
+                        const cpu_set_t *mask);
+int sched_getaffinity(pid_t pid, size_t cpusetsize,
+                        cpu_set_t *mask);
+```
+
+- `pid`：要设置的进程号，也可简单的用`0`来表示调用进程，也可用`gettid()`传入线程号
+- `cpusetsize`：应该指定 `mask` 参数的字节数，通常设定为`sizeof(cpu_set_t)`
+- `mask`：核的掩码。
+- 返回值：成功返回0，失败返回`-1`，并设置`errno`
+  - 如果`mask`中指定的 CPU 与系统中的所有 CPU 都不匹配，返回`EINVAL`错误
+
+`taskset -p PID` 可查看当前进程的`mask`，可通过 `taskset -pc $pid` 来获取某线程与CPU核心的亲和性。
+
+虽然 `cpu_set_t` 数据类型实现为一个位掩码，但应该将其看成是一个不透明的结构。
+
+所有对这个结构的操作都应该使用宏来完成，下面是部分常用的：
+
+```c
+/* man CPU_SET */
+#include <sched.h>
+
+void CPU_ZERO(cpu_set_t *set);          /* 将 set 初始化为空 */
+void CPU_SET(int cpu, cpu_set_t *set);  /* 将 CPU cpu 添加到 set 中 */
+void CPU_CLR(int cpu, cpu_set_t *set);  /* 从 set 中删除 CPU cpu */
+int  CPU_ISSET(int cpu, cpu_set_t *set);/* 在 CPU cpu 是 set 的一个成员时返回 true */
+```
+
+注意上面宏参数`cpu`编号是从0开始。
 
 ## 环境列表
 
@@ -673,5 +1018,7 @@ ffffffffff600000-ffffffffff601000 --xp 00000000 00:00 0     [vsyscall]
 - [小林coding--为什么要有虚拟内存？](https://xiaolincoding.com/os/3_memory/vmem.html#linux-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86)
 - [小林coding--进程管理](https://xiaolincoding.com/os/4_process/process_base.html)
 - [linux源码分析 - 进程](https://www.cnblogs.com/tolimit/p/4530370.html)
+- [搞懂进程组、会话、控制终端关系，才能明白守护进程如何创建](https://zhuanlan.zhihu.com/p/266720121)
+- [进程间的关系以及终端的概念](https://blog.csdn.net/qq_31828515/article/details/73849568)
 - 《Linux系统编程——6.4虚拟内存管理》
 - [/proc/pid/maps文件格式](https://blog.csdn.net/sunao2002002/article/details/84132505)
