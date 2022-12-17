@@ -21,7 +21,11 @@ top_img: transparent
 
 ## 序列式容器
 
+> [序列式容器 hackingcpp](https://hackingcpp.com/cpp/std/sequence_containers.html)
+
 ### Array
+
+![standard library sequence container 'array](../images/ProgramBasic_STL/array_thumb.svg)
 
 **固定大小的数组**，必须在建立时就指明其大小。
 
@@ -30,9 +34,11 @@ top_img: transparent
 
 ### Vector
 
-Vector是一个dynamic array。
+![standard library sequence container 'vector](../images/ProgramBasic_STL/vector_thumb.svg)
 
-内存重新分配很耗时间。
+`Vector` 是一个 `dynamic array`。
+
+大小可变，但内存重新分配很耗时间。
 
 **在`Vector`尾部附加元素或移除元素都很快速**，但是在`Vector`的中段或起始段安插元素就比较费时
 
@@ -50,7 +56,9 @@ Vector是一个dynamic array。
 
 ### Deque
 
-“double-ended queue”的缩写。它是一个dynamic array，可以向两端发展。
+![standard library sequence container 'deque](../images/ProgramBasic_STL/deque_thumb.svg)
+
+“double-ended queue”的缩写。它是一个dynamic array，可以向两端发展。如图所示，**并不是一段连续的内存**。
 
 因此**不论在尾部或头部安插元素都十分迅速**。在**中间部分安插元素则比较费时**，因为必须移动其他元素。
 
@@ -77,6 +85,8 @@ deque的内存重分配优于vector，deque不必在内存重新分配时复制�
 
 ### List
 
+![standard library sequence container 'list](../images/ProgramBasic_STL/list_thumb.svg)
+
 双向链表，**在任何位置上执行安插或删除动作都非常迅速**。
 
 - `.front()`：返回第一元素的**引用**
@@ -101,6 +111,8 @@ deque的内存重分配优于vector，deque不必在内存重新分配时复制�
 
 ### Forward_List
 
+![standard library sequence container 'forward_list](../images/ProgramBasic_STL/forward_list_thumb.svg)
+
 forward list原则上就是一个受限的list，不支持任何“后退移动"或“效率低下"的操作。
 
 基于这个原因，它不提供成员函数如`push_back()` 甚至`size()`。
@@ -120,6 +132,8 @@ forward list原则上就是一个受限的list，不支持任何“后退移动"
 
 ## 关联式容器
 
+> [关联式容器 hackingcpp](https://hackingcpp.com/cpp/std/associative_containers.html)
+
 关联式容器依据特定的排序准则，自动为其元素排序。
 
 自动排序造成的一个重要限制: 你不能直接改变元素值，因为会打乱原本正确的顺序。
@@ -129,6 +143,8 @@ forward list原则上就是一个受限的list，不支持任何“后退移动"
 通常关联式容器由**红黑树**实现，其值有序，且插入、查找、删除的时间复杂度为`O(log n)`。
 
 ### set、multiset
+
+![internal structure of std::set](../images/ProgramBasic_STL/set_thumb.svg)
 
 **由于 set 不允许重复值，set 的 insert/emplace 返回值为 `pair<iterator, bool>`，其中 bool 是指是否插入成功。**
 
@@ -146,6 +162,8 @@ forward list原则上就是一个受限的list，不支持任何“后退移动"
 - `.clear()`：移除所有元素，将容器清空
 
 ### map、multimap
+
+![internal structure of std::map](../images/ProgramBasic_STL/map_thumb.svg)
 
 - `.count(val)`：返回值为val的个数
 - `.find(val)`：返回值为val的第一个元素的迭代器，找不到返回 `end()`
@@ -166,6 +184,8 @@ forward list原则上就是一个受限的list，不支持任何“后退移动"
 
 ### unorder_set、unorder_multiset
 
+![internal structure of std::unordered_set](../images/ProgramBasic_STL/unordered_set_thumb.svg)
+
 - `.count(val)`：返回值为val的个数
 - `.find(val)`：返回值为val的第一个元素的迭代器，找不到返回 `end()`
 - `.contains(val)`：判断是否包含某个元素（c++20）
@@ -177,6 +197,8 @@ forward list原则上就是一个受限的list，不支持任何“后退移动"
 - `.clear()`：移除所有元素，将容器清空
 
 ### unorder_map、unorder_multimap
+
+![internal structure of std::unordered_map](../images/ProgramBasic_STL/unordered_map_thumb.svg)
 
 - `.count(val)`：返回值为val的个数
 - `.find(val)`：返回值为val的第一个元素的迭代器，找不到返回 `end()`
@@ -264,3 +286,11 @@ Bitset造出了一个内含bit或Boolean值上且**大小固定的array**。
 - `.flip(pos)`：翻转 pos 位置的 bit
 - `.to_string()`：输出为01字符串
 - `.to_ullong()`：输出为 unsigned long long 类型
+
+## 相关资料
+
+> - [hackingcpp](https://hackingcpp.com/)：提供了`cpp`标准库中的容器、算法甚至包括内存管理、调试方法等，值得一看，此文档中的图片就来源于该网站。
+> - [标准库算法可视化](https://hackingcpp.com/cpp/std/algorithms.html)
+> - [gdb调试](https://hackingcpp.com/cpp/tools/gdb_intro.html)
+> - [C++ Reference 查找库函数文档](http://www.cplusplus.com/reference/clibrary/)
+> - [京东图书：C++标准库](https://gx.jd.com/gx/gx_bookDetail.action?bookId=30656283)

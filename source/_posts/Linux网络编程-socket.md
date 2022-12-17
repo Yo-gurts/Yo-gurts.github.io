@@ -21,7 +21,9 @@ description:
 
 网络套接字本质：一个文件描述符指向一个套接字（该套接字内部由内核借助两个缓冲区实现）。
 
-## 字节序转换
+## 网络地址
+
+### 字节序转换
 
 由于历史遗留问题，网络数据流采用大端字节序，而 pc 本地一般采用的小段字节序，所以在网络通信中，需要转换字节序。
 
@@ -49,9 +51,9 @@ unsigned int b = 0xff f0 00 00;
 htonl(b) = 0x00 00 f0 ff;
 ```
 
-## inet_pton 函数
+### inet_pton 函数
 
-将一个点分十进制的IP地址（字符串）转换为一个32位的整数。
+将一个点分十进制的 `IP` 地址（字符串）转换为一个32位的整数。
 
 ```c
 #include <arpa/inet.h>
@@ -65,14 +67,14 @@ inet_pton(AF_INET, ip, &ip_int);
 ```
 
 - af：地址族，可以是`AF_INET(ipv4)`、`AF_INET6(ipv6)`
-- src：要转换的IP地址，如：`"192.168.1.1"`
-- dst：转换后的网络字节序的IP地址，整数，如：`&ipv4_addr`
+- src：要转换的 `IP` 地址，如：`"192.168.1.1"`
+- dst：转换后的网络字节序的 `IP` 地址，整数，如：`&ipv4_addr`
 - 返回值：
   - 1，成功
   - 0，异常，说明 `src` 不是一个合法的ip地址
   - -1，`af` 不是一个合法的地址族
 
-## inet_ntop 函数
+### inet_ntop 函数
 
 将一个网络字节序的IP地址转换为一个点分十进制的IP地址（字符串）。
 
@@ -94,7 +96,7 @@ inet_ntop(AF_INET, &client_addr.sin_addr.s_addr, ipv4_str, sizeof(ipv4_str));
 - size：dst 的大小
 - 返回值：成功返回 dst, 失败返回 NULL
 
-## inet_addr 函数
+### inet_addr 函数
 
 将一个点分十进制的IP地址（字符串）转换为一个32位的整数。
 
@@ -111,7 +113,7 @@ in_addr_t inet_addr(const char *cp);
 
 使用这个函数可能会出现问题，因为 `INADDR_NONE` 也是一个有效的IP地址`255.255.255.255`！
 
-## sockaddr 结构
+### sockaddr 结构
 
 同样是历史遗留问题，socket 相关的函数大多都是使用 `struct sockaddr` 结构，但现在使用的往往是 `struct sockaddr_in`，因此在传递参数时，要进行强制类型转换。
 

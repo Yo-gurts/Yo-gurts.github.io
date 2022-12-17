@@ -25,6 +25,7 @@ description: 网络分析工具汇总
 | **tcpdump**  | 抓包工具                                                     |
 | **telnet**   | user interface to the TELNET protocol.                       |
 | **wrk**      | http 压测工具                                                |
+| **top**      |                                                              |
 
 ## dstat
 
@@ -125,6 +126,8 @@ description: 网络分析工具汇总
 
 打印网络连接、路由表、连接的数据统计、伪装连接以及广播域成员。
 
+> [Netstat 备忘清单](https://wangchujiang.com/reference/docs/netstat.html)
+
 | 命令            | 说明                                                 |
 | --------------- | --------------------------------------------------- |
 | `netstat -a`    | 列出 `tcp`, `udp` 和 `unix` 协议下所有套接字的所有连接    |
@@ -143,6 +146,14 @@ description: 网络分析工具汇总
 ## telnet
 
 ## wrk
+
+## top
+
+Linux 的 top 命令用于实时显示系统中**各个进程**的 CPU 和内存使用情况。
+
+> [top命令详解](https://www.cnblogs.com/ggjucheng/archive/2012/01/08/2316399.html)
+
+top 能查看的信息有：
 
 ## 相关资料
 
