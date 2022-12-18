@@ -26,4 +26,5 @@ ln ${src}/ProgramBasic_STL.md           ${dst}/STL容器.md
 ln ${src}/Redis笔记.md                  ${dst}/Redis笔记.md
 ln ${src}/Tensorflow-hub.md             ${dst}/Tensorflow-hub.md
 ln ${src}/Cpp三方库.md                  ${dst}/Cpp三方库.md
+ln ${src}/十大经典排序算法（动图演示）.md ${dst}/十大经典排序算法（动图演示）.md
 
