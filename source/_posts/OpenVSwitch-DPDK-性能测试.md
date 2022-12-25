@@ -172,7 +172,7 @@ rm /usr/local/var/log/openvswitch/*
 
 ovs-ctl --no-ovs-vswitchd start --system-id=random
 ovs-vsctl --no-wait set Open_vSwitch . other_config:dpdk-lcore-mask=0x1
-ovs-vsctl --no-wait set Open_vSwitch . other_config:pmd-cpu-mask=0x2
+ovs-vsctl --no-wait set Open_vSwitch . other_config:pmd-cpu-mask=0x6
 ovs-vsctl --no-wait set Open_vSwitch . other_config:dpdk-socket-mem="1024"
 ovs-vsctl --no-wait set Open_vSwitch . other_config:dpdk-init=true
 ovs-ctl --no-ovsdb-server --db-sock="$DB_SOCK" start
@@ -183,6 +183,10 @@ ovs-vsctl add-port br0 vhost-user1 \
     -- set Interface vhost-user1 type=dpdkvhostuser ofport_request=1
 ovs-vsctl add-port br0 vhost-user2 \
     -- set Interface vhost-user2 type=dpdkvhostuser ofport_request=2
+
+# vhost-user3
+ovs-vsctl add-port br0 vhost-user3 \
+    -- set Interface vhost-user3 type=dpdkvhostuser ofport_request=3
 ```
 
 |                 | 1    | 2    | 3    | 4    | 5    | 6    | 7    | 8    | 9    | 10   | 11   | 12   |
@@ -231,11 +235,15 @@ dpdk-testpmd -c 0x300 -n 1 --socket-mem 1024 --file-prefix testpmd --no-pci \
 |      |                             | 16 353 825 pps    | 7 380 556 pps      |
 | c3   | c2 + vhost-postcopy-support | 8 086 507 608 bps | 96 284 271 416 bps |
 |      |                             | 16 846 890 pps    | 8 045 142 pps      |
+|      | 下面的2send,1recv, 2pmd     |                   | 125975200120 bps   |
+|      |                             |                   | 10 525 949 pps     |
 
 `c2`：配置匹配入端口的流表；
 
 ```bash
 ovs-ofctl add-flow br0 in_port=vhost-user1,actions=output:vhost-user2
+ovs-ofctl add-flow br0 in_port=vhost-user3,actions=output:vhost-user4
+ovs-ofctl add-flow br0 in_port=vhost-user5,actions=output:vhost-user6
 ```
 
 `c3`：配置`vhost-postcopy-support=true`；
@@ -243,6 +251,151 @@ ovs-ofctl add-flow br0 in_port=vhost-user1,actions=output:vhost-user2
 ```bash
 ovs-vsctl set open_vswitch . other_config:vhost-postcopy-support=true
 ```
+
+## 2send-1recv
+
+```bash
+## 删除之前的配置文件
+rm /usr/local/etc/openvswitch/*
+rm /usr/local/var/run/openvswitch/*
+rm /usr/local/var/log/openvswitch/*
+
+ovs-ctl --no-ovs-vswitchd start --system-id=random
+ovs-vsctl --no-wait set Open_vSwitch . other_config:dpdk-lcore-mask=0x1
+ovs-vsctl --no-wait set Open_vSwitch . other_config:pmd-cpu-mask=0xE
+ovs-vsctl --no-wait set Open_vSwitch . other_config:dpdk-socket-mem="1024"
+ovs-vsctl --no-wait set Open_vSwitch . other_config:dpdk-init=true
+ovs-ctl --no-ovsdb-server --db-sock="$DB_SOCK" start
+
+## 添加 bridge
+ovs-vsctl add-br br0 -- set bridge br0 datapath_type=netdev
+ovs-vsctl add-port br0 vhost-user1 \
+    -- set Interface vhost-user1 type=dpdkvhostuser ofport_request=1
+ovs-vsctl add-port br0 vhost-user2 \
+    -- set Interface vhost-user2 type=dpdkvhostuser ofport_request=2
+ovs-vsctl add-port br0 vhost-user3 \
+    -- set Interface vhost-user3 type=dpdkvhostuser ofport_request=3
+ovs-vsctl add-port br0 vhost-user4 \
+    -- set Interface vhost-user4 type=dpdkvhostuser ofport_request=4
+ovs-vsctl add-port br0 vhost-user5 \
+    -- set Interface vhost-user5 type=dpdkvhostuser ofport_request=5
+ovs-vsctl add-port br0 vhost-user6 \
+    -- set Interface vhost-user6 type=dpdkvhostuser ofport_request=6
+```
+
+|                 | 1    | 2    | 3    | 4    | 5    | 6    | 7    | 8    | 9    | 10   | 11   | 12   |
+| --------------- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
+| `pmd=0x6`       |      | *    | *    |      |      |      |      |      |      |      |      |      |
+| `pktgen1=0x30`  |      |      |      |      | *    | *    |      |      |      |      |      |      |
+| `pktgen2=0xc0`  |      |      |      |      |      |      | *    | *    |      |      |      |      |
+| `testpmd=0x300` |      |      |      |      |      |      |      |      | *    | *    |      |      |
+| `testpmd=0xc00` |      |      |      |      |      |      |      |      |      |      | *    | *    |
+
+```bash
+# pktgen
+docker run -it --rm --privileged --name=app-pktgen3 \
+    -v /dev/hugepages:/dev/hugepages \
+    -v /usr/local/var/run/openvswitch:/var/run/openvswitch \
+    pktgen:20.11.3 /bin/bash
+
+pktgen -c 0x30 -n 1 --socket-mem 1024 --file-prefix pktgen --no-pci  \
+--vdev 'net_virtio_user1,mac=00:00:00:00:00:01,path=/var/run/openvswitch/vhost-user1' \
+-- -T -P -m "5.0"
+
+# pktgen
+docker run -it --rm --privileged --name=app-pktgen2 \
+    -v /dev/hugepages:/dev/hugepages \
+    -v /usr/local/var/run/openvswitch:/var/run/openvswitch \
+    pktgen20:latest /bin/bash
+
+pktgen -c 0xc0 -n 1 --socket-mem 1024 --file-prefix pktgen --no-pci  \
+--vdev 'net_virtio_user1,mac=00:00:00:00:00:03,path=/var/run/openvswitch/vhost-user3' \
+-- -T -P -m "7.0"
+
+pktgen -c 0xc000 -n 1 --socket-mem 1024 --file-prefix pktgen --no-pci  \
+--vdev 'net_virtio_user1,mac=00:00:00:00:00:05,path=/var/run/openvswitch/vhost-user5' \
+-- -T -P -m "15.0"
+
+pktgen -c 0xc00 -n 1 --socket-mem 1024 --file-prefix pktgen --no-pci  \
+--vdev 'net_virtio_user1,mac=00:00:00:00:00:04,path=/var/run/openvswitch/vhost-user4' \
+-- -T -P -m "11.0"
+
+
+sequence <seq#> <portlist> dst <Mac> src <Mac> dst <IP> src <IP> sport <val> dport <val> ipv4|ipv6 udp|tcp|icmp vlan <val> size <val> [teid <val>]
+sequence 0 0 dst 00:00:00:00:11:11 src 00:00:00:00:22:22 dst 192.168.1.1/24 src 192.168.1.3/24 sport 10001 dport 10003 ipv4 udp vlan 3000 size 1500
+sequence 2 0 dst 00:00:00:00:11:11 src 00:00:00:00:22:22 dst 192.168.1.1/24 src 192.168.1.4/24 sport 10001 dport 10004 ipv4 udp vlan 4000 size 1500
+
+sequence <seq#> <portlist> <dst-Mac> <src-Mac> <dst-IP> <src-IP> <sport> <dport> ipv4|ipv6 udp|tcp|icmp <vlanid> <pktsize> [<teid>]
+sequence 1 0 dst-Mac 00:00:00:00:11:11 src-Mac 00:00:00:00:22:22 dst-IP 192.168.1.1 src-IP 192.168.1.3/24
+
+# range
+set 0 dst ip min 192.168.1.1
+set 0 dst ip max 192.168.1.2
+ovs-ofctl add-flow br0 ip,nw_dst=192.168.1.1,actions=output:vhost-user2
+ovs-ofctl add-flow br0 ip,nw_dst=192.168.1.2,actions=output:vhost-user4
+```
+
+```bash
+docker run -it --rm --privileged --name=app-testpmd2 \
+    -v /dev/hugepages:/dev/hugepages \
+    -v /usr/local/var/run/openvswitch:/var/run/openvswitch \
+    pktgen:20.11.3 /bin/bash
+
+dpdk-testpmd -c 0x300 -n 1 --socket-mem 1024 --file-prefix testpmd --no-pci \
+--vdev 'net_virtio_user2,mac=00:00:00:00:00:02,path=/var/run/openvswitch/vhost-user2' \
+-- -i -a --coremask=0x200 --forward-mode=rxonly
+
+docker run -it --rm --privileged --name=app-testpmd2 \
+    -v /dev/hugepages:/dev/hugepages \
+    -v /usr/local/var/run/openvswitch:/var/run/openvswitch \
+    pktgen20:latest /bin/bash
+
+docker run -it --rm --privileged --name=pktgen3 \
+    -v /dev/hugepages:/dev/hugepages \
+    -v /usr/local/var/run/openvswitch:/var/run/openvswitch \
+    pktgen:20.11.3 /bin/bash
+
+dpdk-testpmd -c 0xc00 -n 1 --socket-mem 1024 --file-prefix testpmd --no-pci \
+--vdev 'net_virtio_user4,mac=00:00:00:00:00:04,path=/var/run/openvswitch/vhost-user4' \
+-- -i -a --coremask=0x800 --forward-mode=rxonly
+
+dpdk-testpmd -c 0x30000 -n 1 --socket-mem 1024 --file-prefix testpmd --no-pci \
+--vdev 'net_virtio_user6,mac=00:00:00:00:00:06,path=/var/run/openvswitch/vhost-user6' \
+-- -i -a --coremask=0x20000 --forward-mode=rxonly
+```
+
+
+
+```bash
+ovs-ofctl add-flow br0 in_port=vhost-user1,actions=output:vhost-user2
+ovs-ofctl add-flow br0 in_port=vhost-user3,actions=output:vhost-user2
+```
+
+
+
+------
+
+```asciiarmor
+1-------3
+  pmd1
+2-------4
+
+1---pmd1----3
+2---pmd2----4
+```
+
+| 服务器 1500byte，收端测速                       | pps     | bps          |
+| ----------------------------------------------- | ------- | ------------ |
+| 1pmd, 1->2                                      | 4014497 | 48 045502408 |
+| 1pmd, 1->2, 3->2                                | 3821682 | 45 737967984 |
+| 1pmd, 1->2, 3->4, (2,4的结果差不多)             | 1842978 | 22 056772136 |
+| 2pmd, 1->2, 3->2                                | 5644703 | 67 485371880 |
+| 2pmd, 1->2, 3->4, (2,4的结果差不多)             | 3983405 | 47 673395952 |
+| 2pmd, 1->2, 3->2, 4->2                          | 5347450 | 63 864672136 |
+| 3pmd, 1->2, 3->2, 4->2 (应该是收端处理能力限制) | 5332282 | 63 816064880 |
+| 3pmd, 1->2, 3->4, 5->6 (2,4,6的结果差不多)      | 3733353 | 44 680773688 |
+
+
 
 ## QEMU
 

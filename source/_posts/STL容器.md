@@ -214,12 +214,18 @@ forward list原则上就是一个受限的list，不支持任何“后退移动"
 
 ### Stack
 
+> 底层一般用 `deque` 实现
+>
+> `stack` 和 `queue` 其实是适配器，而不叫容器，因为是对容器的再封装
+
 - `.push()`： 将一个元素放入 stack 中
 - `.emplace()`： 将一个元素放入 stack 中，效率比 push 更高
 - `.top()`： 返回 stack 内的下一个元素
 - `.pop()`： 从 stack 内移除一个元素
 
 ### Queue
+
+> 底层一般用 `deque` 实现
 
 - `.front()`：返回第一个元素的**引用**，该元素将最先出队
 - `.back()`：返回最末元素的**引用**，`c.back() = 10`
@@ -228,6 +234,12 @@ forward list原则上就是一个受限的list，不支持任何“后退移动"
 - `.pop()`： 从 queue 内移除一个元素
 
 ### Priority_queue
+
+> 底层数据结构一般为 `vector` 为底层容器，堆 `heap` 为处理规则来管理底层容器实现。
+>
+> - 左子节点 `pos = now * 2 + 1`
+> - 右子节点 `pos = now * 2 + 2`
+> - 父节点 `pos = (now - 1) / 2`
 
 和queue类似，但其元素有优先级，dequeue时并非取最先放入的元素，而是优先级最高的元素！
 
