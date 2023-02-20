@@ -328,6 +328,8 @@ int sigismember(const sigset_t *set, int signum); // 判断 signum 是否为1
 
 ## sigprocmask 函数
 
+设置是否屏蔽信号，类似函数：`pthread_sigmask`。
+
 ```c
 #include <signal.h>
 

@@ -243,6 +243,54 @@ int pthread_detach(pthread_t thread);
 
 分离后，再次调用 `pthread_join()` 时，会报错 `Invalid argument`！
 
+### pthread_cleanup_push/pop
+
+`pthread_cleanup_push` 和 `pthread_cleanup_pop` 是 C 语言 POSIX 线程库 (pthreads) 中的函数，它们用于在线程退出时自动执行清理动作。
+
+- `pthread_cleanup_push` 用于注册清理函数，该函数将在线程退出时自动调用。该函数的第一个参数是清理函数的地址，第二个参数是一个指针，该指针用于传递给清理函数的参数。
+- `pthread_cleanup_pop` 用于弹出最近注册的清理函数。如果第二个参数为非零值，则立即调用清理函数。如果第二个参数为零，则在线程退出时自动调用清理函数。
+
+只有在`push`和`pop`这两个函数中间线程退出时，才会执行对应的清理函数。退出的原因有：
+
+- 其他线程使用 `pthread_cancel()` 杀死了此线程。
+- 线程自己调用了 `pthread_exit()`。
+
+```c
+#include <pthread.h>
+
+void pthread_cleanup_push(void (*routine)(void *),
+                          void *arg);
+void pthread_cleanup_pop(int execute);
+
+/* example */
+void cleanup(void *arg)
+{
+    std::cout << "Cleaning up: " << *(int *)arg << std::endl;
+}
+
+void *thread_func(void *arg)
+{
+    int *i = (int *)arg;
+
+    pthread_cleanup_push(cleanup, i);
+    int cnt = 10;
+    while(cnt--) {
+        sleep(1);
+        if (cnt == 3)
+            pthread_exit(NULL);
+        std::cout << cnt << std::endl;
+    }
+    pthread_cleanup_pop(0);
+    return NULL;
+}
+```
+
+- `routine`：清理函数指针；
+- `arg`：清理函数的传入参数。
+- `execute`：第二个参数是一个整数，它控制清理函数是在线程退出时自动调用，还是在该函数被调用时立即调用。
+  - 如果第二个参数为 0，则在线程退出时自动调用清理函数。
+  - 如果第二个参数非 0，则在该函数被调用时立即调用清理函数。
+
 ### 进程线程对比
 
 | 进程                | 线程               |

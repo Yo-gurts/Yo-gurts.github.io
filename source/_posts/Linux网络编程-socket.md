@@ -389,6 +389,14 @@ nc 192.168.0.8 10001
 
 ## read 函数
 
+从指定的文件描述符上最多读取 `count` 个字节存放到缓冲区 `buf` 中，返回实际读取的字节数。
+
+```c
+#include <unistd.h>
+
+ssize_t read(int fd, void *buf, size_t count);
+```
+
 在网络编程中，read 函数的返回值需要仔细区分：
 
 1. `>0` 实际读到的字节数；
@@ -397,6 +405,135 @@ nc 192.168.0.8 10001
    - `EAGAIN/ENOULDBLOCK` 设置了非阻塞方式读，没有数据到达
    - `EINTR` 慢速系统调用被 中断
    - 其他情况，异常
+
+## write 函数
+
+将缓冲区 `buf` 中的 `count` 个字节数据写入到 `fd` 对应的文件中，返回实际写入的字节数。
+
+```c
+#include <unistd.h>
+
+ssize_t write(int fd, const void *buf, size_t count);
+```
+
+## recv/recvfrom 函数
+
+从指定的 `sockfd` 上接收（读取）数据写入到缓冲区 `buf`中，`buf`的长度是`len`，返回实际接收的字节数。
+
+```c
+#include <sys/types.h>
+#include <sys/socket.h>
+
+ssize_t recv(int sockfd, void *buf, size_t len, int flags);
+ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
+                 struct sockaddr *src_addr, socklen_t *addrlen);
+```
+
+`flags` 参数可以用来指定该函数的特殊行为。常用的 `flags` 参数值有：
+
+- `0`：不设置标志。
+- `MSG_PEEK`：该标志会导致 `recv` 函数返回套接字中的数据，但不会从缓冲区中删除数据。下一次调用 `recv` 函数会再次返回相同的数据。这个标志对检查接收到的数据而不消耗它很有用。
+- `MSG_WAITALL`：该标志导致 `recv` 函数阻塞，直到接收到请求的字节数或连接关闭。如果在接收到请求的字节数之前连接关闭，`recv` 函数会返回已接收的字节数。
+- `MSG_OOB`：该标志导致 `recv` 函数返回带外数据，如果有可用的带外数据。带外数据是单独从正常数据流发送的数据，通常用于紧急数据。
+- `MSG_DONTWAIT`：该标志等同于 `O_NONBLOCK` 文件状态标志。当设置该标志时，`recv` 函数不会阻塞，如果没有数据可用，则返回 `-1` 并带有错误代码 `EAGAIN` 或 `EWOULDBLOCK`。
+
+这些标志可以使用位运算符 `|` 组合，例如：
+
+```c
+int n = recv(sockfd, buffer, 1024, MSG_PEEK | MSG_WAITALL);
+```
+
+## send/sendto 函数
+
+将缓冲区`buf`中的`len`个字节的数据发送到对应的`sockfd`，返回实际发送的字节数。
+
+```c
+#include <sys/types.h>
+#include <sys/socket.h>
+
+ssize_t send(int sockfd, const void *buf, size_t len, int flags);
+ssize_t sendto(int sockfd, const void *buf, size_t len, int flags,
+               const struct sockaddr *dest_addr, socklen_t addrlen);
+```
+
+> `send()` / `write()` 的一点区别：
+>
+> 首先，这两者都是系统调用，都是用来向文件描述符（包括`Socket`文件描述符）写入数据的。区别在于，`send()` 系统调用可以指定一些可选的参数，例如`flags`参数用来指定发送数据的方式，如非阻塞方式和带外方式等。`send()`函数比`write()`函数更加灵活，因此在网络编程中更常用。
+
+## get/setsockopt 函数
+
+用于设置套接字的一些特殊选项！
+
+```c
+#include <sys/types.h>          /* See NOTES */
+#include <sys/socket.h>
+
+int getsockopt(int sockfd, int level, int optname,
+               void *optval, socklen_t *optlen);
+int setsockopt(int sockfd, int level, int optname,
+               const void *optval, socklen_t optlen);
+```
+
+- `socket`：表示需要设置选项的套接字的描述符。
+- `level`：表示选项的协议层，通常是 `SOL_SOCKET`，表示套接字选项。
+- `optname`：表示选项的名称，根据不同的协议层，选项可能不同。
+- `optval`：指向包含选项值的缓冲区的指针。
+- `optlen`：缓冲区的大小。
+
+### SO_SNDBUF/SO_RCVBUF
+
+`SO_SNDBUF` 选项控制发送缓冲区的大小，即从应用程序发送到套接字的数据在内核中的缓冲区大小。如果应用程序发送的数据量大于该缓冲区大小，则必须等待先前发送的数据完成发送才能继续发送数据。
+
+`SO_RCVBUF` 选项控制接收缓冲区的大小，即从网络接收到的数据在内核中的缓冲区大小。如果从网络接收的数据量大于该缓冲区大小，则新接收到的数据可能会覆盖先前未读取的数据。
+
+通过使用 `setsockopt` 函数，可以修改发送缓冲区和接收缓冲区的大小，以适应应用程序的数据传输需求。但是，修改缓冲区大小并不能保证性能提升，因为实际情况可能受到许多因素的影响。
+
+### SO_LINGER
+
+```C
+struct linger {
+    int l_onoff;        /* Nonzero to linger on close.  */
+    int l_linger;       /* Time to linger.  */
+};
+```
+
+`SO_LINGER` 选项是一个套接字选项，用于控制在关闭套接字时是否等待正在发送的数据的完成。
+
+当关闭套接字时，如果有数据正在发送，那么通常有两种处理方式：
+
+- 如果未启用 `SO_LINGER` 选项，那么套接字会立即关闭，未发送完的数据会被丢弃。
+- 如果启用了 `SO_LINGER` 选项，则套接字将等待所有正在发送的数据完成，直到指定的时间到达为止。
+
+具体的，可以使用 `setsockopt` 函数启用 `SO_LINGER` 选项，并使用一个结构体来指定等待的时间，该结构体由两个成员：
+
+- `l_onoff`：用于控制是否启用 `SO_LINGER` 选项。
+- `l_linger`：表示等待时间，单位为秒。
+
+如果 `l_onoff` 设置为非零值，则启用 `SO_LINGER` 选项，并使用 `l_linger` 指定的等待时间。如果 `l_onoff` 设置为零，则禁用 `SO_LINGER` 选项，关闭套接字时不等待数据的完成。
+
+### SO_KEEPALIVE
+
+`SO_KEEPALIVE` 选项用于控制是否启用 TCP 连接的 keep-alive 检测机制。当启用该选项时，如果两端在一段时间内没有数据交互，TCP 协议会发送 keep-alive 数据包来检测对端是否仍然可用。如果多次尝试后对端仍然无法响应，则可以断开该连接。
+
+这个选项可以用于防止长时间空闲的连接被网络中断，从而导致不必要的等待和重试。在某些情况下，它也可以用于检测对端的不存在或故障。
+
+### SO_REUSEADDR
+
+`SO_REUSEADDR` 选项用于控制在同一个主机上是否允许多个套接字绑定到同一端口。
+
+在默认情况下，如果一个套接字已经绑定到某个端口，那么其他套接字将不能再绑定到该端口。这种限制有助于防止在同一端口上的竞争冲突。
+
+但是，有时需要多个套接字共享同一端口，例如当同一主机上有多个服务器程序运行时。在这种情况下，可以使用 `SO_REUSEADDR` 选项来允许多个套接字绑定到同一端口。
+
+### SO_REUSEPORT
+
+`SO_REUSEPORT` 选项是一种扩展的套接字选项，主要用于允许多个套接字绑定到同一端口，从而共享同一个端口。这个选项与 `SO_REUSEADDR` 选项类似，但是提供了更多的灵活性和更高的性能。
+
+在默认情况下，如果一个套接字已经绑定到某个端口，那么其他套接字将不能再绑定到该端口。但是，如果多个套接字都启用了 `SO_REUSEPORT` 选项，那么多个套接字就可以同时绑定到同一端口。
+
+这个选项对于提高网络服务的性能和可靠性非常重要，因为它可以允许多个进程或线程共享同一端口，从而利用多核处理器的优势。
+
+使用 `setsockopt` 函数，可以在套接字创建后启用或禁用 `SO_REUSEPORT` 选项。请注意，`SO_REUSEPORT` 选项可能只在某些操作系统上可用，并且可能需要在编译套接字应用程序时启用特定的宏定义才能使用该选项。
 
 ## 相关资料
 

@@ -73,6 +73,15 @@ int pthread_mutex_init(pthread_mutex_t *restrict mutex,
 
 - restrict：限定该指针不能拷贝到其他指针，`*restrict p = &a, *p2 = *p`会报错。
 
+> pthread_mutexattr_t 的选项包括：
+>
+> 1. PTHREAD_MUTEX_NORMAL：普通锁。普通锁不允许递归调用，如果线程试图对已经拥有的锁再次加锁，它将阻塞。
+> 2. PTHREAD_MUTEX_RECURSIVE：递归锁。递归锁允许线程多次加锁，每次必须解锁一次。
+> 3. PTHREAD_MUTEX_ERRORCHECK：检查锁。检查锁与普通锁相似，但它还允许线程检查是否当前已经拥有该锁。
+> 4. PTHREAD_MUTEX_DEFAULT：默认锁类型。默认锁类型是普通锁。
+>
+> 用户可以根据需要使用不同类型的互斥量，例如递归锁用于处理递归函数，检查锁用于检测错误，而普通锁是一般的互斥量。
+
 ### 死锁
 
 1. 线程试图对同一个互斥量 A 加锁两次。
