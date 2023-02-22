@@ -48,7 +48,7 @@ redis-server /etc/redis/redis.conf
 
 `Redis` 的所有特性和功能都在配置文件中有所体现，建议仔细了解。
 
-**NETWORK**
+**NETWORK**:
 
 ```bash
 bind 127.0.0.1 ::1  # 允许指定地址的host访问server，如果要全部都能访问，注释掉该行
@@ -61,7 +61,7 @@ timeout 0           # 客户端N秒空闲后，关闭连接，0永不关闭
 tcp-keepalive 300   # 对访问客户端的一种心跳检测，每个n秒检测一次，建议设60
 ```
 
-**GENERAL**
+**GENERAL**:
 
 ```bash
 daemonize yes       # 设置守护进程（后台启动），关闭当前终端后不会关闭redis
@@ -91,20 +91,20 @@ masterauth <master-password>
                     # 当 master 服务设置了密码保护时，slave 服务连接 master 的密码
 ```
 
-**SECURITY**
+**SECURITY**:
 
 ```bash
 requirepass 123456  # 设置server密码，默认不带密码！！！
 ```
 
-**CLIENTS**
+**CLIENTS**:
 
 ```bash
 maxclients 120      # 最多连接的客户端数目，设置同一时间最大客户端连接数，默认无限制，
                     # Redis 可同时打开的客户端连接数为Redis进程可打开的最大文件描述符数
 ```
 
-**MEMORY**
+**MEMORY**:
 
 ```bash
 maxmemory <bytes>   # 指定 Redis 最大内存限制，Redis 数据都在内存中，达到最大内存后，
@@ -218,7 +218,7 @@ String 的数据结构为动态字符串，当字符串小于1Mb时，加倍扩�
 | **incrby** key increment | 将key的值增加increment |
 | **decrby** key decrement | 将key的值减少decrement |
 
-**批量操作的命令**
+**批量操作的命令**：
 
 | cmd | explain |
 |:----|:-----|
@@ -374,6 +374,108 @@ QUEUED
     队列中的命令没有提交之前都不会实际被执行，因为事务提交前任何指令都不会被实际执行
 3. **不保证原子性**
     事务中如果有一条命令执行失败，其后的命令仍然会被执行，没有回滚
+
+## hiredis/redis++
+
+异步操作的命令，或使用了回调函数的操作没有给出例子。
+
+### redis-cli 建立连接
+
+```c++
+#include <sw/redis++/redis++.h>
+
+sw::redis::Redis redis("tcp://127.0.0.1:6379");
+sw::redis::Redis redis("tcp://127.0.0.1:6379", "password");
+```
+
+### Key ops
+
+| cmd | `redis++`                                          |
+|:----|:-----|
+| **keys** * | `std::vector<std::string> keys = redis.keys("*");` |
+| **exists** key | `bool exists = redis.exists("key");` |
+| **del** key | `int deleted = redis.del("key");` |
+| **unlink** key | `int unlinked = redis.unlink("key");` |
+| **type** key | `sw::redis::RedisType type = redis.type("key");` |
+| **expire** key seconds | `bool success = redis.expire("key", 60);` |
+| **ttl** key | `long long ttl = redis.ttl("key");` |
+| **dbsize** | `long long size = redis.dbsize();` |
+| **flushdb** | `bool success = redis.flushdb();` |
+| **flushall** | `bool success = redis.flushall();` |
+
+### String ops
+
+| cmd | `redis++`                                     |
+|:----|:-----|
+| **set** key value | `bool success = redis.set("key", "value");` |
+| **get** key | `std::string value = redis.get("key");` |
+| **append** key value | `int length = redis.append("key", "value");` |
+| **strlen** key | `int length = redis.strlen("key");` |
+| **setnx** key value | `bool success = redis.setnx("key", "value");` |
+| **incr** key | `long long result = redis.incr("key");` |
+| **decr** key | `long long result = redis.decr("key");` |
+| **incrby** key increment | `long long result = redis.incrby("key", 10);` |
+| **decrby** key decrement | `long long result = redis.decrby("key", 10);` |
+
+**批量操作的命令**：
+
+| cmd | explain |
+|:----|:-----|
+| **mset** key1 value1 ... keyN valueN | `bool success = redis.mset({"key1", "value1", "key2", "value2"});` |
+| **mget** key1 ... keyN | `std::vector<std::string> values = redis.mget({"key1", "key2"});` |
+| **msetnx** key1 value1 ... keyN valueN | `bool success = redis.msetnx({"key1", "value1", "key2", "value2"});` |
+| **getrange** key start end | `std::string sub = redis.getrange("key", 1, 3);` |
+| **setrange** key offset value | `int length = redis.setrange("key", 1, "new");` |
+| **setex** key seconds value | `bool success = redis.setex("key", 60, "value");` |
+| **getset** key value | 设置key的值，并返回key的旧值 |
+
+### List ops
+
+| cmd | explain |
+|:----|:-----|
+| **lpush** key value | `int length = redis.lpush("list", "element1", "element2");` |
+| **rpush** key value | `int length = redis.rpush("list", "element1", "element2");` |
+| **lrange** key start stop | `std::vector<std::string> elements = redis.lrange("list", 0, -1);` |
+| **lpop** key | `std::string element = redis.lpop("list");` |
+| **rpop** key | `std::string element = redis.rpop("list");` |
+| **lpoplpush** source destination | `bool success = redis.lpoplpush("source", "destination");` |
+| **lpoprpush** source destination | `bool success = redis.lpoprpush("source", "destination");` |
+| **rpoprpush** source destination | `bool success = redis.rpoprpush("source", "destination");` |
+| **rpoplpush** source destination | `bool success = redis.rpoplpush("source", "destination");` |
+| **llen** key | `int64_t len = redis.llen("mylist");` |
+| **lindex** key index | 获取key的值的第index个元素 |
+| **linsert** key before|after pivot value | 在key的值的第index个元素前或后插入一个值 |
+| **lrem** key count value | 从左边删除count个值为value的元素 |
+| **lset** key index value | 设置key的值的第index个元素的值 |
+
+### Hash ops
+
+| cmd | explain |
+|:----|:-----|
+| **hset** key field value | `bool success = redis.hset("hash", "field", "value");` |
+| **hget** key field | `std::string value = redis.hget("hash", "field");` |
+| **hmset** key field1 value1 ... fieldN valueN | `bool success = redis.hmset("hash", {{"field1", "value1"}, {"field2", "value2"}});` |
+| **hexists** key field | `bool exists = redis.hexists("hash", "field");` |
+| **hkeys** key | `std::vector<std::string> fields = redis.hkeys("hash");` |
+| **hvals** key | `std::vector<std::string> values = redis.hvals("hash");` |
+| **hlen** key | `int count = redis.hlen("hash");` |
+| **hdel** key field | `bool success = redis.hdel("hash", "field");` |
+| **hincrby** key field increment | `int value = redis.hincrby("hash", "field", 1);` |
+| **hsetnx** key field value | `bool success = redis.hsetnx("hash", "field", "value");` |
+
+### Set ops
+
+| cmd | explain |
+|:----|:-----|
+| **sadd** key value | `int count = redis.sadd("set", {"elem1", "elem2", "elem3"});` |
+| **smembers** key | `std::vector<std::string> members = redis.smembers("set");` |
+| **sismember** key value | `bool exist = redis.sismember("set", "elem");` |
+| **scard** key | `int count = redis.scard("set");` |
+| **srem** key value | `int count = redis.srem("set", {"elem1", "elem2"});` |
+| **spop** key | `std::string elem = redis.spop("set");` |
+| **srandmember** key | `std::vector<std::string> elems = redis.srandmember("set", 2);` |
+| **smove** source destination value | `bool success = redis.smove("set1", "set2", "elem");` |
+| **sinter** source1 ... sourceN | `std::vector<std::string> elems = redis.sinter({"set1", "set2"});` |
 
 ## 相关资料
 
