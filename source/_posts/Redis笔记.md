@@ -7,6 +7,7 @@ updated: 2022-06-24 14:00:44
 tags:
   - Redis
   - Docker
+  - C++
 categories: Redis
 keywords:
 description: 介绍 Redis 中的数据类型原理和相关命令。
