@@ -13,6 +13,8 @@ keywords:
 description: 介绍 Redis 中的数据类型原理和相关命令。
 ---
 
+Redis 是一个高性能的、键值对数据库，**数据直接存储在内存中**，只有需要持久化时才写入硬盘。
+
 ## 安装启动
 
 ubuntu 下使用 apt 安装的 redis 版本较老，可采用源码安装。
@@ -43,7 +45,7 @@ redis-server /etc/redis/redis.conf
 
 ### 配置文件
 
-`Redis` 启动时有很多配置参数，这些参数设置均在 `redis.conf` 中，且有注释和分类。
+`Redis` 启动时有很多配置参数，这些参数设置均在 `redis.conf` 中，且有注释和分类，**注意：redis 配置文件中注释必须以 # 开头，且必须单独一行**。
 
 **除了在启动前通过修改配置文件的方式修改配置，启动后也可通过`CONFIG SET/GET`命令修改、查看配置。**
 
@@ -147,25 +149,43 @@ auto-aof-rewrite-min-size 64mb
 
 `Redis` 官方有提供镜像，可直接`docker pull redis:6.2.6`拉取。
 
-主要是启动时的端口和文件映射，需要根据`Redis`存储的文件路径和使用的端口确定。
-
-这里启动时已经将配置文件放在`/mydata`目录下，且将RDB备份文件路径也设置为`/data/`。
+主要是启动时的端口和文件映射，需要根据`Redis`存储的文件路径和使用的端口确定。下面是一个例子：
 
 ```bash
+# 1. 准备一个空文件夹存放redis相关的数据
+mkdir redisdata && cd redisdata
+# 2. 创建并编辑配置文件，下面给了一个示例
+vim redis.conf
+# 3. 拉取 redis 镜像
 docker pull redis:6.2.6
-docker run --name redis -p 6379:6379 -v /mydata:/data \
-    redis:6.2.6 redis-server /etc/redis/redis.conf
+# 4. 启动容器，下面非后台运行，使用 `-d` 后台运行
+docker run --name redis -p 6379:6379 -v $(pwd):/data \
+    redis:6.2.6 redis-server /data/redis.conf
 ```
 
-**注意：配置文件一定要与版本一致，配置文件的中设置不对会造成容器启动后又马上`Exit`**
+**注意事项**：
 
-```bash
-# bind 127.0.0.1 ::1
-daemonize no   # 必须设置为默认的 no
-dir /data/     # 设置RDB备份文件目录
-logfile "/data/redis-server.log"    # 目录不存在也会导致容器自动停止
-requirepass 123456
-```
+1. **配置文件的中设置不对会造成容器启动后又马上**`Exit`，一个简单的示例如下：
+
+    ```bash
+    # bind 127.0.0.1 ::1
+    # daemonize 必须设置为默认的 no
+    daemonize no
+    # 设置RDB备份文件目录
+    dir /data/
+    # 目录不存在也会导致容器自动停止
+    logfile "/data/redis-server.log"
+    # 设置密码
+    requirepass 123456
+    ```
+
+2. 配置文件中的相关路径要有效。
+
+3. 如果在 `Docker` 中运行 `Redis` ，并且设置 `daemonize` 为 `yes`，即将 `Redis` 进程守护化时，最终的 `Docker exec` 进程（启动 `Redis` 的那个进程）就无事可做了，所以该进程退出，容器也随之结束。[来自 stackoverflow 上的回答](https://stackoverflow.com/questions/50790197/why-redis-in-docker-need-set-daemonize-to-no)
+
+4. 如果希望 `redis` **后台运行可以使用 `-d` 选项**，不过这样启动失败时难以查看错误的日志信息，所以可以先不带该选项测试是否可正常启动。无误后再使用`-d`选项。
+
+5. **启动失败后，记得删除掉该容器**，再重新尝试启动，否则名字冲突导致启动失败。
 
 也可以自制镜像，将设置好的配置文件拷贝到容器中。
 
@@ -186,6 +206,15 @@ redis-cli -h 127.0.0.1 -p 6379 -a password
 #  -a <password>      Password to use when connecting to the server.
 ```
 
+| cmd              | explain                           |
+| :--------------- | :-------------------------------- |
+| **auth** passwd  | 授权                              |
+| **ping**         | 测试连通性                        |
+| **shutdown**     | 关闭数据库服务进程 `redis-server` |
+| **select** index | 切换数据库                        |
+| **create** index | 创建数据库                        |
+| **drop** index   | 删除数据库                        |
+
 ### Key
 
 | cmd | explain |
@@ -201,9 +230,25 @@ redis-cli -h 127.0.0.1 -p 6379 -a password
 | **flushdb** | 清空当前库 |
 | **flushall** | 清空所有库 |
 
+虽然 `Redis` 是 `key-value` 的方式存储数据，`key` 与 `key` 之间没有关系，但通常可以通过 `key` 的命名来提供一定的“信息”，`Redis` 的官方文档推荐使用冒号`:`作为键名的分隔符，因为它可以提高可读性和维护性，并且可以利用`SCAN`命令进行模式匹配。并且通常在使用 `GUI` 工具查看数据时，也会用`:`来分组。
+
+```yaml
+set md|dv:label:json 0
+set md|dv:a94de756-b776-496b-bfe1-a6f3edd1d0cd 0
+set md|dv:0f0a1014-43be-4531-95ee-34fdffc0b681 0
+set md|dv:service:name:device-rest 0
+set md|dv:label:float 0
+```
+
+上面的几个 `key` 在 `redis-desktop-manager` 中显示效果如下：
+
+![image-20230307231649741](../images/Redis%E7%AC%94%E8%AE%B0/image-20230307231649741.png)
+
+注意：是以 `:` 分割，`key`中的`|`没有实际意义。
+
 ### String
 
-string 是二进制安全的，可以包含任何数据。如jpg图片或者序列化的对象，但最大长度512MB。
+String 是二进制安全的，可以包含任何数据。如jpg图片或者序列化的对象，但最大长度512MB。
 
 String 的数据结构为动态字符串，当字符串小于1Mb时，加倍扩容；大于1Mb时，一次扩容增加1Mb。
 
