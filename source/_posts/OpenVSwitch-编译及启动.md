@@ -115,6 +115,40 @@ ovs-vswitchd --version
 # DPDK 20.11.5
 ```
 
+如果`make -j`编译时，出现错误：
+
+```bash
+  File "/usr/lib/python3/dist-packages/OpenSSL/__init__.py", line 8, in <module>
+    from OpenSSL import crypto, SSL
+  File "/usr/lib/python3/dist-packages/OpenSSL/crypto.py", line 3279, in <module>
+    _lib.OpenSSL_add_all_algorithms()
+AttributeError: module 'lib' has no attribute 'OpenSSL_add_all_algorithms'
+make: *** [Makefile:6819: lib/vswitch-idl.ovsidl] Error 1
+```
+
+根据[这篇文章](https://levelup.gitconnected.com/fix-attributeerror-module-lib-has-no-attribute-openssl-521a35d83769)的解决办法：
+
+Upgrading `pip` to the latest version will probably fix the issue for you.
+
+```bash
+python3 -m pip install --upgrade pip
+```
+
+If this doesn’t seem to be enough, you will then have to upgrade `pyOpenSSL`. You need to make sure that the install `pyopenssl` version is greater than `v22.1.0` therefore,
+
+```bash
+python3 -m pip install --upgrade openssl
+
+# alternatively
+python3 -m pip install openssl>22.1.0
+```
+
+If for any reason you can’t upgrade openssl (due to conflicts with other dependencies you have) the last resort (which I wouldn’t recommend otherwise), is to downgrade `cryptography` module to an older version:
+
+```bash
+python3 -m pip install cryptography==38.0.4
+```
+
 ## 生成Docker镜像
 
 **前提：主机上先安装好OVS！**

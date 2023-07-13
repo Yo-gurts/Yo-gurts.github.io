@@ -62,6 +62,7 @@ port 6379           # 监听端口号
 tcp-backlog         # 连接队列=未完成三次握手队列+已经完成三次握手队列，高并发环境下需要高 backlog 值
 timeout 0           # 客户端N秒空闲后，关闭连接，0永不关闭
 tcp-keepalive 300   # 对访问客户端的一种心跳检测，每个n秒检测一次，建议设60
+unixsocket /tmp/redis.sock # 使用unixsocket连接，比 ip+port 效率更高
 ```
 
 **GENERAL**:

@@ -45,56 +45,60 @@ cd bin
 
 `lldpprovider` 是用于拓扑发现的，启用该应用后，在 `UI/topology` 可以看到节点是否有链路直连。
 
-## 编译 ONOS 镜像
-
-[onos](https://github.com/Yo-gurts/onos/blob/master/Dockerfile)仓库中已有写好了的`Dockerfile`，将整个项目`clone`到本地后，即可直接编译镜像。该`Dockerfile`不是从网上下载源码，而是从当前目录`COPY`，所以修改源码后直接编译就行。
-
-但是 `ONOS` 编译过程需要从`github`或一些外网地址下载相关编译工具，导致编译缓慢或者直接失败。需要配置代理使用：
-
-```bash
-docker build --network=host --build-arg http_proxy=http://127.0.0.1:8889 --build-arg https_proxy=http://127.0.0.1:8889  -t onos .
-```
-
-上面的方式在某些情况下已经够用了，但可能卡在`onos-gui-npm-install`，需要进一步处理。
-
-- 一种方式是修改 `Dockerfile`，增加 `--action_env` 指定代理。
-
-```Dockerfile
-RUN cat WORKSPACE-docker >> WORKSPACE && bazelisk build onos \
-+    --action_env=https_proxy=http://127.0.0.1:8889 \
-     --jobs ${JOBS} \
-     --verbose_failures \
-     --java_runtime_version=dockerjdk_11
-```
-
-- 另一种方式是修改`web/gui/BUILD`。
-
-```bash
-cd onos/web/gui
-sudo vi BUILD
-#修改 onos-gui-npm-install
-在$$NPM $$NPM_ARGS install后面加上
---registry https://registry.npm.taobao.org
-
-#修改 onos-gui-npm-build
-在$$ROOT/$$NPM $$NPM_ARGS run build --no-cache后加上
---registry https://registry.npm.taobao.org
-
-cd onos/web/gui2-fw-lib
-sudo vi BUILD
-#修改 onos-gui2-fw-npm-install
-在npm $$NPM_ARGS install后面加上
---registry https://registry.npm.taobao.org
-```
-
-也可以尝试两种方法都用。此外，也可以先将`bazelisk build onos`之前的编译为一个镜像（免去安装编译工具的步骤），启动容器，再慢慢编译，通过`docker commit`将完成编译的容器保存为镜像，再参考`Dockerfile`进行二阶段的编译过程（此法最可靠）。
-
-## 常用页面
+### 常用页面
 
 1. UI 页面地址：[http://localhost:8181/onos/ui/](http://localhost:8181/onos/ui/) 用户名：onos，密码：rocks
 2. RESTFUL 接口文档：[http://localhost:8181/onos/v1/docs/](http://localhost:8181/onos/v1/docs/)
 3. 流表组成说明：[https://wiki.onosproject.org/display/ONOS/Flow+Rules](https://wiki.onosproject.org/display/ONOS/Flow+Rules)
 4. ONOS wiki，也就是官方文档：[https://wiki.onosproject.org](https://wiki.onosproject.org)
+
+### 连接ONOS CLI
+
+1. 打开终端并输入以下命令，以连接到ONOS的远程命令行界面：
+
+```bash
+phpCopy code
+ssh <username>@<onos-ip-address> -p 8101
+```
+
+其中，`<username>` 是您连接到ONOS的用户名，`<onos-ip-address>` 是ONOS的IP地址。
+
+1. 按回车键执行命令，并输入您的密码（如果需要）。
+2. 连接成功后，您将看到ONOS的CLI界面，类似于以下内容：
+
+```yaml
+yamlCopy codeWelcome to ONOS
+     ________  ________  ________  ________ 
+    |\   __  \|\   __  \|\   __  \|\   ___ \ 
+    \ \  \|\  \ \  \|\  \ \  \|\  \ \  \_|\ \ 
+     \ \   ____\ \  \\\  \ \   __  \ \  \ \\ \ 
+      \ \  \___|\ \  \\\  \ \  \ \  \ \  \_\\ \ 
+       \ \__\    \ \_______\ \__\ \__\ \_______\
+        \|__|     \|_______|\|__|\|__|\|_______|
+
+Documentation: wiki.onosproject.org         
+Tutorials:     tutorials.onosproject.org     
+Mailing lists: lists.onosproject.org         
+
+Come help out! Find out how at: contribute.onosproject.org
+
+onos>
+```
+
+现在，您可以在CLI中执行各种ONOS命令以管理和监控ONOS控制器和网络。
+
+### 清楚所有配置
+
+1. 打开终端并连接到ONOS的CLI。
+2. 在CLI中输入以下命令以清除缓存：
+
+```bash
+onos> clear storage
+```
+
+按回车键执行命令。
+
+这将清除ONOS的所有缓存，包括网络拓扑、设备、主机、流表等。请注意，在执行此命令之前，您需要确保ONOS控制器已经停止对网络的控制，以避免数据丢失或网络中断。
 
 ## OVS 连接控制器
 
@@ -110,7 +114,7 @@ ovs-vsctl set bridge s1 protocols=OpenFlow13,OpenFlow10
 ovs-vsctl set-controller s1 tcp:172.17.0.2:6653
 ```
 
-## Example
+### Example
 
 ```bash
 ## 创建容器
@@ -168,6 +172,50 @@ ovs-vsctl set-controller s2 tcp:172.17.0.2:6653
 https://gerrit.onosproject.org/plugins/gitiles/onos
 
 https://bazel.build/install/ubuntu
+
+### 编译 ONOS 镜像
+
+[onos](https://github.com/Yo-gurts/onos/blob/master/Dockerfile)仓库中已有写好了的`Dockerfile`，将整个项目`clone`到本地后，即可直接编译镜像。该`Dockerfile`不是从网上下载源码，而是从当前目录`COPY`，所以修改源码后直接编译就行。
+
+但是 `ONOS` 编译过程需要从`github`或一些外网地址下载相关编译工具，导致编译缓慢或者直接失败。需要配置代理使用：
+
+```bash
+docker build --network=host --build-arg http_proxy=http://127.0.0.1:8889 --build-arg https_proxy=http://127.0.0.1:8889  -t onos .
+```
+
+上面的方式在某些情况下已经够用了，但可能卡在`onos-gui-npm-install`，需要进一步处理。
+
+- 一种方式是修改 `Dockerfile`，增加 `--action_env` 指定代理。
+
+```Dockerfile
+RUN cat WORKSPACE-docker >> WORKSPACE && bazelisk build onos \
++    --action_env=https_proxy=http://127.0.0.1:8889 \
+     --jobs ${JOBS} \
+     --verbose_failures \
+     --java_runtime_version=dockerjdk_11
+```
+
+- 另一种方式是修改`web/gui/BUILD`。
+
+```bash
+cd onos/web/gui
+sudo vi BUILD
+#修改 onos-gui-npm-install
+在$$NPM $$NPM_ARGS install后面加上
+--registry https://registry.npm.taobao.org
+
+#修改 onos-gui-npm-build
+在$$ROOT/$$NPM $$NPM_ARGS run build --no-cache后加上
+--registry https://registry.npm.taobao.org
+
+cd onos/web/gui2-fw-lib
+sudo vi BUILD
+#修改 onos-gui2-fw-npm-install
+在npm $$NPM_ARGS install后面加上
+--registry https://registry.npm.taobao.org
+```
+
+也可以尝试两种方法都用。此外，也可以先将`bazelisk build onos`之前的编译为一个镜像（免去安装编译工具的步骤），启动容器，再慢慢编译，通过`docker commit`将完成编译的容器保存为镜像，再参考`Dockerfile`进行二阶段的编译过程（此法最可靠）。
 
 ## 参考资料
 

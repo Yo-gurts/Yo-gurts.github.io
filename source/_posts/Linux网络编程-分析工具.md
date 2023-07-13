@@ -37,6 +37,12 @@ description: 网络分析工具汇总
 
 ## ip
 
+## ip route
+
+```bash
+sudo ip route add <your_network_address>/24 dev <your_interface>
+```
+
 ## iptables
 
 > - [iptables 中文文档](https://wangchujiang.com/linux-command/c/iptables.html)
