@@ -448,6 +448,47 @@ int newfd = dup2(fd, STDOUT_FILENO); // 将标准输出等重定向到文件
 
 让 newfd 指向 oldfd，也就是说无论写newfd还是oldfd，都会写到oldfd。
 
+## ioctl 函数
+
+可用于向内核传递任意类型的数据。也是一种内核态和用户态通信的方式。
+
+```c
+#include <sys/ioctl.h>
+
+int ioctl(int fd, unsigned long request, ...);
+
+// 内核中的对应函数原型为
+long module_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
+```
+
+- `fd`：与设备驱动通信时，该`fd`通常表示`/dev/`目录下的某个文件
+- `request`/`cmd`：表示操作类型，也用于判断如何处理后续参数
+- `arg`：在内核中 `unsigned long` 和 `void *` 是等价的，所以这里既可以表示用户态传入的指针变量，也可以表示普通的整形变量
+
+``` c
+typedef struct _attrs {
+    int a;
+    int b;
+} attrs;
+
+long scull_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
+{
+    int err = 0, tmp;
+	attrs kdata;
+
+    switch (cmd) {
+        case IOCTL_INT:
+            tmp = arg;
+            break;
+        case IOCTL_POINTER:
+            copy_from_user(&kdata, (attrs *)arg, sizeof(attrs));
+            break;
+    }
+}
+```
+
+上面例子中的 `IOCTL_INT` `IOCTL_POINTER` 由各个模块自行设计。
+
 ## 相关资料
 
 - [**Linux系统调用列表**](https://blog.51cto.com/u_3078781/3287065)
