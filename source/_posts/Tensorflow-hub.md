@@ -10,9 +10,9 @@ keywords:
 description:
 ---
 
-# `Tensorflow-hub`介绍
+## `Tensorflow-hub`介绍
 
-![scrnli_4_19_2021_9-54-50 AM.png](http://ww1.sinaimg.cn/large/006xUmvuly1gpoths386wj311y0iln04.jpg)
+![scrnli_4_19_2021_9-54-50 AM.png](../images/Tensorflow-hub/006xUmvuly1gpoths386wj311y0iln04.jpg)
 
 [tfhub.dev](https://tfhub.dev/)包含一系列模型，根据处理对象`Problem domain`分成了四类：`Image, Text, Video, Audio`
 
@@ -20,27 +20,27 @@ description:
 模型格式又可分为`TF.js, TFLite, Coral`
 * `TF.js` 是用于浏览器的模型。[ref](https://blog.csdn.net/xiangzhihong8/article/details/82597644)
 * `TFLite` 使用的思路主要是从预训练的模型转换为tflite模型文件，拿到移动端部署。[ref](https://blog.csdn.net/yuanlulu/article/details/84063503)
-![undefined](http://ww1.sinaimg.cn/large/006xUmvuly1gpou0gwc06j30lw0cu3zc.jpg)
+![undefined](../images/Tensorflow-hub/006xUmvuly1gpou0gwc06j30lw0cu3zc-168171479005116.jpg)
 * `Coral` 是google发布在一款开发板，类似树莓派，专门用于跑神经网络模型。[ref](https://www.sohu.com/a/299688498_223764)
-![scrnli_4_19_2021_10-24-56 AM.png](http://ww1.sinaimg.cn/large/006xUmvuly1gpoud2vi74j30pn0dmjtx.jpg)
+![scrnli_4_19_2021_10-24-56 AM.png](../images/Tensorflow-hub/006xUmvuly1gpoud2vi74j30pn0dmjtx.jpg)
 
 上述三类模型都是比较特殊的格式（在电脑上或服务器上运行不使用上述3种格式！），模型列表中的右上角有标出格式。而实际上还有其他格式的模型（`TF2.0 Saved Model, Hub module`等），只有进入模型页面后才能看见。
-![scrnli_4_19_2021_10-44-35 AM.png](http://ww1.sinaimg.cn/large/006xUmvuly1gpouy58k3ij30wn08zmyf.jpg)
-![scrnli_4_19_2021_10-46-27 AM.png](http://ww1.sinaimg.cn/large/006xUmvuly1gpouzhx6htj30wr0a875w.jpg)
+![scrnli_4_19_2021_10-44-35 AM.png](../images/Tensorflow-hub/006xUmvuly1gpouy58k3ij30wn08zmyf.jpg)
+![scrnli_4_19_2021_10-46-27 AM.png](../images/Tensorflow-hub/006xUmvuly1gpouzhx6htj30wr0a875w-168171483639024.jpg)
 
 **`Tensorflow Serving` 使用的是`TF2.0 Saved Model`格式的模型！**
 
 ---------------------------------
 ---------------------------------
 
-![scrnli_4_19_2021_10-35-24 AM.png](http://ww1.sinaimg.cn/large/006xUmvuly1gpounyjsgdj30ph0dfq4q.jpg)
+![scrnli_4_19_2021_10-35-24 AM.png](../images/Tensorflow-hub/006xUmvuly1gpounyjsgdj30ph0dfq4q.jpg)
 `Collection`是处理一类问题的一系列模型的集合，而且在`Collection`中会展示模型的性能（推理时间等！）在选择模型时非常方便
-![scrnli_4_19_2021_10-36-43 AM.png](http://ww1.sinaimg.cn/large/006xUmvuly1gpoupu3wqhj311y0ilad3.jpg)
+![scrnli_4_19_2021_10-36-43 AM.png](../images/Tensorflow-hub/006xUmvuly1gpoupu3wqhj311y0ilad3.jpg)
 
 ---------------------------------
 ## 模型使用
 进入模型介绍页面后，如下图：
-![scrnli_4_19_2021_10-46-27 AM.png](http://ww1.sinaimg.cn/large/006xUmvuly1gpouzhx6htj30wr0a875w.jpg)
+![scrnli_4_19_2021_10-46-27 AM.png](../images/Tensorflow-hub/006xUmvuly1gpouzhx6htj30wr0a875w.jpg)
 * `COPY URL` 复制模型链接，在加载模型时，可直接使用`hub.load("model url")`的方式来加载，它会先自动下载模型到本地，再加载模型。但由于网络环境限制，不太好用，一般用下面的方法。
 * `download` 下载模型到本地，加载模型时，可直接使用`hub.load("/home/xxx/modlepath")`，指定本地模型的路径。
 * **`open colab notebook` 在colab中使用此模型，并且提供了模型的使用方法，非常方便！！！！**

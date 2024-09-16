@@ -1,30 +1,49 @@
 src="./typora/_posts"
 dst="./source/_posts"
+src_img="./typora/images"
+dst_img="./source/images"
 
-rm ${dst}/*.md
+rm -f ${dst}/*.md
 
-ln ${src}/DS_数据结构摘要.md            ${dst}/数据结构摘要.md
-ln ${src}/Linux系统编程-信号.md         ${dst}/Linux系统编程-信号.md
-ln ${src}/Linux系统编程-同步与锁.md     ${dst}/Linux系统编程-同步与锁.md
-ln ${src}/Linux系统编程-文件.md         ${dst}/Linux系统编程-文件.md
-ln ${src}/Linux系统编程-线程.md         ${dst}/Linux系统编程-线程.md
-ln ${src}/Linux系统编程-进程.md         ${dst}/Linux系统编程-进程.md
-ln ${src}/Linux系统编程-进程通信.md     ${dst}/Linux系统编程-进程通信.md
-ln ${src}/Linux系统编程-静态库动态库.md ${dst}/Linux系统编程-静态库动态库.md
-ln ${src}/Linux网络编程-socket.md       ${dst}/Linux网络编程-socket.md
-ln ${src}/Linux网络编程-分析工具.md     ${dst}/Linux网络编程-分析工具.md
-ln ${src}/Linux网络编程-并发服务器.md   ${dst}/Linux网络编程-并发服务器.md
-ln ${src}/Linux网络编程-线程池.md       ${dst}/Linux网络编程-线程池.md
-ln ${src}/Linux网络编程-网卡收包.md     ${dst}/Linux网络编程-网卡收包.md
-ln ${src}/OpenVSwitch-DPDK-区分服务.md  ${dst}/OpenVSwitch-DPDK-区分服务.md
-ln ${src}/OpenVSwitch-DPDK-性能测试.md  ${dst}/OpenVSwitch-DPDK-性能测试.md
-ln ${src}/OpenVSwitch-控制器ONOS.md     ${dst}/OpenVSwitch-控制器ONOS.md
-ln ${src}/OpenVSwitch-数据结构.md       ${dst}/OpenVSwitch-数据结构.md
-ln ${src}/OpenVSwitch-测试拓扑.md       ${dst}/OpenVSwitch-测试拓扑.md
-ln ${src}/OpenVSwitch-编译及启动.md     ${dst}/OpenVSwitch-编译及启动.md
-ln ${src}/ProgramBasic_STL.md           ${dst}/STL容器.md
-ln ${src}/Redis笔记.md                  ${dst}/Redis笔记.md
-ln ${src}/Tensorflow-hub.md             ${dst}/Tensorflow-hub.md
-ln ${src}/Cpp三方库.md                  ${dst}/Cpp三方库.md
-ln ${src}/十大经典排序算法（动图演示）.md ${dst}/十大经典排序算法（动图演示）.md
+file_list=(
+	"Cpp三方库"
+	"Cvitek-buildroot"
+	"Cvitek-reboot"
+	"Cvitek-安全启动"
+	"DS_数据结构摘要"
+	"gdb"
+	"Linux内核-中断"
+	"Linux内核-设备树"
+	"Linux系统编程-syslog"
+	"Linux系统编程-信号"
+	"Linux系统编程-同步与锁"
+	"Linux系统编程-文件"
+	"Linux系统编程-线程"
+	"Linux系统编程-进程"
+	"Linux系统编程-进程通信"
+	"Linux系统编程-静态库动态库"
+	"Linux网络编程-socket"
+	"Linux网络编程-分析工具"
+	"Linux网络编程-并发服务器"
+	"Linux网络编程-线程池"
+	"Linux网络编程-网卡收包"
+	"Linux解析命令行选项"
+	"OpenVSwitch-DPDK-性能测试"
+	"OpenVSwitch-控制器ONOS"
+	"OpenVSwitch-数据结构"
+	"OpenVSwitch-测试拓扑"
+	"OpenVSwitch-编译及启动"
+	"ProgramBasic_STL"
+	"Redis笔记"
+	"Scripts-git_tools"
+	"Tensorflow-hub"
+	"USB-UVC_extension"
+	"VSCODE-clang-format"
+	"十大经典排序算法（动图演示）"
+)
 
+for file in "${file_list[@]}"; do
+	ln ${src}/${file}.md ${dst}
+	mkdir -p ${dst_img}/${file}
+	cp -r ${src_img}/${file}/* ${dst_img}/${file} > /dev/null 2>&1
+done

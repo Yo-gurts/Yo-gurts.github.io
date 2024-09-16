@@ -401,7 +401,7 @@ int sem_init(sem_t *sem, int pshared, unsigned int value);
 
 - `sem`：信号量的地址
 - `pshared`：是否共享，`0`（用于线程间同步），`1`（**用于进程间同步，在进程间共享**）
-- `value`：N 值，可同时访问数据的线程数量
+- `value`：N 值，可同时访问数据的线程数量.
 - 返回值：0（成功），-1（失败）
 
 ### 3类信号量
@@ -422,7 +422,7 @@ int sem_init(sem_t *sem, int pshared, unsigned int value);
 
 这个与上面基于条件变量的实现逻辑不同，建议先看视频[基于信号量实现生产者消费者模型](https://www.bilibili.com/video/BV1KE411q7ee?p=183&spm_id_from=pageDriver)理解实现的原理，再看具体实现代码。
 
-注意，对信号量初始化时，将 `product_num` 初始化为0，但仍然可以调用`sem_post`, `sem_wait`等函数，这与上面所说的最多只能有 N (这里为0) 是不是矛盾？怎么实现多个消费者？
+注意，对信号量初始化时，将 `product_num` 初始化为0，但仍然可以调用`sem_post`, `sem_wait`等函数，这与上面所说的最多只能有 N (这里为0) 是不是矛盾?怎么实现多个消费者？
 
 ```c
 #include <pthread.h>
