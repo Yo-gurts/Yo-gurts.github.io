@@ -1,0 +1,838 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>OpenVSwitch-DPDK-性能测试 | (╯°□°）╯︵ ┻━┻ </title><meta name="author" content="(ง'̀-'́)ง"><meta name="copyright" content="(ง'̀-'́)ง"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="OVS基于DPDK的数据通路绕过了内核协议栈，并且做了很多优化，带来了一定的性能提升，但也引入了很多需要配置的参数，而且这些参数和性能密切相关。  参数说明 ovsdb 官方文档，下面的参数表格只是简单翻译了一下作用，仅供参考，具体信息还得看官方文档  ovsdb中存储着OVS所有配置信息，并按结"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://yo-gurts.github.io/2022/05/23/OpenVSwitch-DPDK-%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.13.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":600},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'OpenVSwitch-DPDK-性能测试',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-05-23 21:55:09'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+          const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+          const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+          const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+          if (t === undefined) {
+            if (isLightMode) activateLightMode()
+            else if (isDarkMode) activateDarkMode()
+            else if (isNotSpecified || hasNoSupport) {
+              const now = new Date()
+              const hour = now.getHours()
+              const isNight = hour <= 6 || hour >= 18
+              isNight ? activateDarkMode() : activateLightMode()
+            }
+            window.matchMedia('(prefers-color-scheme: dark)').addListener(e => {
+              if (saveToLocal.get('theme') === undefined) {
+                e.matches ? activateDarkMode() : activateLightMode()
+              }
+            })
+          } else if (t === 'light') activateLightMode()
+          else activateDarkMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="google-site-verification" content="MP347_Nl-SqfnOi3FZSI69WSb8J_rk_jEsa3jL4ODCI" /><meta name="generator" content="Hexo 6.1.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://s2.loli.net/2024/09/17/3NdhvxIcPRVpufD.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">35</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">46</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background: transparent"><nav id="nav"><span id="blog-info"><a href="/" title="(╯°□°）╯︵ ┻━┻ "><span class="site-name">(╯°□°）╯︵ ┻━┻ </span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">OpenVSwitch-DPDK-性能测试</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2022-05-23T13:55:09.000Z" title="发表于 2022-05-23 21:55:09">2022-05-23</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-05-23T13:55:09.000Z" title="更新于 2022-05-23 21:55:09">2022-05-23</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/OpenVSwitch/">OpenVSwitch</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">8.1k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>42分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="OpenVSwitch-DPDK-性能测试"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/2022/05/23/OpenVSwitch-DPDK-%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95/#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><blockquote>
+<p>OVS基于DPDK的数据通路绕过了内核协议栈，并且做了很多优化，带来了一定的性能提升，但也引入了很多需要配置的参数，而且这些参数和性能密切相关。</p>
+</blockquote>
+<h2 id="参数说明"><a href="#参数说明" class="headerlink" title="参数说明"></a>参数说明</h2><blockquote>
+<p><a target="_blank" rel="noopener" href="https://man7.org/linux/man-pages/man5/ovs-vswitchd.conf.db.5.html">ovsdb 官方文档</a>，下面的参数表格只是简单翻译了一下作用，仅供参考，具体信息还得看官方文档</p>
+</blockquote>
+<p><code>ovsdb</code>中存储着<code>OVS</code>所有配置信息，并按结构划分为一张张表<code>TABLE</code>，这里只关注其中与<code>dpdk</code>有关的配置参数。</p>
+<h3 id="Open-vSwitch-Table"><a href="#Open-vSwitch-Table" class="headerlink" title="Open_vSwitch Table"></a>Open_vSwitch Table</h3><style>
+table th:first-of-type {
+    width: 40%;
+}
+table th:nth-of-type(2) {
+    width: 60%;
+}
+</style>
+
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>other_config:dpdk-init=true</code></td>
+<td>是否启用<code>dpdk</code>数据通路</td>
+</tr>
+<tr>
+<td><code>other_config:dpdk-lcore-mask=0x1</code></td>
+<td>指定在哪些<code>core</code>上创建<code>lcore</code>线程，该线程用于<code>dpdk</code>库内部消息处理，如日志等；若没有指定，则默认为<code>cpu affinity list</code>中的第一个。<strong>为达到最佳性能，最好将其设置在单个<code>core</code>上</strong></td>
+</tr>
+<tr>
+<td><code>other_config:pmd-cpu-mask=0x30</code></td>
+<td>设置在哪些<code>core</code>上创建<code>pmd</code>线程；若没有指定，则默认在每个<code>NUMA</code>节点上创建一个<code>pmd</code>线程，并绑定到对应<code>NUMA</code>的<code>core</code>上</td>
+</tr>
+<tr>
+<td><code>other_config:smc-enable=true</code></td>
+<td>是否启用<code>SMC</code>缓存，相对于<code>EMC</code>，内存更高效；当流表的数量超过8192时，<code>SMC</code>尤其有用。<strong>默认为<code>false</code></strong></td>
+</tr>
+<tr>
+<td><code>other_config:per-port-memory=true</code></td>
+<td>是否使用每端口内存模型；默认有相同MTU和CPU socket的设备共享内存池</td>
+</tr>
+<tr>
+<td><code>other_config:dpdk-alloc-mem</code></td>
+<td>指定预先从<code>hugepage</code>上分配的内存大小，单位为<code>MB</code>，与<code>socket(cpu)</code>无关；推荐用<code>dpdk-socket-mem</code>指定</td>
+</tr>
+<tr>
+<td><code>other_config:dpdk-socket-mem=&quot;1024,1024&quot;</code></td>
+<td>指定预先从<code>hugepage</code>上为每个<code>socket(cpu)</code>分配的内存大小；值用逗号分割，如对4个CPU socket的系统，”1024,0,1024”，表示为第0和第3个CPU分配1024Mb。<code>dpdk-alloc-mem</code>和<code>dpdk-socket-mem</code>都没有指定的话，会为每个NUMA用DPDK库中设定的默认值。若同时指定了，则采用<code>dpdk-socket-mem</code>。修改后，需要重启守护进程才生效</td>
+</tr>
+<tr>
+<td><code>other_config:dpdk-socket-limit</code></td>
+<td>限制每一个<code>socket(cpu)</code>最大可用的内存大小（上面的<code>dpdk-socket-mem</code>可动态扩容）。值用逗号分割，如对4个CPU socket的系统，”2048,0,0”，值为0表示不设限制。未指定时，<strong>默认为不设限制</strong></td>
+</tr>
+<tr>
+<td><code>other_config:dpdk-hugepage-dir</code></td>
+<td>指定<code>hugetlbfs</code>挂载点的路径，默认为<code>/dev/hugepages</code></td>
+</tr>
+<tr>
+<td><code>other_config:dpdk-extra</code></td>
+<td>为 <code>DPDK</code> 指定其他 <code>EAL</code> 命令行参数</td>
+</tr>
+<tr>
+<td><code>other_config:vhost-sock-dir</code></td>
+<td>指定为<code>vhost-user</code>生成的<code>socket</code>文件路径，该值为基于<code>external_ids:rundir</code>的相对路径。未指定时，则生成在<code>external_ids:rundir</code>目录下</td>
+</tr>
+<tr>
+<td><code>other_config:tx-flush-interval=0</code></td>
+<td>指定一个数据包在<code>output batch</code>中可等待的最大时间（为了凑足32个批量发送），<strong>单位微秒<code>us</code><strong>；该值可调节吞吐率和网络延迟的平衡，值越小：网络延迟越低，但吞吐率也相对低；</strong>默认值为0</strong></td>
+</tr>
+<tr>
+<td><code>other_config:pmd-perf-metrics=true</code></td>
+<td>是否使能记录<code>PMD</code>的详细性能数据，<strong>默认为false</strong></td>
+</tr>
+<tr>
+<td><code>other_config:pmd-rxq-assign=cycles</code></td>
+<td>指定接受队列如何分配到<code>core</code>；有三种算法：<code>cycles/roundrobin/group</code>。<strong>默认为<code>cycles</code></strong></td>
+</tr>
+<tr>
+<td><code>other_config:pmd-rxq-isolate=true</code></td>
+<td>指定一个<code>core</code>在分配（通过<code>pmd-rxq-affinity</code>）一个接受队列后，是否要 <code>isolate</code>。若该值为<code>false</code>，表示允许OVS再将其他<code>RXQ</code>分配给该<code>core</code>。**默认为 <code>true</code>**。</td>
+</tr>
+<tr>
+<td><code>other_config:emc-insert-inv-prob</code></td>
+<td>配置流表插入到<code>EMC</code>的概率（<code>1 / emc-insert-inv-prob</code>），1表示100%插入</td>
+</tr>
+<tr>
+<td><code>other_config:vhost-postcopy-support=true</code></td>
+<td>没看懂，但实测发现对<code>vhost-user</code>端口<strong>性能有一定提升</strong>！</td>
+</tr>
+</tbody></table>
+<p>对这些参数的修改主要通过以下方式（需要注意某些参数设置后需要重启<code>OVS</code>才会生效）：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ovs-vsctl <span class="built_in">set</span> open_vswitch . other_config:vhost-postcopy-support=<span class="literal">true</span></span><br><span class="line">ovs-vsctl <span class="built_in">set</span> open_vswitch . other_config:per-port-memory=<span class="literal">true</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="测试说明"><a href="#测试说明" class="headerlink" title="测试说明"></a>测试说明</h2><blockquote>
+<p><strong>注：此处测试的都是原版<code>OVS</code>，没有经过修改</strong>！未作特殊说明，则表示基于以下平台得到的测试结果</p>
+<ul>
+<li>ovs-2.16.0</li>
+<li>dpdk-20.11.6</li>
+<li>处理器：i7-12700k</li>
+<li>系统：ubuntu:22.04</li>
+<li>内核：5.15.0-52-generic</li>
+</ul>
+</blockquote>
+<p>主要对比<code>OVS</code>内核数据通路与<code>DPDK</code>数据通路的吞吐率情况，以及不同配置参数下对性能的影响。</p>
+<p>除了<code>OVS</code>的配置参数，网卡支持的功能<code>ethtool --show-features &#123;eth0&#125;</code>、收发包工具及其配置参数等都可能影响最终的测试结果！</p>
+<table>
+<thead>
+<tr>
+<th align="center"><img src="/../images/OpenVSwitch-DPDK-%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95/PKTGEN-OVS-DPDK-TESTPMD.png" alt="pktgen-testpmd"><br />topo1</th>
+<th align="center"><img src="/../images/OpenVSwitch-DPDK-%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95/QEMU-OVS-QEMU.png" alt="qemu"><br />topo2</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="/../images/OpenVSwitch-DPDK-%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95/ovs-dpdk-virtualport.png" alt="ovs-dpdk-virtualport"><br />topo3</td>
+<td align="center"><img src="/../images/OpenVSwitch-DPDK-%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95/ovs-virtualport.png" alt="ovs-virtualport"><br />topo4</td>
+</tr>
+</tbody></table>
+<p>指标：接收带宽！</p>
+<ol>
+<li><code>Topo1</code>：测试不同配置参数下的性能对比。</li>
+<li><code>Topo2</code>：使用其他发包工具<code>iperf</code>（可在<code>veth</code>类端口上使用）同<code>topo1</code>进行对比测试。</li>
+<li><code>Topo3</code>：使用<code>veth</code>等端口时，不会启动<code>PMD</code>线程，测试此时的性能。</li>
+<li><code>Topo4</code>：不使用<code>DPDK</code>，和<code>topo3</code>测试流程一致，两者对比。</li>
+</ol>
+<hr>
+<p><img src="/../images/OpenVSwitch-DPDK-%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95/physics-port.png" alt="physics-port"></p>
+<p>在两台主机上启动<code>OVS</code>，分别测试<code>OVS/OVS-DPDK</code>的转发能力。</p>
+<hr>
+<h2 id="base"><a href="#base" class="headerlink" title="base"></a>base</h2><p>首先测试在不使用<code>OVS</code>，单独两个虚拟端口直接连接的情况下，<strong>链路</strong>的带宽。</p>
+<p><img src="/../images/OpenVSwitch-DPDK-%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95/netns-topo.png" alt="netns"></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">sudo ip netns add A</span><br><span class="line">sudo ip netns add B</span><br><span class="line"></span><br><span class="line">sudo ip <span class="built_in">link</span> add ethA <span class="built_in">type</span> veth peer name ethB</span><br><span class="line">sudo ip <span class="built_in">link</span> <span class="built_in">set</span> dev ethA name ethA netns A up</span><br><span class="line">sudo ip <span class="built_in">link</span> <span class="built_in">set</span> dev ethB name ethB netns B up</span><br><span class="line">sudo ip netns <span class="built_in">exec</span> A ifconfig ethA 10.0.0.10/24 up</span><br><span class="line">sudo ip netns <span class="built_in">exec</span> B ifconfig ethB 10.0.0.11/24 up</span><br><span class="line"></span><br><span class="line"><span class="comment"># terminal B: B作为Server</span></span><br><span class="line">sudo ip netns <span class="built_in">exec</span> B iperf -s -i 1</span><br><span class="line"><span class="comment"># terminal A: A作为Client</span></span><br><span class="line">sudo ip netns <span class="built_in">exec</span> B iperf -s -i 1</span><br><span class="line"></span><br><span class="line"><span class="comment"># 其他可能用到的命令</span></span><br><span class="line">ip netns list</span><br><span class="line">ip netns delete A</span><br></pre></td></tr></table></figure>
+
+<h3 id="测试结果"><a href="#测试结果" class="headerlink" title="测试结果"></a>测试结果</h3><table>
+<thead>
+<tr>
+<th></th>
+<th>测试环境</th>
+<th>iperf-tcp</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>c1</td>
+<td><code>veth-veth</code>直连</td>
+<td>102 Gbps</td>
+</tr>
+<tr>
+<td>c2</td>
+<td>docker 默认交换机<code>docker0</code></td>
+<td>79.7 Gbps</td>
+</tr>
+</tbody></table>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># terminal A</span></span><br><span class="line">$ sudo ip netns <span class="built_in">exec</span> A iperf -c 10.0.0.11</span><br><span class="line">------------------------------------------------------------</span><br><span class="line">Client connecting to 10.0.0.11, TCP port 5001</span><br><span class="line">TCP window size: 85.0 KByte (default)</span><br><span class="line">------------------------------------------------------------</span><br><span class="line">[  1] <span class="built_in">local</span> 10.0.0.10 port 44154 connected with 10.0.0.11 port 5001</span><br><span class="line">[ ID] Interval       Transfer     Bandwidth</span><br><span class="line">[  1] 0.0000-10.0099 sec   119 GBytes   102 Gbits/sec</span><br><span class="line"></span><br><span class="line"><span class="comment"># terminal B</span></span><br><span class="line">$ sudo ip netns <span class="built_in">exec</span> B iperf -s -i 1</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>注：<code>iperf</code>也支持打<code>udp</code>流进行测试，但实际测出来的带宽远不如<code>tcp</code>，<a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/47035263/iperf-tcp-much-faster-than-udp-why">iperf TCP much faster than UDP, why?</a>，虽然这里说调整发包大小，但并没有用，<code>iperf</code>默认的报文大小就是最大值<code>1470</code>，调大后反而需要切片处理，导致速率更低。</p>
+<p>从测试情况来看，应该是<code>iperf</code>发送端的发送速率不足，导致测出的带宽远小于<code>tcp</code>。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># server</span></span><br><span class="line">sudo ip netns <span class="built_in">exec</span> B iperf -s -i 1 -u</span><br><span class="line"></span><br><span class="line"><span class="comment"># client</span></span><br><span class="line">sudo ip netns <span class="built_in">exec</span> A iperf -u -c 10.0.0.11 -b 10g</span><br><span class="line">------------------------------------------------------------</span><br><span class="line">Client connecting to 10.0.0.11, UDP port 5001</span><br><span class="line">Sending 1470 byte datagrams, IPG target: 1.18 us (kalman adjust)</span><br><span class="line">UDP buffer size:  208 KByte (default)</span><br><span class="line">------------------------------------------------------------</span><br><span class="line">[  1] <span class="built_in">local</span> 10.0.0.10 port 50645 connected with 10.0.0.11 port 5001</span><br><span class="line">[ ID] Interval       Transfer     Bandwidth</span><br><span class="line">[  1] 0.0000-10.0047 sec  8.37 GBytes  7.19 Gbits/sec</span><br><span class="line">[  1] Sent 6113230 datagrams</span><br><span class="line">[  1] Server Report:</span><br><span class="line">[ ID] Interval       Transfer     Bandwidth        Jitter   Lost/Total Datagrams</span><br><span class="line">[  1] 0.0000-10.0046 sec  8.26 GBytes  7.09 Gbits/sec   0.001 ms 88036/6123229 (1.4%)</span><br></pre></td></tr></table></figure>
+</blockquote>
+<h2 id="vhost-user"><a href="#vhost-user" class="headerlink" title="vhost-user"></a>vhost-user</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## 删除之前的配置文件</span></span><br><span class="line"><span class="built_in">rm</span> /usr/local/etc/openvswitch/*</span><br><span class="line"><span class="built_in">rm</span> /usr/local/var/run/openvswitch/*</span><br><span class="line"><span class="built_in">rm</span> /usr/local/var/log/openvswitch/*</span><br><span class="line"></span><br><span class="line">ovs-ctl --no-ovs-vswitchd start --system-id=random</span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:dpdk-lcore-mask=0x1</span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:pmd-cpu-mask=0x6</span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:dpdk-socket-mem=<span class="string">&quot;1024&quot;</span></span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:dpdk-init=<span class="literal">true</span></span><br><span class="line">ovs-ctl --no-ovsdb-server --db-sock=<span class="string">&quot;<span class="variable">$DB_SOCK</span>&quot;</span> start</span><br><span class="line"></span><br><span class="line"><span class="comment">## 添加 bridge</span></span><br><span class="line">ovs-vsctl add-br br0 -- <span class="built_in">set</span> bridge br0 datapath_type=netdev</span><br><span class="line">ovs-vsctl add-port br0 vhost-user1 \</span><br><span class="line">    -- <span class="built_in">set</span> Interface vhost-user1 <span class="built_in">type</span>=dpdkvhostuser ofport_request=1</span><br><span class="line">ovs-vsctl add-port br0 vhost-user2 \</span><br><span class="line">    -- <span class="built_in">set</span> Interface vhost-user2 <span class="built_in">type</span>=dpdkvhostuser ofport_request=2</span><br><span class="line"></span><br><span class="line"><span class="comment"># vhost-user3</span></span><br><span class="line">ovs-vsctl add-port br0 vhost-user3 \</span><br><span class="line">    -- <span class="built_in">set</span> Interface vhost-user3 <span class="built_in">type</span>=dpdkvhostuser ofport_request=3</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>6</th>
+<th>7</th>
+<th>8</th>
+<th>9</th>
+<th>10</th>
+<th>11</th>
+<th>12</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>pmd=0x1</code></td>
+<td>*</td>
+<td>*</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>pktgen=0x30</code></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>*</td>
+<td>*</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>testpmd=0x300</code></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>*</td>
+<td>*</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<p><code>pktgen</code>和<code>testpmd</code>好像也采用了<code>PMD</code>轮询驱动类似的方式运行，会占满某些核，在配置参数时需要将<code>core</code>错开，否则影响性能！</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># pktgen</span></span><br><span class="line">docker run -it --<span class="built_in">rm</span> --privileged --name=app-pktgen \</span><br><span class="line">    -v /dev/hugepages:/dev/hugepages \</span><br><span class="line">    -v /usr/local/var/run/openvswitch:/var/run/openvswitch \</span><br><span class="line">    pktgen20:latest /bin/bash</span><br><span class="line"></span><br><span class="line">pktgen -c 0x30 -n 1 --socket-mem 1024 --file-prefix pktgen --no-pci  \</span><br><span class="line">--vdev <span class="string">&#x27;net_virtio_user1,mac=00:00:00:00:00:01,path=/var/run/openvswitch/vhost-user1&#x27;</span> \</span><br><span class="line">-- -T -P -m <span class="string">&quot;5.0&quot;</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># testpmd</span></span><br><span class="line">docker run -it --<span class="built_in">rm</span> --privileged --name=app-testpmd \</span><br><span class="line">    -v /dev/hugepages:/dev/hugepages \</span><br><span class="line">    -v /usr/local/var/run/openvswitch:/var/run/openvswitch \</span><br><span class="line">    pktgen20:latest /bin/bash</span><br><span class="line"></span><br><span class="line">dpdk-testpmd -c 0x300 -n 1 --socket-mem 1024 --file-prefix testpmd --no-pci \</span><br><span class="line">--vdev <span class="string">&#x27;net_virtio_user2,mac=00:00:00:00:00:02,path=/var/run/openvswitch/vhost-user2&#x27;</span> \</span><br><span class="line">-- -i -a --coremask=0x200 --forward-mode=rxonly</span><br></pre></td></tr></table></figure>
+
+<p><img src="/../images/OpenVSwitch-DPDK-%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95/image-20220703163105375.png" alt="image-20220703163105375"></p>
+<p>可以看到CPU的占用情况与配置一致！<code>Pktgen</code>占用了两个核。</p>
+<h3 id="测试结果-1"><a href="#测试结果-1" class="headerlink" title="测试结果"></a>测试结果</h3><table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+<th>pktgen-64byte</th>
+<th>pktgen-1500byte</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>c1</td>
+<td>默认流表 Normal</td>
+<td>3 016 608 216 bps</td>
+<td>42 754 318 664 bps</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>6 284 600 pps</td>
+<td>3 572 386 pps</td>
+</tr>
+<tr>
+<td>c2</td>
+<td>c1 + 匹配入端口流表</td>
+<td>7 849 813 576 bps</td>
+<td>88 330 499 920 bps</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>16 353 825 pps</td>
+<td>7 380 556 pps</td>
+</tr>
+<tr>
+<td>c3</td>
+<td>c2 + vhost-postcopy-support</td>
+<td>8 086 507 608 bps</td>
+<td>96 284 271 416 bps</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>16 846 890 pps</td>
+<td>8 045 142 pps</td>
+</tr>
+<tr>
+<td></td>
+<td>下面的2send,1recv, 2pmd</td>
+<td></td>
+<td>125975200120 bps</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>10 525 949 pps</td>
+</tr>
+</tbody></table>
+<p><code>c2</code>：配置匹配入端口的流表；</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ovs-ofctl add-flow br0 in_port=vhost-user1,actions=output:vhost-user2</span><br><span class="line">ovs-ofctl add-flow br0 in_port=vhost-user3,actions=output:vhost-user4</span><br><span class="line">ovs-ofctl add-flow br0 in_port=vhost-user5,actions=output:vhost-user6</span><br></pre></td></tr></table></figure>
+
+<p><code>c3</code>：配置<code>vhost-postcopy-support=true</code>；</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ovs-vsctl <span class="built_in">set</span> open_vswitch . other_config:vhost-postcopy-support=<span class="literal">true</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="2send-1recv"><a href="#2send-1recv" class="headerlink" title="2send-1recv"></a>2send-1recv</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## 删除之前的配置文件</span></span><br><span class="line"><span class="built_in">rm</span> /usr/local/etc/openvswitch/*</span><br><span class="line"><span class="built_in">rm</span> /usr/local/var/run/openvswitch/*</span><br><span class="line"><span class="built_in">rm</span> /usr/local/var/log/openvswitch/*</span><br><span class="line"></span><br><span class="line">ovs-ctl --no-ovs-vswitchd start --system-id=random</span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:dpdk-lcore-mask=0x1</span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:pmd-cpu-mask=0xE</span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:dpdk-socket-mem=<span class="string">&quot;1024&quot;</span></span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:dpdk-init=<span class="literal">true</span></span><br><span class="line">ovs-ctl --no-ovsdb-server --db-sock=<span class="string">&quot;<span class="variable">$DB_SOCK</span>&quot;</span> start</span><br><span class="line"></span><br><span class="line"><span class="comment">## 添加 bridge</span></span><br><span class="line">ovs-vsctl add-br br0 -- <span class="built_in">set</span> bridge br0 datapath_type=netdev</span><br><span class="line">ovs-vsctl add-port br0 vhost-user1 \</span><br><span class="line">    -- <span class="built_in">set</span> Interface vhost-user1 <span class="built_in">type</span>=dpdkvhostuser ofport_request=1</span><br><span class="line">ovs-vsctl add-port br0 vhost-user2 \</span><br><span class="line">    -- <span class="built_in">set</span> Interface vhost-user2 <span class="built_in">type</span>=dpdkvhostuser ofport_request=2</span><br><span class="line">ovs-vsctl add-port br0 vhost-user3 \</span><br><span class="line">    -- <span class="built_in">set</span> Interface vhost-user3 <span class="built_in">type</span>=dpdkvhostuser ofport_request=3</span><br><span class="line">ovs-vsctl add-port br0 vhost-user4 \</span><br><span class="line">    -- <span class="built_in">set</span> Interface vhost-user4 <span class="built_in">type</span>=dpdkvhostuser ofport_request=4</span><br><span class="line">ovs-vsctl add-port br0 vhost-user5 \</span><br><span class="line">    -- <span class="built_in">set</span> Interface vhost-user5 <span class="built_in">type</span>=dpdkvhostuser ofport_request=5</span><br><span class="line">ovs-vsctl add-port br0 vhost-user6 \</span><br><span class="line">    -- <span class="built_in">set</span> Interface vhost-user6 <span class="built_in">type</span>=dpdkvhostuser ofport_request=6</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>6</th>
+<th>7</th>
+<th>8</th>
+<th>9</th>
+<th>10</th>
+<th>11</th>
+<th>12</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>pmd=0x6</code></td>
+<td></td>
+<td>*</td>
+<td>*</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>pktgen1=0x30</code></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>*</td>
+<td>*</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>pktgen2=0xc0</code></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>*</td>
+<td>*</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>testpmd=0x300</code></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>*</td>
+<td>*</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>testpmd=0xc00</code></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>*</td>
+<td>*</td>
+</tr>
+</tbody></table>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># pktgen</span></span><br><span class="line">docker run -it --<span class="built_in">rm</span> --privileged --name=app-pktgen3 \</span><br><span class="line">    -v /dev/hugepages:/dev/hugepages \</span><br><span class="line">    -v /usr/local/var/run/openvswitch:/var/run/openvswitch \</span><br><span class="line">    pktgen:20.11.3 /bin/bash</span><br><span class="line"></span><br><span class="line">pktgen -c 0x30 -n 1 --socket-mem 1024 --file-prefix pktgen --no-pci  \</span><br><span class="line">--vdev <span class="string">&#x27;net_virtio_user1,mac=00:00:00:00:00:01,path=/var/run/openvswitch/vhost-user1&#x27;</span> \</span><br><span class="line">-- -T -P -m <span class="string">&quot;5.0&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># pktgen</span></span><br><span class="line">docker run -it --<span class="built_in">rm</span> --privileged --name=app-pktgen2 \</span><br><span class="line">    -v /dev/hugepages:/dev/hugepages \</span><br><span class="line">    -v /usr/local/var/run/openvswitch:/var/run/openvswitch \</span><br><span class="line">    pktgen20:latest /bin/bash</span><br><span class="line"></span><br><span class="line">pktgen -c 0xc0 -n 1 --socket-mem 1024 --file-prefix pktgen --no-pci  \</span><br><span class="line">--vdev <span class="string">&#x27;net_virtio_user1,mac=00:00:00:00:00:03,path=/var/run/openvswitch/vhost-user3&#x27;</span> \</span><br><span class="line">-- -T -P -m <span class="string">&quot;7.0&quot;</span></span><br><span class="line"></span><br><span class="line">pktgen -c 0xc000 -n 1 --socket-mem 1024 --file-prefix pktgen --no-pci  \</span><br><span class="line">--vdev <span class="string">&#x27;net_virtio_user1,mac=00:00:00:00:00:05,path=/var/run/openvswitch/vhost-user5&#x27;</span> \</span><br><span class="line">-- -T -P -m <span class="string">&quot;15.0&quot;</span></span><br><span class="line"></span><br><span class="line">pktgen -c 0xc00 -n 1 --socket-mem 1024 --file-prefix pktgen --no-pci  \</span><br><span class="line">--vdev <span class="string">&#x27;net_virtio_user1,mac=00:00:00:00:00:04,path=/var/run/openvswitch/vhost-user4&#x27;</span> \</span><br><span class="line">-- -T -P -m <span class="string">&quot;11.0&quot;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">sequence &lt;<span class="built_in">seq</span><span class="comment">#&gt; &lt;portlist&gt; dst &lt;Mac&gt; src &lt;Mac&gt; dst &lt;IP&gt; src &lt;IP&gt; sport &lt;val&gt; dport &lt;val&gt; ipv4|ipv6 udp|tcp|icmp vlan &lt;val&gt; size &lt;val&gt; [teid &lt;val&gt;]</span></span><br><span class="line">sequence 0 0 dst 00:00:00:00:11:11 src 00:00:00:00:22:22 dst 192.168.1.1/24 src 192.168.1.3/24 sport 10001 dport 10003 ipv4 udp vlan 3000 size 1500</span><br><span class="line">sequence 2 0 dst 00:00:00:00:11:11 src 00:00:00:00:22:22 dst 192.168.1.1/24 src 192.168.1.4/24 sport 10001 dport 10004 ipv4 udp vlan 4000 size 1500</span><br><span class="line"></span><br><span class="line">sequence &lt;<span class="built_in">seq</span><span class="comment">#&gt; &lt;portlist&gt; &lt;dst-Mac&gt; &lt;src-Mac&gt; &lt;dst-IP&gt; &lt;src-IP&gt; &lt;sport&gt; &lt;dport&gt; ipv4|ipv6 udp|tcp|icmp &lt;vlanid&gt; &lt;pktsize&gt; [&lt;teid&gt;]</span></span><br><span class="line">sequence 1 0 dst-Mac 00:00:00:00:11:11 src-Mac 00:00:00:00:22:22 dst-IP 192.168.1.1 src-IP 192.168.1.3/24</span><br><span class="line"></span><br><span class="line"><span class="comment"># range</span></span><br><span class="line"><span class="built_in">set</span> 0 dst ip min 192.168.1.1</span><br><span class="line"><span class="built_in">set</span> 0 dst ip max 192.168.1.2</span><br><span class="line">ovs-ofctl add-flow br0 ip,nw_dst=192.168.1.1,actions=output:vhost-user2</span><br><span class="line">ovs-ofctl add-flow br0 ip,nw_dst=192.168.1.2,actions=output:vhost-user4</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">docker run -it --<span class="built_in">rm</span> --privileged --name=app-testpmd2 \</span><br><span class="line">    -v /dev/hugepages:/dev/hugepages \</span><br><span class="line">    -v /usr/local/var/run/openvswitch:/var/run/openvswitch \</span><br><span class="line">    pktgen:20.11.3 /bin/bash</span><br><span class="line"></span><br><span class="line">dpdk-testpmd -c 0x300 -n 1 --socket-mem 1024 --file-prefix testpmd --no-pci \</span><br><span class="line">--vdev <span class="string">&#x27;net_virtio_user2,mac=00:00:00:00:00:02,path=/var/run/openvswitch/vhost-user2&#x27;</span> \</span><br><span class="line">-- -i -a --coremask=0x200 --forward-mode=rxonly</span><br><span class="line"></span><br><span class="line">docker run -it --<span class="built_in">rm</span> --privileged --name=app-testpmd2 \</span><br><span class="line">    -v /dev/hugepages:/dev/hugepages \</span><br><span class="line">    -v /usr/local/var/run/openvswitch:/var/run/openvswitch \</span><br><span class="line">    pktgen20:latest /bin/bash</span><br><span class="line"></span><br><span class="line">docker run -it --<span class="built_in">rm</span> --privileged --name=pktgen3 \</span><br><span class="line">    -v /dev/hugepages:/dev/hugepages \</span><br><span class="line">    -v /usr/local/var/run/openvswitch:/var/run/openvswitch \</span><br><span class="line">    pktgen:20.11.3 /bin/bash</span><br><span class="line"></span><br><span class="line">dpdk-testpmd -c 0xc00 -n 1 --socket-mem 1024 --file-prefix testpmd --no-pci \</span><br><span class="line">--vdev <span class="string">&#x27;net_virtio_user4,mac=00:00:00:00:00:04,path=/var/run/openvswitch/vhost-user4&#x27;</span> \</span><br><span class="line">-- -i -a --coremask=0x800 --forward-mode=rxonly</span><br><span class="line"></span><br><span class="line">dpdk-testpmd -c 0x30000 -n 1 --socket-mem 1024 --file-prefix testpmd --no-pci \</span><br><span class="line">--vdev <span class="string">&#x27;net_virtio_user6,mac=00:00:00:00:00:06,path=/var/run/openvswitch/vhost-user6&#x27;</span> \</span><br><span class="line">-- -i -a --coremask=0x20000 --forward-mode=rxonly</span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ovs-ofctl add-flow br0 in_port=vhost-user1,actions=output:vhost-user2</span><br><span class="line">ovs-ofctl add-flow br0 in_port=vhost-user3,actions=output:vhost-user2</span><br></pre></td></tr></table></figure>
+
+
+
+<hr>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">1-------3</span><br><span class="line">  pmd1</span><br><span class="line">2-------4</span><br><span class="line"></span><br><span class="line">1---pmd1----3</span><br><span class="line">2---pmd2----4</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>服务器 1500byte，收端测速</th>
+<th>pps</th>
+<th>bps</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1pmd, 1-&gt;2</td>
+<td>4014497</td>
+<td>48 045502408</td>
+</tr>
+<tr>
+<td>1pmd, 1-&gt;2, 3-&gt;2</td>
+<td>3821682</td>
+<td>45 737967984</td>
+</tr>
+<tr>
+<td>1pmd, 1-&gt;2, 3-&gt;4, (2,4的结果差不多)</td>
+<td>1842978</td>
+<td>22 056772136</td>
+</tr>
+<tr>
+<td>2pmd, 1-&gt;2, 3-&gt;2</td>
+<td>5644703</td>
+<td>67 485371880</td>
+</tr>
+<tr>
+<td>2pmd, 1-&gt;2, 3-&gt;4, (2,4的结果差不多)</td>
+<td>3983405</td>
+<td>47 673395952</td>
+</tr>
+<tr>
+<td>2pmd, 1-&gt;2, 3-&gt;2, 4-&gt;2</td>
+<td>5347450</td>
+<td>63 864672136</td>
+</tr>
+<tr>
+<td>3pmd, 1-&gt;2, 3-&gt;2, 4-&gt;2 (应该是收端处理能力限制)</td>
+<td>5332282</td>
+<td>63 816064880</td>
+</tr>
+<tr>
+<td>3pmd, 1-&gt;2, 3-&gt;4, 5-&gt;6 (2,4,6的结果差不多)</td>
+<td>3733353</td>
+<td>44 680773688</td>
+</tr>
+</tbody></table>
+<h2 id="QEMU"><a href="#QEMU" class="headerlink" title="QEMU"></a>QEMU</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## 删除之前的配置文件</span></span><br><span class="line"><span class="built_in">rm</span> /usr/local/etc/openvswitch/*</span><br><span class="line"><span class="built_in">rm</span> /usr/local/var/run/openvswitch/*</span><br><span class="line"><span class="built_in">rm</span> /usr/local/var/log/openvswitch/*</span><br><span class="line"></span><br><span class="line">ovs-ctl --no-ovs-vswitchd start --system-id=random</span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:dpdk-lcore-mask=0x1</span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:pmd-cpu-mask=0x02</span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:dpdk-socket-mem=<span class="string">&quot;1024&quot;</span></span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:dpdk-init=<span class="literal">true</span></span><br><span class="line">ovs-ctl --no-ovsdb-server --db-sock=<span class="string">&quot;<span class="variable">$DB_SOCK</span>&quot;</span> start</span><br><span class="line"></span><br><span class="line"><span class="comment">## 添加 bridge</span></span><br><span class="line">ovs-vsctl add-br br0 -- <span class="built_in">set</span> bridge br0 datapath_type=netdev</span><br><span class="line">ovs-vsctl add-port br0 vhost-user1 \</span><br><span class="line">    -- <span class="built_in">set</span> Interface vhost-user1 <span class="built_in">type</span>=dpdkvhostuser ofport_request=1</span><br><span class="line">ovs-vsctl add-port br0 vhost-user2 \</span><br><span class="line">    -- <span class="built_in">set</span> Interface vhost-user2 <span class="built_in">type</span>=dpdkvhostuser ofport_request=2</span><br></pre></td></tr></table></figure>
+
+<p>使用QEMU虚拟机</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 基于vhost-user1, vhost-user2创建虚拟机</span></span><br><span class="line">qemu-system-x86_64 -enable-kvm -m 2048 -smp 4 \</span><br><span class="line">    -chardev socket,<span class="built_in">id</span>=char0,path=/usr/local/var/run/openvswitch/vhost-user1 \</span><br><span class="line">    -netdev <span class="built_in">type</span>=vhost-user,<span class="built_in">id</span>=mynet1,chardev=char0,vhostforce \</span><br><span class="line">    -device virtio-net-pci,netdev=mynet1,mac=52:54:00:02:d9:01 \</span><br><span class="line">    -object memory-backend-file,<span class="built_in">id</span>=mem,size=2048M,mem-path=/dev/hugepages,share=on \</span><br><span class="line">    -numa node,memdev=mem -mem-prealloc \</span><br><span class="line">    -net user,hostfwd=tcp::10021-:22 -net nic \</span><br><span class="line">    ./qemu-vm1.img</span><br><span class="line"></span><br><span class="line">qemu-system-x86_64 -enable-kvm -m 2048 -smp 4 \</span><br><span class="line">    -chardev socket,<span class="built_in">id</span>=char0,path=/usr/local/var/run/openvswitch/vhost-user2 \</span><br><span class="line">    -netdev <span class="built_in">type</span>=vhost-user,<span class="built_in">id</span>=mynet1,chardev=char0,vhostforce \</span><br><span class="line">    -device virtio-net-pci,netdev=mynet1,mac=52:54:00:02:d9:02 \</span><br><span class="line">    -object memory-backend-file,<span class="built_in">id</span>=mem,size=2048M,mem-path=/dev/hugepages,share=on \</span><br><span class="line">    -numa node,memdev=mem -mem-prealloc \</span><br><span class="line">    -net user,hostfwd=tcp::10022-:22 -net nic \</span><br><span class="line">    ./qemu-vm2.img &amp;</span><br></pre></td></tr></table></figure>
+
+<h3 id="测试结果-2"><a href="#测试结果-2" class="headerlink" title="测试结果"></a>测试结果</h3><table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+<th>iperf-tcp</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>c1</td>
+<td>默认流表 Normal</td>
+<td>22.3 Gbps</td>
+</tr>
+<tr>
+<td>c2</td>
+<td>c1 + 匹配入端口流表</td>
+<td>22.4 Gbps</td>
+</tr>
+<tr>
+<td>c3</td>
+<td>c2 + vhost-postcopy-support</td>
+<td>22.3 Gbps</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>这三种情况下，速率几乎一致！而且使用<code>iperf-udp</code>测试时，指定带宽小于<code>5Gbps</code>时，测试速率比较正常。但若指定的带宽大于<code>5g</code>，会导致速率严重下降，为<code>1.5Gbps</code>左右。</p>
+<p>不过这里也涉及到配置<code>qemu</code>虚拟机的相关参数，没进一步调试。</p>
+</blockquote>
+<h2 id="物理网卡"><a href="#物理网卡" class="headerlink" title="物理网卡"></a>物理网卡</h2><blockquote>
+<p>这里为在两台物理服务器上做测试，每台服务器用两张网卡，每张网卡两个端口，一张网卡为光口，另一张则是正常的RJ45接口。除一个RJ45口接入网络外，其余端口都两两直连。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">$ lspci | grep Eth</span><br><span class="line">3d:00.0 Ethernet controller: Intel Corporation Ethernet Connection X722 <span class="keyword">for</span> 10GBASE-T (rev 09)</span><br><span class="line">3d:00.1 Ethernet controller: Intel Corporation Ethernet Connection X722 <span class="keyword">for</span> 10GBASE-T (rev 09)</span><br><span class="line">af:00.0 Ethernet controller: Intel Corporation 82599ES 10-Gigabit SFI/SFP+ Network Connection (rev 01)</span><br><span class="line">af:00.1 Ethernet controller: Intel Corporation 82599ES 10-Gigabit SFI/SFP+ Network Connection (rev 01)</span><br><span class="line">$ <span class="built_in">uname</span> -a</span><br><span class="line">Linux uestc 5.15.0-52-generic <span class="comment">#58~20.04.1-Ubuntu SMP</span></span><br><span class="line"></span><br><span class="line">$ lscpu <span class="comment"># 两台服务器CPU 频率稍有差别</span></span><br><span class="line">Model name:                      Intel(R) Xeon(R) Gold 6133 CPU @ 2.50GHz</span><br><span class="line">Stepping:                        4</span><br><span class="line">CPU MHz:                         1000.000</span><br><span class="line">CPU max MHz:                     3000.0000</span><br><span class="line">CPU min MHz:                     1000.0000</span><br><span class="line">BogoMIPS:                        5000.00</span><br><span class="line">-----------------------------------------------</span><br><span class="line">Model name:                      Intel(R) Xeon(R) Gold 6145 CPU @ 2.00GHz</span><br><span class="line">Stepping:                        4</span><br><span class="line">CPU MHz:                         1000.120</span><br><span class="line">CPU max MHz:                     3700.0000</span><br><span class="line">CPU min MHz:                     1000.0000</span><br><span class="line">BogoMIPS:                        4000.00</span><br></pre></td></tr></table></figure>
+</blockquote>
+<h3 id="ovs"><a href="#ovs" class="headerlink" title="ovs"></a>ovs</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## 删除之前的配置文件</span></span><br><span class="line"><span class="built_in">rm</span> /usr/local/etc/openvswitch/*</span><br><span class="line"><span class="built_in">rm</span> /usr/local/var/run/openvswitch/*</span><br><span class="line"><span class="built_in">rm</span> /usr/local/var/log/openvswitch/*</span><br><span class="line"></span><br><span class="line">ovs-ctl start</span><br><span class="line">ovs-vsctl add-br br0 -- <span class="built_in">set</span> bridge br0 datapath_type=system</span><br><span class="line"></span><br><span class="line"><span class="comment"># Server A</span></span><br><span class="line">ifconfig br0 192.168.5.80</span><br><span class="line">ovs-vsctl add-port br0 eno0</span><br><span class="line">ovs-ofctl add-flow br0 ip,nw_dst=192.168.5.40,actions=output:eno0</span><br><span class="line">ovs-ofctl add-flow br0 ip,nw_dst=192.168.5.80,actions=output:LOCAL</span><br><span class="line"></span><br><span class="line"><span class="comment"># Server B</span></span><br><span class="line">ifconfig br0 192.168.5.40</span><br><span class="line">ovs-vsctl add-port br0 eno1</span><br><span class="line">ovs-ofctl add-flow br0 ip,nw_dst=192.168.5.80,actions=output:eno1</span><br><span class="line">ovs-ofctl add-flow br0 ip,nw_dst=192.168.5.40,actions=output:LOCAL</span><br></pre></td></tr></table></figure>
+
+<h3 id="ovs-dpdk"><a href="#ovs-dpdk" class="headerlink" title="ovs-dpdk"></a>ovs-dpdk</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## 删除之前的配置文件</span></span><br><span class="line"><span class="built_in">rm</span> /usr/local/etc/openvswitch/*</span><br><span class="line"><span class="built_in">rm</span> /usr/local/var/run/openvswitch/*</span><br><span class="line"><span class="built_in">rm</span> /usr/local/var/log/openvswitch/*</span><br><span class="line"></span><br><span class="line">ovs-ctl --no-ovs-vswitchd start --system-id=random</span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:dpdk-lcore-mask=0x1</span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:pmd-cpu-mask=0x2</span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:dpdk-socket-mem=<span class="string">&quot;1024&quot;</span></span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:dpdk-init=<span class="literal">true</span></span><br><span class="line">ovs-ctl --no-ovsdb-server --db-sock=<span class="string">&quot;<span class="variable">$DB_SOCK</span>&quot;</span> start</span><br><span class="line">ovs-vsctl add-br br1 -- <span class="built_in">set</span> bridge br1 datapath_type=netdev</span><br><span class="line"></span><br><span class="line"><span class="comment"># server A</span></span><br><span class="line">ifconfig br1 192.168.6.80</span><br><span class="line">modprobe vfio enable_unsafe_noiommu_mode=1</span><br><span class="line"><span class="built_in">echo</span> 1 &gt; /sys/module/vfio/parameters/enable_unsafe_noiommu_mode</span><br><span class="line">ifconfig eno0 down</span><br><span class="line">ifconfig ens1f0 down</span><br><span class="line">ifconfig ens1f1 down</span><br><span class="line">dpdk-devbind.py --<span class="built_in">bind</span>=vfio-pci 0000:60:00.0</span><br><span class="line">dpdk-devbind.py --<span class="built_in">bind</span>=vfio-pci 0000:18:00.0</span><br><span class="line">dpdk-devbind.py --<span class="built_in">bind</span>=vfio-pci 0000:18:00.1</span><br><span class="line">ovs-vsctl add-port br1 rj45 \</span><br><span class="line">    -- <span class="built_in">set</span> Interface rj45 <span class="built_in">type</span>=dpdk options:dpdk-devargs=0000:60:00.0</span><br><span class="line">ovs-ofctl add-flow br1 ip,nw_dst=192.168.6.40,actions=output:rj45</span><br><span class="line">ovs-ofctl add-flow br1 ip,nw_dst=192.168.6.80,actions=output:LOCAL</span><br><span class="line"></span><br><span class="line"><span class="comment"># server B</span></span><br><span class="line">ifconfig br1 192.168.4.80</span><br><span class="line">modprobe vfio enable_unsafe_noiommu_mode=1</span><br><span class="line"><span class="built_in">echo</span> 1 &gt; /sys/module/vfio/parameters/enable_unsafe_noiommu_mode</span><br><span class="line">ifconfig eno1 down</span><br><span class="line">ifconfig ens802f0 down</span><br><span class="line">ifconfig ens802f1 down</span><br><span class="line">dpdk-devbind.py --<span class="built_in">bind</span>=vfio-pci 0000:3d:00.0</span><br><span class="line">dpdk-devbind.py --<span class="built_in">bind</span>=vfio-pci 0000:af:00.0</span><br><span class="line">dpdk-devbind.py --<span class="built_in">bind</span>=vfio-pci 0000:af:00.1</span><br><span class="line"></span><br><span class="line">ovs-vsctl add-port br1 rj45 \</span><br><span class="line">    -- <span class="built_in">set</span> Interface rj45 <span class="built_in">type</span>=dpdk options:dpdk-devargs=0000:3d:00.0</span><br><span class="line">ovs-ofctl add-flow br1 ip,nw_dst=192.168.6.80,actions=output:rj45</span><br><span class="line">ovs-ofctl add-flow br1 ip,nw_dst=192.168.6.40,actions=output:LOCAL</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="测试结果-3"><a href="#测试结果-3" class="headerlink" title="测试结果"></a>测试结果</h3><table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+<th>iperf-tcp</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>c1</td>
+<td>无OVS，网口直连（RJ45与光口差不多）</td>
+<td>9.38 Gbps</td>
+</tr>
+<tr>
+<td>c2</td>
+<td>OVS，RJ45与光口同样差不多</td>
+<td>9.41 Gbps</td>
+</tr>
+<tr>
+<td>c3</td>
+<td>OVS-DPDK，(不知道为什么这么慢)</td>
+<td>3.89 Gbps</td>
+</tr>
+<tr>
+<td>c4</td>
+<td>OVS-DPDK-pktgen</td>
+<td>9.8 Gbps</td>
+</tr>
+</tbody></table>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># server A: pktgen</span></span><br><span class="line">ovs-ofctl add-flow br1 in_port=vhost-user1,actions=output:g1</span><br><span class="line"></span><br><span class="line"><span class="comment"># server B: testpmd</span></span><br><span class="line">ovs-ofctl add-flow br1 in_port=g1,actions=output:vhost-user1</span><br></pre></td></tr></table></figure>
+
+<h3 id="vhost-user-1"><a href="#vhost-user-1" class="headerlink" title="vhost-user"></a>vhost-user</h3><h3 id="OVS-OVS"><a href="#OVS-OVS" class="headerlink" title="OVS-OVS"></a>OVS-OVS</h3><p>补：该方案使用<code>veth pair</code>连接两容器，本想借此测试OVS-DPDK的转发性能，但<a target="_blank" rel="noopener" href="https://www.cnblogs.com/dream397/p/13964154.html#%E5%9F%BA%E4%BA%8E%E5%86%85%E6%A0%B8%E5%8D%8F%E8%AE%AE%E6%A0%88%E7%9A%84%E5%BA%94%E7%94%A8">使用<code>veth</code>端口会让OVS回落到system datapath</a>，而且搭建下面的拓扑并启动OVS后，会发现没有核被占满（PMD运行时不会休眠）。当添加了<code>vhost-user</code>端口后，才会看到有个核跑满了。</p>
+<p><img src="/../images/OpenVSwitch-DPDK-%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95/OVS%20%E6%B5%81%E7%A8%8B%E5%9B%BE-%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95.drawio-16567289755781.png" alt="OVS 流程图-性能测试.drawio"></p>
+<p><strong>拓扑搭建</strong>：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">dpdk-hugepages.py -p 1G --setup 4G</span><br><span class="line">modprobe openvswitch</span><br><span class="line"></span><br><span class="line"><span class="comment">## 创建容器</span></span><br><span class="line">sudo docker create -it --name=s1 --privileged -v /dev/hugepages:/dev/hugepages -v /root/run:/root/run ovs-dpdk:2.16.0-qdisc</span><br><span class="line">sudo docker create -it --name=s2 --privileged -v /dev/hugepages:/dev/hugepages -v /root/run:/root/run ovs-dpdk:2.16.0-qdisc</span><br><span class="line">sudo docker start s1</span><br><span class="line">sudo docker start s2</span><br><span class="line"></span><br><span class="line"><span class="comment">## 添加 veth-peer</span></span><br><span class="line">sudo ip <span class="built_in">link</span> add p1_2 <span class="built_in">type</span> veth peer name p2_1 &gt; /dev/null</span><br><span class="line">sudo ip <span class="built_in">link</span> <span class="built_in">set</span> dev p1_2 name p1_2 netns $(sudo docker inspect -f <span class="string">&#x27;&#123;&#123;.State.Pid&#125;&#125;&#x27;</span> s1) up</span><br><span class="line">sudo ip <span class="built_in">link</span> <span class="built_in">set</span> dev p2_1 name p2_1 netns $(sudo docker inspect -f <span class="string">&#x27;&#123;&#123;.State.Pid&#125;&#125;&#x27;</span> s2) up</span><br></pre></td></tr></table></figure>
+
+<p><strong>启动OVS</strong>：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">################################ s1 ####################################</span></span><br><span class="line">docker <span class="built_in">exec</span> -it s1 bash</span><br><span class="line">ovs-ctl --no-ovs-vswitchd start --system-id=1001</span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:pmd-cpu-mask=0x02</span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:dpdk-socket-mem=<span class="string">&quot;1024&quot;</span></span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:dpdk-init=<span class="literal">true</span></span><br><span class="line">ovs-ctl --no-ovsdb-server --db-sock=<span class="string">&quot;<span class="variable">$DB_SOCK</span>&quot;</span> start</span><br><span class="line"></span><br><span class="line"><span class="comment">## 添加 bridge</span></span><br><span class="line">ovs-vsctl add-br s1 -- <span class="built_in">set</span> bridge s1 datapath_type=netdev</span><br><span class="line">ifconfig s1 192.168.1.12 netmask 255.255.255.0 up</span><br><span class="line">ovs-vsctl add-port s1 p1_2 -- <span class="built_in">set</span> Interface p1_2 ofport_request=12</span><br><span class="line"><span class="comment"># ovs-vsctl add-port s1 vhost-user1 -- set Interface vhost-user1 type=dpdkvhostuser ofport_request=2</span></span><br><span class="line"></span><br><span class="line"><span class="comment">################################ s2 ####################################</span></span><br><span class="line">docker <span class="built_in">exec</span> -it s2 bash</span><br><span class="line">ovs-ctl --no-ovs-vswitchd start --system-id=1002</span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:pmd-cpu-mask=0x08</span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:dpdk-socket-mem=<span class="string">&quot;1024&quot;</span></span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:dpdk-init=<span class="literal">true</span></span><br><span class="line">ovs-ctl --no-ovsdb-server --db-sock=<span class="string">&quot;<span class="variable">$DB_SOCK</span>&quot;</span> start</span><br><span class="line"></span><br><span class="line"><span class="comment">## 添加 bridge</span></span><br><span class="line">ovs-vsctl add-br s2 -- <span class="built_in">set</span> bridge s2 datapath_type=netdev</span><br><span class="line">ifconfig s2 192.168.1.21 netmask 255.255.255.0 up</span><br><span class="line">ovs-vsctl add-port s2 p2_1 -- <span class="built_in">set</span> Interface p2_1 ofport_request=21</span><br><span class="line"><span class="comment"># ovs-vsctl add-port s2 vhost-user1 -- set Interface vhost-user1 type=dpdkvhostuser ofport_request=2</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="OVS-OVS-OVS"><a href="#OVS-OVS-OVS" class="headerlink" title="OVS-OVS-OVS"></a>OVS-OVS-OVS</h3><p><img src="/../images/OpenVSwitch-DPDK-%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95/OVS%20%E6%B5%81%E7%A8%8B%E5%9B%BE-ovs-ovs-ovs.png" alt="OVS 流程图-ovs-ovs-ovs"></p>
+<p><strong>拓扑搭建</strong>：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">dpdk-hugepages.py -p 1G --setup 6G</span><br><span class="line">modprobe openvswitch</span><br><span class="line"></span><br><span class="line"><span class="comment">## 创建容器</span></span><br><span class="line">sudo docker create -it --name=s1 --privileged -v /dev/hugepages:/dev/hugepages -v /root/run:/root/run ovs-dpdk:2.16.0-vlog</span><br><span class="line">sudo docker create -it --name=s2 --privileged -v /dev/hugepages:/dev/hugepages -v /root/run:/root/run ovs-dpdk:2.16.0-vlog</span><br><span class="line">sudo docker create -it --name=s3 --privileged -v /dev/hugepages:/dev/hugepages -v /root/run:/root/run ovs-dpdk:2.16.0-vlog</span><br><span class="line">sudo docker start s1 s2 s3</span><br><span class="line"></span><br><span class="line"><span class="comment">## 添加 veth-peer</span></span><br><span class="line">sudo ip <span class="built_in">link</span> add s1_2 <span class="built_in">type</span> veth peer name s2_1 &gt; /dev/null</span><br><span class="line">sudo ip <span class="built_in">link</span> add s3_2 <span class="built_in">type</span> veth peer name s2_3 &gt; /dev/null</span><br><span class="line">sudo ip <span class="built_in">link</span> add s1_3 <span class="built_in">type</span> veth peer name s3_1 &gt; /dev/null</span><br><span class="line">sudo ip <span class="built_in">link</span> <span class="built_in">set</span> dev s1_2 name s1_2 netns $(sudo docker inspect -f <span class="string">&#x27;&#123;&#123;.State.Pid&#125;&#125;&#x27;</span> s1) up</span><br><span class="line">sudo ip <span class="built_in">link</span> <span class="built_in">set</span> dev s1_3 name s1_3 netns $(sudo docker inspect -f <span class="string">&#x27;&#123;&#123;.State.Pid&#125;&#125;&#x27;</span> s1) up</span><br><span class="line">sudo ip <span class="built_in">link</span> <span class="built_in">set</span> dev s2_1 name s2_1 netns $(sudo docker inspect -f <span class="string">&#x27;&#123;&#123;.State.Pid&#125;&#125;&#x27;</span> s2) up</span><br><span class="line">sudo ip <span class="built_in">link</span> <span class="built_in">set</span> dev s2_3 name s2_3 netns $(sudo docker inspect -f <span class="string">&#x27;&#123;&#123;.State.Pid&#125;&#125;&#x27;</span> s2) up</span><br><span class="line">sudo ip <span class="built_in">link</span> <span class="built_in">set</span> dev s3_1 name s3_1 netns $(sudo docker inspect -f <span class="string">&#x27;&#123;&#123;.State.Pid&#125;&#125;&#x27;</span> s3) up</span><br><span class="line">sudo ip <span class="built_in">link</span> <span class="built_in">set</span> dev s3_2 name s3_2 netns $(sudo docker inspect -f <span class="string">&#x27;&#123;&#123;.State.Pid&#125;&#125;&#x27;</span> s3) up</span><br></pre></td></tr></table></figure>
+
+<p><strong>启动OVS</strong>：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">################################ s1 ####################################</span></span><br><span class="line">docker <span class="built_in">exec</span> -it s1 bash</span><br><span class="line">ovs-ctl --no-ovs-vswitchd start --system-id=1001</span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:pmd-cpu-mask=0x02</span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:dpdk-socket-mem=<span class="string">&quot;1024&quot;</span></span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:dpdk-init=<span class="literal">true</span></span><br><span class="line">ovs-ctl --no-ovsdb-server --db-sock=<span class="string">&quot;<span class="variable">$DB_SOCK</span>&quot;</span> start</span><br><span class="line"></span><br><span class="line"><span class="comment">## 添加 bridge</span></span><br><span class="line">ovs-vsctl add-br s1 -- <span class="built_in">set</span> bridge s1 datapath_type=netdev</span><br><span class="line">ovs-vsctl <span class="built_in">set</span> bridge s1 other_config:hwaddr=<span class="string">&quot;00:00:00:00:10:01&quot;</span></span><br><span class="line">ifconfig s1 192.168.10.1 netmask 255.255.255.0 up</span><br><span class="line">ovs-vsctl add-port s1 s1_2 -- <span class="built_in">set</span> Interface s1_2 ofport_request=12</span><br><span class="line">ovs-vsctl add-port s1 s1_3 -- <span class="built_in">set</span> Interface s1_3 ofport_request=13</span><br><span class="line"><span class="comment"># ovs-vsctl add-port s1 vhost-user1 -- set Interface vhost-user1 type=dpdkvhostuser ofport_request=2</span></span><br><span class="line"></span><br><span class="line"><span class="comment">################################ s2 ####################################</span></span><br><span class="line">docker <span class="built_in">exec</span> -it s2 bash</span><br><span class="line">ovs-ctl --no-ovs-vswitchd start --system-id=1002</span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:pmd-cpu-mask=0x08</span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:dpdk-socket-mem=<span class="string">&quot;1024&quot;</span></span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:dpdk-init=<span class="literal">true</span></span><br><span class="line">ovs-ctl --no-ovsdb-server --db-sock=<span class="string">&quot;<span class="variable">$DB_SOCK</span>&quot;</span> start</span><br><span class="line"></span><br><span class="line"><span class="comment">## 添加 bridge</span></span><br><span class="line">ovs-vsctl add-br s2 -- <span class="built_in">set</span> bridge s2 datapath_type=netdev</span><br><span class="line">ovs-vsctl <span class="built_in">set</span> bridge s2 other_config:hwaddr=<span class="string">&quot;00:00:00:00:10:02&quot;</span></span><br><span class="line">ifconfig s2 192.168.10.2 netmask 255.255.255.0 up</span><br><span class="line">ovs-vsctl add-port s2 s2_1 -- <span class="built_in">set</span> Interface s2_1 ofport_request=21</span><br><span class="line">ovs-vsctl add-port s2 s2_3 -- <span class="built_in">set</span> Interface s2_3 ofport_request=23</span><br><span class="line"><span class="comment"># ovs-vsctl add-port s2 vhost-user1 -- set Interface vhost-user1 type=dpdkvhostuser ofport_request=2</span></span><br><span class="line"></span><br><span class="line"><span class="comment">################################ s3 ####################################</span></span><br><span class="line">docker <span class="built_in">exec</span> -it s3 bash</span><br><span class="line">ovs-ctl --no-ovs-vswitchd start --system-id=1002</span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:pmd-cpu-mask=0x20</span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:dpdk-socket-mem=<span class="string">&quot;1024&quot;</span></span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:dpdk-init=<span class="literal">true</span></span><br><span class="line">ovs-ctl --no-ovsdb-server --db-sock=<span class="string">&quot;<span class="variable">$DB_SOCK</span>&quot;</span> start</span><br><span class="line"></span><br><span class="line"><span class="comment">## 添加 bridge</span></span><br><span class="line">ovs-vsctl add-br s3 -- <span class="built_in">set</span> bridge s3 datapath_type=netdev</span><br><span class="line">ovs-vsctl <span class="built_in">set</span> bridge s3 other_config:hwaddr=<span class="string">&quot;00:00:00:00:10:03&quot;</span></span><br><span class="line">ifconfig s3 192.168.10.3 netmask 255.255.255.0 up</span><br><span class="line">ovs-vsctl add-port s3 s3_1 -- <span class="built_in">set</span> Interface s3_1 ofport_request=31</span><br><span class="line">ovs-vsctl add-port s3 s3_2 -- <span class="built_in">set</span> Interface s3_2 ofport_request=32</span><br><span class="line"><span class="comment"># ovs-vsctl add-port s3vhost-user1 -- set Interface vhost-user1 type=dpdkvhostuser ofport_request=2</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>转发流表</strong>：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># s1</span></span><br><span class="line">ovs-ofctl add-flow s1 ip,nw_dst=192.168.10.1,actions=output:LOCAL</span><br><span class="line">ovs-ofctl add-flow s1 ip,nw_dst=192.168.10.2,actions=output:s1_2</span><br><span class="line">ovs-ofctl add-flow s1 ip,nw_dst=192.168.10.3,actions=output:s1_3</span><br><span class="line"><span class="comment"># s2</span></span><br><span class="line">ovs-ofctl add-flow s2 ip,nw_dst=192.168.10.2,actions=output:LOCAL</span><br><span class="line">ovs-ofctl add-flow s2 ip,nw_dst=192.168.10.1,actions=output:s2_1</span><br><span class="line">ovs-ofctl add-flow s2 ip,nw_dst=192.168.10.3,actions=output:s2_3</span><br><span class="line"><span class="comment"># s3</span></span><br><span class="line">ovs-ofctl add-flow s3 ip,nw_dst=192.168.10.3,actions=output:LOCAL</span><br><span class="line">ovs-ofctl add-flow s3 ip,nw_dst=192.168.10.1,actions=output:s3_1</span><br><span class="line">ovs-ofctl add-flow s3 ip,nw_dst=192.168.10.2,actions=output:s3_2</span><br><span class="line"><span class="comment"># arp</span></span><br><span class="line">arp -s 192.168.10.1 00:00:00:00:10:01</span><br><span class="line">arp -s 192.168.10.2 00:00:00:00:10:02</span><br><span class="line">arp -s 192.168.10.3 00:00:00:00:10:03</span><br></pre></td></tr></table></figure>
+
+<p><strong>转发流表2</strong>：1&lt;-&gt;2&lt;-&gt;3 (1与3不直连)</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># s1</span></span><br><span class="line">ovs-ofctl add-flow s1 ip,nw_dst=192.168.10.1,actions=output:LOCAL</span><br><span class="line">ovs-ofctl add-flow s1 ip,nw_dst=192.168.10.2,actions=output:s1_2</span><br><span class="line">ovs-ofctl add-flow s1 ip,nw_dst=192.168.10.3,actions=output:s1_2</span><br><span class="line"><span class="comment"># s2</span></span><br><span class="line">ovs-ofctl add-flow s2 ip,nw_dst=192.168.10.2,actions=output:LOCAL</span><br><span class="line">ovs-ofctl add-flow s2 ip,nw_dst=192.168.10.1,actions=output:s2_1</span><br><span class="line">ovs-ofctl add-flow s2 ip,nw_dst=192.168.10.3,actions=output:s2_3</span><br><span class="line"><span class="comment"># s3</span></span><br><span class="line">ovs-ofctl add-flow s3 ip,nw_dst=192.168.10.3,actions=output:LOCAL</span><br><span class="line">ovs-ofctl add-flow s3 ip,nw_dst=192.168.10.1,actions=output:s3_2</span><br><span class="line">ovs-ofctl add-flow s3 ip,nw_dst=192.168.10.2,actions=output:s3_2</span><br></pre></td></tr></table></figure>
+
+<h4 id="测试ATS"><a href="#测试ATS" class="headerlink" title="测试ATS"></a>测试ATS</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">ovs-vsctl <span class="built_in">set</span> interface s1_2 other_config:qdisc-params=<span class="string">&quot;rate:1=10000&quot;</span> <span class="comment"># 10M</span></span><br><span class="line">ovs-appctl vlog/set dpif_qdisc:file:dbg</span><br><span class="line"><span class="comment"># s1</span></span><br><span class="line">ovs-vsctl <span class="built_in">set</span> interface s1_2 other_config:qdisc=ATS</span><br><span class="line"><span class="comment"># s2</span></span><br><span class="line">ovs-vsctl <span class="built_in">set</span> interface s2_3 other_config:qdisc=ATS</span><br><span class="line">ovs-vsctl <span class="built_in">set</span> interface s2_1 other_config:qdisc=ATS</span><br><span class="line"><span class="comment"># s3</span></span><br><span class="line">ovs-vsctl <span class="built_in">set</span> interface s3_2 other_config:qdisc=ATS</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">################################ s1 ####################################</span></span><br><span class="line">docker <span class="built_in">exec</span> -it s1 bash</span><br><span class="line">ovs-ctl --no-ovs-vswitchd start --system-id=1001</span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:pmd-cpu-mask=0x02</span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:dpdk-socket-mem=<span class="string">&quot;1024&quot;</span></span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:dpdk-init=<span class="literal">true</span></span><br><span class="line">ovs-ctl --no-ovsdb-server --db-sock=<span class="string">&quot;<span class="variable">$DB_SOCK</span>&quot;</span> start</span><br><span class="line"></span><br><span class="line"><span class="comment">## 添加 bridge</span></span><br><span class="line">ovs-vsctl add-br s1 -- <span class="built_in">set</span> bridge s1 datapath_type=netdev</span><br><span class="line">ovs-vsctl <span class="built_in">set</span> bridge s1 other_config:hwaddr=<span class="string">&quot;00:00:00:00:10:01&quot;</span></span><br><span class="line">ifconfig s1 192.168.10.1 netmask 255.255.255.0 up</span><br><span class="line">ovs-vsctl add-port s1 s1_2 -- <span class="built_in">set</span> Interface s1_2 ofport_request=12</span><br><span class="line">ovs-vsctl add-port s1 s1_3 -- <span class="built_in">set</span> Interface s1_3 ofport_request=13</span><br><span class="line">arp -s 192.168.10.1 00:00:00:00:10:01</span><br><span class="line">arp -s 192.168.10.2 00:00:00:00:10:02</span><br><span class="line">arp -s 192.168.10.3 00:00:00:00:10:03</span><br><span class="line">ovs-ofctl add-flow s1 ip,nw_dst=192.168.10.1,actions=output:LOCAL</span><br><span class="line">ovs-ofctl add-flow s1 ip,nw_dst=192.168.10.2,actions=output:s1_2</span><br><span class="line">ovs-ofctl add-flow s1 ip,nw_dst=192.168.10.3,actions=output:s1_2</span><br><span class="line"><span class="comment"># ovs-vsctl add-port s1 vhost-user1 -- set Interface vhost-user1 type=dpdkvhostuser ofport_request=2</span></span><br><span class="line"></span><br><span class="line"><span class="comment">################################ s2 ####################################</span></span><br><span class="line">docker <span class="built_in">exec</span> -it s2 bash</span><br><span class="line">ovs-ctl --no-ovs-vswitchd start --system-id=1002</span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:pmd-cpu-mask=0x08</span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:dpdk-socket-mem=<span class="string">&quot;1024&quot;</span></span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:dpdk-init=<span class="literal">true</span></span><br><span class="line">ovs-ctl --no-ovsdb-server --db-sock=<span class="string">&quot;<span class="variable">$DB_SOCK</span>&quot;</span> start</span><br><span class="line"></span><br><span class="line"><span class="comment">## 添加 bridge</span></span><br><span class="line">ovs-appctl vlog/set dpif_qdisc:file:dbg</span><br><span class="line">ovs-vsctl add-br s2 -- <span class="built_in">set</span> bridge s2 datapath_type=netdev</span><br><span class="line">ovs-vsctl <span class="built_in">set</span> bridge s2 other_config:hwaddr=<span class="string">&quot;00:00:00:00:10:02&quot;</span></span><br><span class="line">ifconfig s2 192.168.10.2 netmask 255.255.255.0 up</span><br><span class="line">ovs-vsctl add-port s2 s2_1 -- <span class="built_in">set</span> Interface s2_1 ofport_request=21</span><br><span class="line">ovs-vsctl add-port s2 s2_3 -- <span class="built_in">set</span> Interface s2_3 ofport_request=23</span><br><span class="line">arp -s 192.168.10.1 00:00:00:00:10:01</span><br><span class="line">arp -s 192.168.10.2 00:00:00:00:10:02</span><br><span class="line">arp -s 192.168.10.3 00:00:00:00:10:03</span><br><span class="line">ovs-ofctl add-flow s2 ip,nw_dst=192.168.10.2,actions=output:LOCAL</span><br><span class="line">ovs-ofctl add-flow s2 ip,nw_dst=192.168.10.1,actions=output:s2_1</span><br><span class="line">ovs-ofctl add-flow s2 ip,nw_dst=192.168.10.3,actions=output:s2_3</span><br><span class="line"><span class="comment"># ovs-vsctl add-port s2 vhost-user1 -- set Interface vhost-user1 type=dpdkvhostuser ofport_request=2</span></span><br><span class="line"></span><br><span class="line"><span class="comment">################################ s3 ####################################</span></span><br><span class="line">docker <span class="built_in">exec</span> -it s3 bash</span><br><span class="line">ovs-ctl --no-ovs-vswitchd start --system-id=1002</span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:pmd-cpu-mask=0x20</span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:dpdk-socket-mem=<span class="string">&quot;1024&quot;</span></span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:dpdk-init=<span class="literal">true</span></span><br><span class="line">ovs-ctl --no-ovsdb-server --db-sock=<span class="string">&quot;<span class="variable">$DB_SOCK</span>&quot;</span> start</span><br><span class="line"></span><br><span class="line"><span class="comment">## 添加 bridge</span></span><br><span class="line">ovs-vsctl add-br s3 -- <span class="built_in">set</span> bridge s3 datapath_type=netdev</span><br><span class="line">ovs-vsctl <span class="built_in">set</span> bridge s3 other_config:hwaddr=<span class="string">&quot;00:00:00:00:10:03&quot;</span></span><br><span class="line">ifconfig s3 192.168.10.3 netmask 255.255.255.0 up</span><br><span class="line">ovs-vsctl add-port s3 s3_1 -- <span class="built_in">set</span> Interface s3_1 ofport_request=31</span><br><span class="line">ovs-vsctl add-port s3 s3_2 -- <span class="built_in">set</span> Interface s3_2 ofport_request=32</span><br><span class="line">arp -s 192.168.10.1 00:00:00:00:10:01</span><br><span class="line">arp -s 192.168.10.2 00:00:00:00:10:02</span><br><span class="line">arp -s 192.168.10.3 00:00:00:00:10:03</span><br><span class="line">ovs-ofctl add-flow s3 ip,nw_dst=192.168.10.3,actions=output:LOCAL</span><br><span class="line">ovs-ofctl add-flow s3 ip,nw_dst=192.168.10.1,actions=output:s3_2</span><br><span class="line">ovs-ofctl add-flow s3 ip,nw_dst=192.168.10.2,actions=output:s3_2</span><br><span class="line"><span class="comment"># ovs-vsctl add-port s3vhost-user1 -- set Interface vhost-user1 type=dpdkvhostuser ofport_request=2</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="veth-OVS-veth"><a href="#veth-OVS-veth" class="headerlink" title="veth-OVS-veth"></a>veth-OVS-veth</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">sudo docker create -it --name=s1 --privileged -v /dev/hugepages:/dev/hugepages -v /root/run:/root/run ovs-dpdk:2.16.0-vlog</span><br><span class="line">sudo docker create -it --name=s2 --privileged -v /dev/hugepages:/dev/hugepages -v /root/run:/root/run ovs-dpdk:2.16.0-vlog</span><br><span class="line">sudo docker start s1 s2</span><br><span class="line"></span><br><span class="line"><span class="comment">## 添加 veth-peer</span></span><br><span class="line">sudo ip <span class="built_in">link</span> add sh_1 <span class="built_in">type</span> veth peer name s1_h &gt; /dev/null</span><br><span class="line">sudo ip <span class="built_in">link</span> add sh_2 <span class="built_in">type</span> veth peer name s2_h &gt; /dev/null</span><br><span class="line">sudo ip <span class="built_in">link</span> <span class="built_in">set</span> dev s1_h name s1_h netns $(sudo docker inspect -f <span class="string">&#x27;&#123;&#123;.State.Pid&#125;&#125;&#x27;</span> s1) up</span><br><span class="line">sudo ip <span class="built_in">link</span> <span class="built_in">set</span> dev s2_h name s2_h netns $(sudo docker inspect -f <span class="string">&#x27;&#123;&#123;.State.Pid&#125;&#125;&#x27;</span> s2) up</span><br><span class="line">ifconfig sh_1 up</span><br><span class="line">ifconfig sh_2 up</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">docker <span class="built_in">exec</span> -it s1 bash</span><br><span class="line">ifconfig s1_h 192.168.10.1</span><br><span class="line">ip <span class="built_in">link</span> <span class="built_in">set</span> dev s1_h address 00:00:00:00:10:01</span><br><span class="line">arp -s 192.168.10.2 00:00:00:00:10:02</span><br><span class="line"></span><br><span class="line">docker <span class="built_in">exec</span> -it s2 bash</span><br><span class="line">ifconfig s2_h 192.168.10.2</span><br><span class="line">ip <span class="built_in">link</span> <span class="built_in">set</span> dev s2_h address 00:00:00:00:10:02</span><br><span class="line">arp -s 192.168.10.1 00:00:00:00:10:01</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## 删除之前的配置文件</span></span><br><span class="line"><span class="built_in">rm</span> /usr/local/etc/openvswitch/*</span><br><span class="line"><span class="built_in">rm</span> /usr/local/var/run/openvswitch/*</span><br><span class="line"><span class="built_in">rm</span> /usr/local/var/log/openvswitch/*</span><br><span class="line"></span><br><span class="line">ovs-ctl --no-ovs-vswitchd start --system-id=random</span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:pmd-cpu-mask=0x02</span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:dpdk-socket-mem=<span class="string">&quot;1024&quot;</span></span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:dpdk-init=<span class="literal">true</span></span><br><span class="line">ovs-ctl --no-ovsdb-server --db-sock=<span class="string">&quot;<span class="variable">$DB_SOCK</span>&quot;</span> start</span><br><span class="line"></span><br><span class="line"><span class="comment">## 添加 bridge</span></span><br><span class="line">ovs-vsctl add-br br0 -- <span class="built_in">set</span> bridge br0 datapath_type=netdev</span><br><span class="line">ovs-vsctl add-port br0 sh_1 -- <span class="built_in">set</span> Interface sh_1 ofport_request=11</span><br><span class="line">ovs-vsctl add-port br0 sh_2 -- <span class="built_in">set</span> Interface sh_2 ofport_request=12</span><br><span class="line">ovs-ofctl add-flow br0 ip,nw_dst=192.168.10.1,actions=output:sh_1</span><br><span class="line">ovs-ofctl add-flow br0 ip,nw_dst=192.168.10.2,actions=output:sh_2</span><br><span class="line"></span><br><span class="line"><span class="comment">## ATS</span></span><br><span class="line">ovs-vsctl <span class="built_in">set</span> interface sh_1 other_config:qdisc=ATS</span><br><span class="line">ovs-vsctl <span class="built_in">set</span> interface sh_2 other_config:qdisc=ATS</span><br></pre></td></tr></table></figure>
+
+<h3 id="PKTGEN-OVS-TESTPMD"><a href="#PKTGEN-OVS-TESTPMD" class="headerlink" title="PKTGEN-OVS-TESTPMD"></a>PKTGEN-OVS-TESTPMD</h3><p><img src="/../images/OpenVSwitch-DPDK-%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95/OVS%20%E6%B5%81%E7%A8%8B%E5%9B%BE-%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95.drawio%20(1).png" alt="OVS 流程图-性能测试.drawio (1)"></p>
+<p>由于上面的拓扑存在连接问题，只好用单节点测试OVS的速率与PMD的关系，这里OVS就直接部署在主机上，pktgen和testpmd放置在Docker中运行。</p>
+<p><strong>拓扑搭建</strong>：基本拓扑搭建方法如下，但实际测试时会修改参数！</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## 删除之前的配置文件</span></span><br><span class="line"><span class="built_in">rm</span> /usr/local/etc/openvswitch/*</span><br><span class="line"><span class="built_in">rm</span> /usr/local/var/run/openvswitch/*</span><br><span class="line"><span class="built_in">rm</span> /usr/local/var/log/openvswitch/*</span><br><span class="line"></span><br><span class="line">ovs-ctl --no-ovs-vswitchd start --system-id=random</span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:pmd-cpu-mask=0x02</span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:dpdk-socket-mem=<span class="string">&quot;1024&quot;</span></span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:dpdk-init=<span class="literal">true</span></span><br><span class="line">ovs-ctl --no-ovsdb-server --db-sock=<span class="string">&quot;<span class="variable">$DB_SOCK</span>&quot;</span> start</span><br><span class="line"></span><br><span class="line"><span class="comment">## 添加 bridge</span></span><br><span class="line">ovs-vsctl add-br br0 -- <span class="built_in">set</span> bridge br0 datapath_type=netdev</span><br><span class="line">ovs-vsctl add-port br0 vhost-user1 \</span><br><span class="line">    -- <span class="built_in">set</span> Interface vhost-user1 <span class="built_in">type</span>=dpdkvhostuser ofport_request=1</span><br><span class="line">ovs-vsctl add-port br0 vhost-user2 \</span><br><span class="line">    -- <span class="built_in">set</span> Interface vhost-user2 <span class="built_in">type</span>=dpdkvhostuser ofport_request=2</span><br><span class="line"></span><br><span class="line"><span class="comment">## 启动容器</span></span><br><span class="line"><span class="comment"># pktgen</span></span><br><span class="line">docker run -it --<span class="built_in">rm</span> --privileged --name=app-pktgen \</span><br><span class="line">    -v /dev/hugepages:/dev/hugepages \</span><br><span class="line">    -v /usr/local/var/run/openvswitch:/var/run/openvswitch \</span><br><span class="line">    pktgen20:latest /bin/bash</span><br><span class="line"></span><br><span class="line">pktgen -c 0x19 --main-lcore 3 -n 1 --socket-mem 1024 --file-prefix pktgen --no-pci  \</span><br><span class="line">--vdev <span class="string">&#x27;net_virtio_user1,mac=00:00:00:00:00:01,path=/var/run/openvswitch/vhost-user1&#x27;</span> \</span><br><span class="line">-- -T -P -m <span class="string">&quot;0.0&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># testpmd</span></span><br><span class="line">docker run -it --<span class="built_in">rm</span> --privileged --name=app-testpmd \</span><br><span class="line">    -v /dev/hugepages:/dev/hugepages \</span><br><span class="line">    -v /usr/local/var/run/openvswitch:/var/run/openvswitch \</span><br><span class="line">    pktgen20:latest /bin/bash</span><br><span class="line"></span><br><span class="line">dpdk-testpmd -c 0xE0 -n 1 --socket-mem 1024 --file-prefix testpmd --no-pci \</span><br><span class="line">--vdev <span class="string">&#x27;net_virtio_user2,mac=00:00:00:00:00:02,path=/var/run/openvswitch/vhost-user2&#x27;</span> \</span><br><span class="line">-- -i -a --coremask=0xc0 --forward-mode=rxonly</span><br></pre></td></tr></table></figure>
+
+<p><strong>参数说明</strong>：</p>
+<ul>
+<li><p><code>pmd-cpu-mask</code>：指定在哪些核上面绑定PMD线程，即指定了PMD创建的数量。</p>
+</li>
+<li><p><code>dpdk-lcore-mask</code>：指定在哪些核上创建lcore 线程，该线程用于 dpdk 库内部消息处理，如日志等。</p>
+</li>
+<li><p><code>-c</code>：指定在哪些核上运行Pktgen发包或接收线程。</p>
+</li>
+<li><p><code>-m</code>：指定核与端口的对应关系，注意这里的编号从0开始数。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">“1.0, 2.1, 3.2”               - core 1 handles port 0 rx/tx,</span><br><span class="line">                                core 2 handles port 1 rx/tx</span><br><span class="line">                                core 3 handles port 2 rx/tx</span><br><span class="line">1.[0-2], 2.3, ...             - core 1 handle ports 0,1,2 rx/tx,</span><br><span class="line">                                core 2 handle port 3 rx/tx</span><br><span class="line">[1:2].0, [4:6].1, ...         - core 1 handles port 0 rx,</span><br><span class="line">                                core 2 handles port 0 tx,</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><code>--coremask=0xXX</code>：指定在哪些核上运行包转发。</p>
+</li>
+</ul>
+<h4 id="测试1"><a href="#测试1" class="headerlink" title="测试1"></a>测试1</h4><p>CPU为 <code>i7-12700k</code>，系统为 <code>Ubuntu 20.04</code>！</p>
+<p><img src="/../images/OpenVSwitch-DPDK-%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95/image-20220703165153359.png" alt="image-20220703165153359"></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:pmd-cpu-mask=0x2</span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:dpdk-lcore-mask=0x1</span><br><span class="line"></span><br><span class="line">pktgen -c 0x30 -n 1 --socket-mem 1024 --file-prefix pktgen --no-pci  \</span><br><span class="line">--vdev <span class="string">&#x27;net_virtio_user1,mac=00:00:00:00:00:01,path=/var/run/openvswitch/vhost-user1&#x27;</span> \</span><br><span class="line">-- -T -P -m <span class="string">&quot;5.0&quot;</span></span><br><span class="line"></span><br><span class="line">dpdk-testpmd -c 0x300 -n 1 --socket-mem 1024 --file-prefix testpmd --no-pci \</span><br><span class="line">--vdev <span class="string">&#x27;net_virtio_user2,mac=00:00:00:00:00:02,path=/var/run/openvswitch/vhost-user2&#x27;</span> \</span><br><span class="line">-- -i -a --coremask=0x200 --forward-mode=rxonly</span><br></pre></td></tr></table></figure>
+
+<p><img src="/../images/OpenVSwitch-DPDK-%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95/image-20220703163105375.png" alt="image-20220703163105375"></p>
+<p>可以看到CPU的占用情况与配置一致！<code>Pktgen</code>占用了两个核。</p>
+<p><strong>未配置流表的情况下的速率与配置流表后的速率明显有区别</strong>！</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 未配置流表情况下，安装默认的 Normal 转发</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 数据包大小为 64 BYTE，测得接收速率为 3 Gbps</span></span><br><span class="line">testpmd&gt; show port stats all</span><br><span class="line">  <span class="comment">######################## NIC statistics for port 0  ########################</span></span><br><span class="line">  Throughput (since last show)</span><br><span class="line">  Rx-pps:      6284600          Rx-bps:   3 016 608 216</span><br><span class="line">  Tx-pps:            0          Tx-bps:            0</span><br><span class="line">  <span class="comment">############################################################################</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 数据包大小为 1500 BYTE，测得接收速率为 42 Gbps</span></span><br><span class="line">testpmd&gt; show port stats all</span><br><span class="line">  <span class="comment">######################## NIC statistics for port 0  ########################</span></span><br><span class="line">  Throughput (since last show)</span><br><span class="line">  Rx-pps:      3572386          Rx-bps:  42 754 318 664</span><br><span class="line">  Tx-pps:            0          Tx-bps:            0</span><br><span class="line">  <span class="comment">############################################################################</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">############################################################################</span></span><br><span class="line">ovs-ofctl add-flow br0 in_port=vhost-user1,actions=output:vhost-user2</span><br><span class="line"><span class="comment">############################################################################</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 数据包大小为 64 BYTE，测得接收速率为 7.8 Gbps</span></span><br><span class="line">testpmd&gt; show port stats all</span><br><span class="line">  <span class="comment">######################## NIC statistics for port 0  ########################</span></span><br><span class="line">  Throughput (since last show)</span><br><span class="line">  Rx-pps:     16353825          Rx-bps:   7 849 813 576</span><br><span class="line">  Tx-pps:            0          Tx-bps:            0</span><br><span class="line">  <span class="comment">############################################################################</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 数据包大小为 1500 BYTE，测得接收速率为 88 Gbps</span></span><br><span class="line">testpmd&gt; show port stats all</span><br><span class="line">  <span class="comment">######################## NIC statistics for port 0  ########################</span></span><br><span class="line">  Throughput (since last show)</span><br><span class="line">  Rx-pps:      7380556          Rx-bps:  88 330 499 920</span><br><span class="line">  Tx-pps:            0          Tx-bps:            0</span><br><span class="line">  <span class="comment">############################################################################</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="测试2"><a href="#测试2" class="headerlink" title="测试2"></a>测试2</h4><p><img src="/../images/OpenVSwitch-DPDK-%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95/image-20220703171156821.png" alt="image-20220703171156821"></p>
+<p>上面设置流表后，转发速率有了很多提升，但瓶颈在哪一个阶段（发包、转发、收包）还不确定，可能仍然在转发这里，因此先测试启用两个PMD线程后的速率！</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:pmd-cpu-mask=0x6</span><br><span class="line">ovs-vsctl --no-wait <span class="built_in">set</span> Open_vSwitch . other_config:dpdk-lcore-mask=0x1</span><br><span class="line"></span><br><span class="line">ovs-vsctl <span class="built_in">set</span> Interface vhost-user1 options:n_rxq=2</span><br><span class="line"></span><br><span class="line">pktgen -c 0x30 -n 1 --socket-mem 1024 --file-prefix pktgen --no-pci  \</span><br><span class="line">--vdev <span class="string">&#x27;net_virtio_user1,mac=00:00:00:00:00:01,path=/var/run/openvswitch/vhost-user1&#x27;</span> \</span><br><span class="line">-- -T -P -m <span class="string">&quot;5.0&quot;</span></span><br><span class="line"></span><br><span class="line">dpdk-testpmd -c 0x300 -n 1 --socket-mem 1024 --file-prefix testpmd --no-pci \</span><br><span class="line">--vdev <span class="string">&#x27;net_virtio_user2,mac=00:00:00:00:00:02,path=/var/run/openvswitch/vhost-user2&#x27;</span> \</span><br><span class="line">-- -i -a --coremask=0x200 --forward-mode=rxonly</span><br></pre></td></tr></table></figure>
+
+<p>根据日志，确实启用了2个PMD线程，但并没有将<code>vhost-user1</code>设置为双接收队列！按照文档中的描述<a target="_blank" rel="noopener" href="http://www.openvswitch.org/support/dist-docs/ovs-vswitchd.conf.db.5.html">n_rxq</a> Not supported by DPDK vHost interfaces. 但是在<a target="_blank" rel="noopener" href="https://www.intel.com/content/www/us/en/developer/articles/technical/configure-vhost-user-multiqueue-for-ovs-with-dpdk.html">Intel 的文档</a>中也是用此参数设置的！</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">2022-07-03T09:32:20.070Z|00075|dpif_netdev|INFO|PMD thread on numa_id: 0, core <span class="built_in">id</span>:  1 created.</span><br><span class="line">2022-07-03T09:32:20.073Z|00076|dpif_netdev|INFO|PMD thread on numa_id: 0, core <span class="built_in">id</span>:  2 created.</span><br><span class="line">2022-07-03T09:32:20.073Z|00077|dpif_netdev|INFO|There are 2 pmd threads on numa node 0</span><br><span class="line">...</span><br><span class="line">2022-07-03T09:32:20.191Z|00086|dpif_netdev|INFO|Core  1 on numa node 0 assigned port <span class="string">&#x27;vhost-user1&#x27;</span> rx queue 0 (measured processing cycles 0).</span><br><span class="line">2022-07-03T09:32:20.191Z|00087|dpif_netdev|INFO|Core  2 on numa node 0 assigned port <span class="string">&#x27;vhost-user2&#x27;</span> rx queue 0 (measured processing cycles 0).</span><br></pre></td></tr></table></figure>
+
+<p>由于一个接收队列只能交给一个PMD处理，所以这里虽然设置两个PMD，但仍然只有一个PMD在转发包，虽然相比之前，不用去轮询<code>vhost-user2</code>端口上的队列，不过不知道轮询一个空队列的开销大小。</p>
+<p>此情况下，实际测得接收速率仍然为 88 Gbps，故仍然不确定瓶颈在哪！</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 数据包大小为 1500 BYTE，测得接收速率为 88 Gbps</span></span><br><span class="line">testpmd&gt; show port stats all</span><br><span class="line">  <span class="comment">######################## NIC statistics for port 0  ########################</span></span><br><span class="line">  Throughput (since last show)</span><br><span class="line">  Rx-pps:      7421329          Rx-bps:  88818467544</span><br><span class="line">  Tx-pps:            0          Tx-bps:            0</span><br><span class="line">  <span class="comment">############################################################################</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="相关资料"><a href="#相关资料" class="headerlink" title="相关资料"></a>相关资料</h2><p><a target="_blank" rel="noopener" href="https://man7.org/linux/man-pages/man5/ovs-vswitchd.conf.db.5.html#Open_vSwitch_TABLE">Open_vSwitch 守护进程配置</a><br><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/269782783">CPU socket</a><br><a target="_blank" rel="noopener" href="https://bbs.huaweicloud.com/forum/thread-71514-1-1.html">查看网卡归属哪个CPU socket</a><br><a target="_blank" rel="noopener" href="https://www.cxyzjd.com/article/sinat_20184565/93471205">OVS DPDK设备内存模型</a></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://yo-gurts.github.io">(ง'̀-'́)ง</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://yo-gurts.github.io/2022/05/23/OpenVSwitch-DPDK-%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95/">https://yo-gurts.github.io/2022/05/23/OpenVSwitch-DPDK-%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://yo-gurts.github.io" target="_blank">(╯°□°）╯︵ ┻━┻ </a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/OpenVSwitch/">OpenVSwitch</a><a class="post-meta__tags" href="/tags/DPDK/">DPDK</a></div><div class="post_share"><div class="social-share" data-image="https://s2.loli.net/2022/11/17/NGf2mpwasOYzVIA.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2022/05/16/Linux%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-%E7%BA%BF%E7%A8%8B%E6%B1%A0/" title="Linux网络编程-线程池"><img class="cover" src="https://s2.loli.net/2022/11/17/UeWP8jCq6dJZSGD.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Linux网络编程-线程池</div></div></a></div><div class="next-post pull-right"><a href="/2022/06/03/OpenVSwitch-%E6%8E%A7%E5%88%B6%E5%99%A8ONOS/" title="OpenVSwitch-控制器ONOS"><img class="cover" src="https://s2.loli.net/2022/11/17/UeWP8jCq6dJZSGD.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">OpenVSwitch-控制器ONOS</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2022/07/18/OpenVSwitch-%E6%B5%8B%E8%AF%95%E6%8B%93%E6%89%91/" title="OpenVSwitch-测试拓扑"><img class="cover" src="https://s2.loli.net/2022/11/17/BeiQmkw4Ya1gvPx.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-07-18</div><div class="title">OpenVSwitch-测试拓扑</div></div></a></div><div><a href="/2022/05/12/OpenVSwitch-%E7%BC%96%E8%AF%91%E5%8F%8A%E5%90%AF%E5%8A%A8/" title="OpenVSwitch-编译及启动"><img class="cover" src="https://s2.loli.net/2022/11/17/BeiQmkw4Ya1gvPx.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-05-12</div><div class="title">OpenVSwitch-编译及启动</div></div></a></div><div><a href="/2022/06/03/OpenVSwitch-%E6%8E%A7%E5%88%B6%E5%99%A8ONOS/" title="OpenVSwitch-控制器ONOS"><img class="cover" src="https://s2.loli.net/2022/11/17/UeWP8jCq6dJZSGD.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-06-03</div><div class="title">OpenVSwitch-控制器ONOS</div></div></a></div><div><a href="/2022/11/01/OpenVSwitch-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" title="OpenVSwitch-数据结构"><img class="cover" src="https://s2.loli.net/2022/11/17/UeWP8jCq6dJZSGD.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-11-01</div><div class="title">OpenVSwitch-数据结构</div></div></a></div></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://s2.loli.net/2024/09/17/3NdhvxIcPRVpufD.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">(ง'̀-'́)ง</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">35</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">46</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/yo-gurts"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/yo-gurts" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:yusong1117.u@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E6%95%B0%E8%AF%B4%E6%98%8E"><span class="toc-number">1.</span> <span class="toc-text">参数说明</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Open-vSwitch-Table"><span class="toc-number">1.1.</span> <span class="toc-text">Open_vSwitch Table</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95%E8%AF%B4%E6%98%8E"><span class="toc-number">2.</span> <span class="toc-text">测试说明</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#base"><span class="toc-number">3.</span> <span class="toc-text">base</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95%E7%BB%93%E6%9E%9C"><span class="toc-number">3.1.</span> <span class="toc-text">测试结果</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#vhost-user"><span class="toc-number">4.</span> <span class="toc-text">vhost-user</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95%E7%BB%93%E6%9E%9C-1"><span class="toc-number">4.1.</span> <span class="toc-text">测试结果</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2send-1recv"><span class="toc-number">5.</span> <span class="toc-text">2send-1recv</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#QEMU"><span class="toc-number">6.</span> <span class="toc-text">QEMU</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95%E7%BB%93%E6%9E%9C-2"><span class="toc-number">6.1.</span> <span class="toc-text">测试结果</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%89%A9%E7%90%86%E7%BD%91%E5%8D%A1"><span class="toc-number">7.</span> <span class="toc-text">物理网卡</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#ovs"><span class="toc-number">7.1.</span> <span class="toc-text">ovs</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ovs-dpdk"><span class="toc-number">7.2.</span> <span class="toc-text">ovs-dpdk</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95%E7%BB%93%E6%9E%9C-3"><span class="toc-number">7.3.</span> <span class="toc-text">测试结果</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#vhost-user-1"><span class="toc-number">7.4.</span> <span class="toc-text">vhost-user</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#OVS-OVS"><span class="toc-number">7.5.</span> <span class="toc-text">OVS-OVS</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#OVS-OVS-OVS"><span class="toc-number">7.6.</span> <span class="toc-text">OVS-OVS-OVS</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95ATS"><span class="toc-number">7.6.1.</span> <span class="toc-text">测试ATS</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#veth-OVS-veth"><span class="toc-number">7.7.</span> <span class="toc-text">veth-OVS-veth</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#PKTGEN-OVS-TESTPMD"><span class="toc-number">7.8.</span> <span class="toc-text">PKTGEN-OVS-TESTPMD</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B5%8B%E8%AF%951"><span class="toc-number">7.8.1.</span> <span class="toc-text">测试1</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B5%8B%E8%AF%952"><span class="toc-number">7.8.2.</span> <span class="toc-text">测试2</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%B8%E5%85%B3%E8%B5%84%E6%96%99"><span class="toc-number">8.</span> <span class="toc-text">相关资料</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2024/09/11/Cvitek-reboot/" title="Cvitek-busybox init/reboot/poweroff"><img src="https://s2.loli.net/2022/11/17/Zm4kDRxypb5ez3q.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Cvitek-busybox init/reboot/poweroff"/></a><div class="content"><a class="title" href="/2024/09/11/Cvitek-reboot/" title="Cvitek-busybox init/reboot/poweroff">Cvitek-busybox init/reboot/poweroff</a><time datetime="2024-09-11T09:57:02.000Z" title="发表于 2024-09-11 17:57:02">2024-09-11</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/08/11/Scripts-git_tools/" title="Scripts-管理多个 git 仓库"><img src="https://s2.loli.net/2022/11/17/9ZBEesyr14aJhPM.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Scripts-管理多个 git 仓库"/></a><div class="content"><a class="title" href="/2024/08/11/Scripts-git_tools/" title="Scripts-管理多个 git 仓库">Scripts-管理多个 git 仓库</a><time datetime="2024-08-11T03:37:00.000Z" title="发表于 2024-08-11 11:37:00">2024-08-11</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/06/04/Cvitek-usbcamera%E9%9C%80%E6%B1%82/" title="Alios USB camera 常见需求处理"><img src="https://s2.loli.net/2022/11/17/BeiQmkw4Ya1gvPx.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Alios USB camera 常见需求处理"/></a><div class="content"><a class="title" href="/2024/06/04/Cvitek-usbcamera%E9%9C%80%E6%B1%82/" title="Alios USB camera 常见需求处理">Alios USB camera 常见需求处理</a><time datetime="2024-06-04T03:19:42.000Z" title="发表于 2024-06-04 11:19:42">2024-06-04</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/05/15/USB-UVC_extension/" title="UVC 扩展单元"><img src="https://s2.loli.net/2022/11/17/hF7KodYmE6iPWqg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="UVC 扩展单元"/></a><div class="content"><a class="title" href="/2024/05/15/USB-UVC_extension/" title="UVC 扩展单元">UVC 扩展单元</a><time datetime="2024-05-15T14:26:44.000Z" title="发表于 2024-05-15 22:26:44">2024-05-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/04/14/gdb/" title="gdb"><img src="https://s2.loli.net/2022/11/17/nuDZ3dsB6z4bfVJ.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="gdb"/></a><div class="content"><a class="title" href="/2024/04/14/gdb/" title="gdb">gdb</a><time datetime="2024-04-13T16:33:49.000Z" title="发表于 2024-04-14 00:33:49">2024-04-14</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2024 By (ง'̀-'́)ง</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.13.0"></script><script src="/js/main.js?v=4.13.0"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.1
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, '']
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typesetPromise()
+}</script><script>(() => {
+  const initGitalk = () => {
+    const gitalk = new Gitalk(Object.assign({
+      clientID: 'b740056c42e9eadf273e',
+      clientSecret: 'e5f185fa9a6e27927f7a2672469435c68a288c95',
+      repo: 'Yo-gurts.github.io',
+      owner: 'yo-gurts',
+      admin: ['yo-gurts'],
+      id: 'b4078ee7f5011238036bc5536f612999',
+      updateCountCallback: commentCount
+    },null))
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async() => {
+    if (typeof Gitalk === 'function') initGitalk()
+    else {
+      await getCSS('https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.min.css')
+      await getScript('https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.min.js')
+      initGitalk()
+    }
+  }
+  
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/canvas-fluttering-ribbon.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=4.13.0"></script></div></div></body></html>

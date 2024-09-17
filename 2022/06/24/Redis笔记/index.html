@@ -1,0 +1,1046 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Redis笔记 | (╯°□°）╯︵ ┻━┻ </title><meta name="author" content="(ง'̀-'́)ง"><meta name="copyright" content="(ง'̀-'́)ง"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="介绍 Redis 中的数据类型原理和相关命令。"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://yo-gurts.github.io/2022/06/24/Redis%E7%AC%94%E8%AE%B0/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.13.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":600},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Redis笔记',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-06-24 14:00:44'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+          const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+          const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+          const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+          if (t === undefined) {
+            if (isLightMode) activateLightMode()
+            else if (isDarkMode) activateDarkMode()
+            else if (isNotSpecified || hasNoSupport) {
+              const now = new Date()
+              const hour = now.getHours()
+              const isNight = hour <= 6 || hour >= 18
+              isNight ? activateDarkMode() : activateLightMode()
+            }
+            window.matchMedia('(prefers-color-scheme: dark)').addListener(e => {
+              if (saveToLocal.get('theme') === undefined) {
+                e.matches ? activateDarkMode() : activateLightMode()
+              }
+            })
+          } else if (t === 'light') activateLightMode()
+          else activateDarkMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="google-site-verification" content="MP347_Nl-SqfnOi3FZSI69WSb8J_rk_jEsa3jL4ODCI" /><meta name="generator" content="Hexo 6.1.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://s2.loli.net/2024/09/17/3NdhvxIcPRVpufD.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">35</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">46</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background: transparent"><nav id="nav"><span id="blog-info"><a href="/" title="(╯°□°）╯︵ ┻━┻ "><span class="site-name">(╯°□°）╯︵ ┻━┻ </span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Redis笔记</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2022-06-24T06:00:44.000Z" title="发表于 2022-06-24 14:00:44">2022-06-24</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-06-24T06:00:44.000Z" title="更新于 2022-06-24 14:00:44">2022-06-24</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Redis/">Redis</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">5.1k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>20分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Redis笔记"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/2022/06/24/Redis%E7%AC%94%E8%AE%B0/#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>Redis 是一个高性能的、键值对数据库，<strong>数据直接存储在内存中</strong>，只有需要持久化时才写入硬盘。</p>
+<h2 id="安装启动"><a href="#安装启动" class="headerlink" title="安装启动"></a>安装启动</h2><p>ubuntu 下使用 apt 安装的 redis 版本较老，可采用源码安装。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">wget https://download.redis.io/releases/redis-6.2.6.tar.gz &amp;&amp; tar xzf redis-6.2.6.tar.gz</span><br><span class="line"></span><br><span class="line"><span class="built_in">cd</span> redis-stable &amp;&amp; make -j</span><br><span class="line">make <span class="built_in">test</span></span><br><span class="line">sudo make install</span><br><span class="line">sudo <span class="built_in">mkdir</span> /etc/redis &amp;&amp; sudo <span class="built_in">cp</span> redis.conf /etc/redis <span class="comment"># 复制配置文件到 /etc</span></span><br></pre></td></tr></table></figure>
+
+<p>安装完成后，会有以下命令可用：</p>
+<ul>
+<li><strong>redis-cli</strong>: Redis客户端</li>
+<li><strong>redis-server</strong>: Redis服务器启动命令</li>
+<li><strong>redis-benchmark</strong>: 性能测试工具</li>
+<li><strong>redis-check-aof</strong>: 修复有问题的AOF文件</li>
+<li><strong>redis-check-rdb</strong>: 修复有问题的RDB文件</li>
+<li><strong>redis-sentinel</strong>: Redis集群使用</li>
+</ul>
+<p>设置好配置文件后，启动方法为：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">redis-server /etc/redis/redis.conf</span><br></pre></td></tr></table></figure>
+
+<h3 id="配置文件"><a href="#配置文件" class="headerlink" title="配置文件"></a>配置文件</h3><p><code>Redis</code> 启动时有很多配置参数，这些参数设置均在 <code>redis.conf</code> 中，且有注释和分类，<strong>注意：redis 配置文件中注释必须以 # 开头，且必须单独一行</strong>。</p>
+<p><strong>除了在启动前通过修改配置文件的方式修改配置，启动后也可通过<code>CONFIG SET/GET</code>命令修改、查看配置。</strong></p>
+<p><code>Redis</code> 的所有特性和功能都在配置文件中有所体现，建议仔细了解。</p>
+<p><strong>NETWORK</strong>:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">bind</span> 127.0.0.1 ::1  <span class="comment"># 允许指定地址的host访问server，如果要全部都能访问，注释掉该行</span></span><br><span class="line">                    <span class="comment"># 注意，即使注释掉了bind，但protect-mode启动了的，</span></span><br><span class="line">                    <span class="comment"># 并且没有给server设置密码，外部仍然无法访问</span></span><br><span class="line">protected-mode <span class="built_in">yes</span>  <span class="comment"># 保护模式，禁止其他主机在无密码的方式下访问本机的redis-server</span></span><br><span class="line">port 6379           <span class="comment"># 监听端口号</span></span><br><span class="line">tcp-backlog         <span class="comment"># 连接队列=未完成三次握手队列+已经完成三次握手队列，高并发环境下需要高 backlog 值</span></span><br><span class="line"><span class="built_in">timeout</span> 0           <span class="comment"># 客户端N秒空闲后，关闭连接，0永不关闭</span></span><br><span class="line">tcp-keepalive 300   <span class="comment"># 对访问客户端的一种心跳检测，每个n秒检测一次，建议设60</span></span><br><span class="line">unixsocket /tmp/redis.sock <span class="comment"># 使用unixsocket连接，比 ip+port 效率更高</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>GENERAL</strong>:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">daemonize <span class="built_in">yes</span>       <span class="comment"># 设置守护进程（后台启动），关闭当前终端后不会关闭redis</span></span><br><span class="line">loglevel notice     <span class="comment"># 日志级别，总共支持四个级别：debug、verbose、notice、warning</span></span><br><span class="line">logfile <span class="string">&quot;&quot;</span>          <span class="comment"># 指定日志文件名称</span></span><br><span class="line">databases 16        <span class="comment"># 设置库的数量</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>SNAPSHOTTING</strong> 保存数据到磁盘文件 <strong>RDB</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">save 3600 1 300 100 60 10000</span><br><span class="line">                    <span class="comment"># 指定在多长时间内，有多少次更新操作，就将数据同步到数据文件，可多个条件配合</span></span><br><span class="line">rdbcompression <span class="built_in">yes</span>  <span class="comment"># 指定存储至本地数据库时是否压缩数据，默认为 yes，Redis 采用 LZF 压缩，</span></span><br><span class="line">                    <span class="comment"># 如果为了节省 CPU 时间，可以关闭该选项，但会导致数据库文件变的巨大</span></span><br><span class="line">dbfilename dump.rdb <span class="comment"># 指定本地数据库文件名</span></span><br><span class="line"><span class="built_in">dir</span> ./              <span class="comment"># 指定本地数据库文件的存放路径</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>REPLICATION</strong> 同步到从机</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">replicaof &lt;masterip&gt; &lt;masterport&gt;</span><br><span class="line">                    <span class="comment"># 设置当本机为 slave 服务时，设置 master 服务的 IP 地址及端口，</span></span><br><span class="line">                    <span class="comment"># 在 Redis 启动时，它会自动从 master 进行数据同步</span></span><br><span class="line">masterauth &lt;master-password&gt;</span><br><span class="line">                    <span class="comment"># 当 master 服务设置了密码保护时，slave 服务连接 master 的密码</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>SECURITY</strong>:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">requirepass 123456  <span class="comment"># 设置server密码，默认不带密码！！！</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>CLIENTS</strong>:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">maxclients 120      <span class="comment"># 最多连接的客户端数目，设置同一时间最大客户端连接数，默认无限制，</span></span><br><span class="line">                    <span class="comment"># Redis 可同时打开的客户端连接数为Redis进程可打开的最大文件描述符数</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>MEMORY</strong>:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">maxmemory &lt;bytes&gt;   <span class="comment"># 指定 Redis 最大内存限制，Redis 数据都在内存中，达到最大内存后，</span></span><br><span class="line">                    <span class="comment"># Redis 会先尝试清除部分key，清除策略由 maxmemory-policy 指定</span></span><br><span class="line">                    <span class="comment"># 若无法有效清除，将无法再进行写入操作，但仍然可以进行读取操作。</span></span><br><span class="line">                    <span class="comment"># Redis 新的 vm 机制，会把 Key 存放内存，Value 会存放在 swap 区</span></span><br><span class="line">maxmemory-policy noeviction</span><br><span class="line">                    <span class="comment"># volatile-lru：使用 LRU 算法移除 key，只对设置了过期时间的键；</span></span><br><span class="line">                    <span class="comment"># allkeys-lru：在所有集合 key 中，使用 LRU 算法移除 key</span></span><br><span class="line">                    <span class="comment"># LRU是淘汰最长时间没有被使用的，LFU是淘汰一段时间内，使用次数最少的</span></span><br><span class="line">                    <span class="comment"># volatile-lfu：使用 LFU 算法移除 key，只对设置了过期时间的键；</span></span><br><span class="line">                    <span class="comment"># allkeys-lfu：在所有集合 key 中，使用 LFU 算法移除 key</span></span><br><span class="line">                    <span class="comment"># volatile-random：在过期集合中移除随机的 key，只对设置了过期时间的键</span></span><br><span class="line">                    <span class="comment"># allkeys-random：在所有集合 key 中，移除随机的 key</span></span><br><span class="line">                    <span class="comment"># volatile-ttl：移除那些 TTL 值最小的 key，即那些最近要过期的 key</span></span><br><span class="line">                    <span class="comment"># noeviction：不进行移除。针对写操作，只是返回错误信息</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>APPEND ONLY MODE</strong> 保存写操作到文件 <strong>AOF</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">appendonly no       <span class="comment"># 是否启用AOF，将写操作记录到文件，以便重启时恢复数据</span></span><br><span class="line">appendfilename appendonly.aof</span><br><span class="line">                    <span class="comment"># 指定保存操作信息的文件名</span></span><br><span class="line">appenddirname <span class="string">&quot;&quot;</span>    <span class="comment"># 指定保存操作信息的文件路径</span></span><br><span class="line">appendfsync no      <span class="comment"># 指定更新操作记录的条件：</span></span><br><span class="line">                    <span class="comment"># no：表示不主动进行同步，把同步时机交给操作系统。</span></span><br><span class="line">                    <span class="comment"># always：始终同步，每次Redis的写入都会立刻记入日志；性能较差但数据完整性比较好</span></span><br><span class="line">                    <span class="comment"># everysec：表示每秒同步一次，如果宕机，本秒的数据可能丢失。</span></span><br><span class="line">auto-aof-rewrite-percentage 100</span><br><span class="line">                    <span class="comment"># AOF 采用文件追加方式，文件会越来越大为避免出现此种情况，新增了重写机制,</span></span><br><span class="line">                    <span class="comment"># 当AOF 文件的大小超过所设定的阈值时，Redis 就会启动 AOF 文件的内容压缩，</span></span><br><span class="line">                    <span class="comment"># 只保留可以恢复数据的最小指令集</span></span><br><span class="line">auto-aof-rewrite-min-size 64mb</span><br><span class="line">                    <span class="comment"># 设置重写的基准值，最小文件 64MB。达到这个值开始重写</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="Docker-运行"><a href="#Docker-运行" class="headerlink" title="Docker 运行"></a>Docker 运行</h3><p><code>Redis</code> 官方有提供镜像，可直接<code>docker pull redis:6.2.6</code>拉取。</p>
+<p>主要是启动时的端口和文件映射，需要根据<code>Redis</code>存储的文件路径和使用的端口确定。下面是一个例子：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 1. 准备一个空文件夹存放redis相关的数据</span></span><br><span class="line"><span class="built_in">mkdir</span> redisdata &amp;&amp; <span class="built_in">cd</span> redisdata</span><br><span class="line"><span class="comment"># 2. 创建并编辑配置文件，下面给了一个示例</span></span><br><span class="line">vim redis.conf</span><br><span class="line"><span class="comment"># 3. 拉取 redis 镜像</span></span><br><span class="line">docker pull redis:6.2.6</span><br><span class="line"><span class="comment"># 4. 启动容器，下面非后台运行，使用 `-d` 后台运行</span></span><br><span class="line">docker run --name redis -p 6379:6379 -v $(<span class="built_in">pwd</span>):/data \</span><br><span class="line">    redis:6.2.6 redis-server /data/redis.conf</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意事项</strong>：</p>
+<ol>
+<li><p><strong>配置文件的中设置不对会造成容器启动后又马上</strong><code>Exit</code>，一个简单的示例如下：</p>
+ <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># bind 127.0.0.1 ::1</span></span><br><span class="line"><span class="comment"># daemonize 必须设置为默认的 no</span></span><br><span class="line">daemonize no</span><br><span class="line"><span class="comment"># 设置RDB备份文件目录</span></span><br><span class="line"><span class="built_in">dir</span> /data/</span><br><span class="line"><span class="comment"># 目录不存在也会导致容器自动停止</span></span><br><span class="line">logfile <span class="string">&quot;/data/redis-server.log&quot;</span></span><br><span class="line"><span class="comment"># 设置密码</span></span><br><span class="line">requirepass 123456</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>配置文件中的相关路径要有效。</p>
+</li>
+<li><p>如果在 <code>Docker</code> 中运行 <code>Redis</code> ，并且设置 <code>daemonize</code> 为 <code>yes</code>，即将 <code>Redis</code> 进程守护化时，最终的 <code>Docker exec</code> 进程（启动 <code>Redis</code> 的那个进程）就无事可做了，所以该进程退出，容器也随之结束。<a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/50790197/why-redis-in-docker-need-set-daemonize-to-no">来自 stackoverflow 上的回答</a></p>
+</li>
+<li><p>如果希望 <code>redis</code> <strong>后台运行可以使用 <code>-d</code> 选项</strong>，不过这样启动失败时难以查看错误的日志信息，所以可以先不带该选项测试是否可正常启动。无误后再使用<code>-d</code>选项。</p>
+</li>
+<li><p><strong>启动失败后，记得删除掉该容器</strong>，再重新尝试启动，否则名字冲突导致启动失败。</p>
+</li>
+</ol>
+<p>也可以自制镜像，将设置好的配置文件拷贝到容器中。</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">FROM</span> redis</span><br><span class="line"><span class="keyword">COPY</span><span class="language-bash"> redis.conf /etc/redis/redis.conf</span></span><br><span class="line"><span class="keyword">CMD</span><span class="language-bash"> [ <span class="string">&quot;redis-server&quot;</span>, <span class="string">&quot;/etc/redis/redis.conf&quot;</span>]</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="基础操作"><a href="#基础操作" class="headerlink" title="基础操作"></a>基础操作</h2><h3 id="redis-cli"><a href="#redis-cli" class="headerlink" title="redis-cli"></a>redis-cli</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">redis-cli -h 127.0.0.1 -p 6379 -a password</span><br><span class="line"><span class="comment">#  -h &lt;hostname&gt;      Server hostname (default: 127.0.0.1).</span></span><br><span class="line"><span class="comment">#  -s &lt;socket&gt;        Server socket (overrides hostname and port).</span></span><br><span class="line"><span class="comment">#  -a &lt;password&gt;      Password to use when connecting to the server.</span></span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th align="left">cmd</th>
+<th align="left">explain</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>auth</strong> passwd</td>
+<td align="left">授权</td>
+</tr>
+<tr>
+<td align="left"><strong>ping</strong></td>
+<td align="left">测试连通性</td>
+</tr>
+<tr>
+<td align="left"><strong>shutdown</strong></td>
+<td align="left">关闭数据库服务进程 <code>redis-server</code></td>
+</tr>
+<tr>
+<td align="left"><strong>select</strong> index</td>
+<td align="left">切换数据库</td>
+</tr>
+<tr>
+<td align="left"><strong>create</strong> index</td>
+<td align="left">创建数据库</td>
+</tr>
+<tr>
+<td align="left"><strong>drop</strong> index</td>
+<td align="left">删除数据库</td>
+</tr>
+</tbody></table>
+<h3 id="Key"><a href="#Key" class="headerlink" title="Key"></a>Key</h3><table>
+<thead>
+<tr>
+<th align="left">cmd</th>
+<th align="left">explain</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>keys</strong> *</td>
+<td align="left">查看当前库的所有key</td>
+</tr>
+<tr>
+<td align="left"><strong>exists</strong> key</td>
+<td align="left">查看key是否存在</td>
+</tr>
+<tr>
+<td align="left"><strong>del</strong> key</td>
+<td align="left">删除key</td>
+</tr>
+<tr>
+<td align="left"><strong>unlink</strong> key</td>
+<td align="left">删除key，只是将key从数据库中删除，真正的删除会在后续异步操作</td>
+</tr>
+<tr>
+<td align="left"><strong>type</strong> key</td>
+<td align="left">查看key的类型</td>
+</tr>
+<tr>
+<td align="left"><strong>expire</strong> key seconds</td>
+<td align="left">设置key的过期时间</td>
+</tr>
+<tr>
+<td align="left"><strong>ttl</strong> key</td>
+<td align="left">查看key的过期时间</td>
+</tr>
+<tr>
+<td align="left"><strong>dbsize</strong></td>
+<td align="left">查看当前库的key数量</td>
+</tr>
+<tr>
+<td align="left"><strong>flushdb</strong></td>
+<td align="left">清空当前库</td>
+</tr>
+<tr>
+<td align="left"><strong>flushall</strong></td>
+<td align="left">清空所有库</td>
+</tr>
+</tbody></table>
+<p>虽然 <code>Redis</code> 是 <code>key-value</code> 的方式存储数据，<code>key</code> 与 <code>key</code> 之间没有关系，但通常可以通过 <code>key</code> 的命名来提供一定的“信息”，<code>Redis</code> 的官方文档推荐使用冒号<code>:</code>作为键名的分隔符，因为它可以提高可读性和维护性，并且可以利用<code>SCAN</code>命令进行模式匹配。并且通常在使用 <code>GUI</code> 工具查看数据时，也会用<code>:</code>来分组。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">set</span> <span class="string">md|dv:label:json</span> <span class="number">0</span></span><br><span class="line"><span class="string">set</span> <span class="string">md|dv:a94de756-b776-496b-bfe1-a6f3edd1d0cd</span> <span class="number">0</span></span><br><span class="line"><span class="string">set</span> <span class="string">md|dv:0f0a1014-43be-4531-95ee-34fdffc0b681</span> <span class="number">0</span></span><br><span class="line"><span class="string">set</span> <span class="string">md|dv:service:name:device-rest</span> <span class="number">0</span></span><br><span class="line"><span class="string">set</span> <span class="string">md|dv:label:float</span> <span class="number">0</span></span><br></pre></td></tr></table></figure>
+
+<p>上面的几个 <code>key</code> 在 <code>redis-desktop-manager</code> 中显示效果如下：</p>
+<p><img src="/../images/Redis%E7%AC%94%E8%AE%B0/image-20230307231649741.png" alt="image-20230307231649741"></p>
+<p>注意：是以 <code>:</code> 分割，<code>key</code>中的<code>|</code>没有实际意义。</p>
+<h3 id="String"><a href="#String" class="headerlink" title="String"></a>String</h3><p>String 是二进制安全的，可以包含任何数据。如jpg图片或者序列化的对象，但最大长度512MB。</p>
+<p>String 的数据结构为动态字符串，当字符串小于1Mb时，加倍扩容；大于1Mb时，一次扩容增加1Mb。</p>
+<table>
+<thead>
+<tr>
+<th align="left">cmd</th>
+<th align="left">explain</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>set</strong> key value</td>
+<td align="left">设置key的值，如果key存在，则覆盖</td>
+</tr>
+<tr>
+<td align="left"><strong>get</strong> key</td>
+<td align="left">查看 key 对应的值</td>
+</tr>
+<tr>
+<td align="left"><strong>append</strong> key value</td>
+<td align="left">在key的值后面追加value</td>
+</tr>
+<tr>
+<td align="left"><strong>strlen</strong> key</td>
+<td align="left">查看key的长度</td>
+</tr>
+<tr>
+<td align="left"><strong>setnx</strong> key value</td>
+<td align="left">只有当key不存在时，才设置key的值，否则不设置</td>
+</tr>
+<tr>
+<td align="left"><strong>incr</strong> key</td>
+<td align="left">将key的值增加1</td>
+</tr>
+<tr>
+<td align="left"><strong>decr</strong> key</td>
+<td align="left">将key的值减少1</td>
+</tr>
+<tr>
+<td align="left"><strong>incrby</strong> key increment</td>
+<td align="left">将key的值增加increment</td>
+</tr>
+<tr>
+<td align="left"><strong>decrby</strong> key decrement</td>
+<td align="left">将key的值减少decrement</td>
+</tr>
+</tbody></table>
+<p><strong>批量操作的命令</strong>：</p>
+<table>
+<thead>
+<tr>
+<th align="left">cmd</th>
+<th align="left">explain</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>mset</strong> key1 value1 … keyN valueN</td>
+<td align="left">设置多个key的值</td>
+</tr>
+<tr>
+<td align="left"><strong>mget</strong> key1 … keyN</td>
+<td align="left">获取多个key的值</td>
+</tr>
+<tr>
+<td align="left"><strong>msetnx</strong> key1 value1 … keyN valueN</td>
+<td align="left">只有当所有key都不存在时，才设置多个key的值，一个失败则全部失败</td>
+</tr>
+<tr>
+<td align="left"><strong>getrange</strong> key start end</td>
+<td align="left">获取key的值的一部分 [start, end], 包含start 和end</td>
+</tr>
+<tr>
+<td align="left"><strong>setrange</strong> key offset value</td>
+<td align="left">设置key的值的一部分 [offset, offset+value.length()], <br />如果offset+value.length()大于key的长度，则扩展key的长度</td>
+</tr>
+<tr>
+<td align="left"><strong>setex</strong> key seconds value</td>
+<td align="left">设置key的值并设置过期时间</td>
+</tr>
+<tr>
+<td align="left"><strong>getset</strong> key value</td>
+<td align="left">设置key的值，并返回key的旧值</td>
+</tr>
+</tbody></table>
+<h3 id="List"><a href="#List" class="headerlink" title="List"></a>List</h3><p>列表是值的结构，多个字符串的集合，底层是一个双向链表，对两端的操作性能很高，对中间的操作性能较差。</p>
+<p>底层：quicklist，将部分数据组合为一个ziplist，多个ziplist通过前后指针组合为双向链表（quicklist），避免对单个小值如 int 分配两个前后指针，节约空间。</p>
+<table>
+<thead>
+<tr>
+<th align="left">cmd</th>
+<th align="left">explain</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>lpush</strong> key value</td>
+<td align="left">在key的左边添加一个值（也可同时插入多个值）</td>
+</tr>
+<tr>
+<td align="left"><strong>rpush</strong> key value</td>
+<td align="left">在key的右边添加一个值</td>
+</tr>
+<tr>
+<td align="left"><strong>lrange</strong> key start stop</td>
+<td align="left">获取key的值的一部分，包含start和stop</td>
+</tr>
+<tr>
+<td align="left"><strong>lpop</strong> key</td>
+<td align="left">删除并返回key的左边的值（值在键在，值空键消）</td>
+</tr>
+<tr>
+<td align="left"><strong>rpop</strong> key</td>
+<td align="left">删除并返回key的右边的值</td>
+</tr>
+<tr>
+<td align="left"><strong>lpoplpush</strong> source destination</td>
+<td align="left">将source的左边的值移动到destination的右边</td>
+</tr>
+<tr>
+<td align="left"><strong>lpoprpush</strong> source destination</td>
+<td align="left">将source的左边的值移动到destination的右边</td>
+</tr>
+<tr>
+<td align="left"><strong>rpoprpush</strong> source destination</td>
+<td align="left">将source的右边的值移动到destination的左边</td>
+</tr>
+<tr>
+<td align="left"><strong>rpoplpush</strong> source destination</td>
+<td align="left">将source的右边的值移动到destination的左边</td>
+</tr>
+<tr>
+<td align="left"><strong>lindex</strong> key index</td>
+<td align="left">获取key的值的第index个元素</td>
+</tr>
+<tr>
+<td align="left"><strong>llen</strong> key</td>
+<td align="left">获取key的值的长度</td>
+</tr>
+<tr>
+<td align="left"><strong>linsert</strong> key before</td>
+<td align="left">after pivot value</td>
+</tr>
+<tr>
+<td align="left"><strong>lrem</strong> key count value</td>
+<td align="left">从左边删除count个值为value的元素</td>
+</tr>
+<tr>
+<td align="left"><strong>lset</strong> key index value</td>
+<td align="left">设置key的值的第index个元素的值</td>
+</tr>
+</tbody></table>
+<h3 id="Hash"><a href="#Hash" class="headerlink" title="Hash"></a>Hash</h3><p>值部分也是 field-value 结构！</p>
+<p>底层有两种：当数据较少时用zipist，当数据较多时用hashtable。</p>
+<table>
+<thead>
+<tr>
+<th align="left">cmd</th>
+<th align="left">explain</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>hset</strong> key field value</td>
+<td align="left">设置key的值的field的值</td>
+</tr>
+<tr>
+<td align="left"><strong>hget</strong> key field</td>
+<td align="left">获取key的值的field的值</td>
+</tr>
+<tr>
+<td align="left"><strong>hmset</strong> key field1 value1 … fieldN valueN</td>
+<td align="left">设置key的值的多个field的值</td>
+</tr>
+<tr>
+<td align="left"><strong>hexists</strong> key field</td>
+<td align="left">判断key的值是否包含field</td>
+</tr>
+<tr>
+<td align="left"><strong>hkeys</strong> key</td>
+<td align="left">获取key的值的所有field</td>
+</tr>
+<tr>
+<td align="left"><strong>hvals</strong> key</td>
+<td align="left">获取key的值的所有value</td>
+</tr>
+<tr>
+<td align="left"><strong>hlen</strong> key</td>
+<td align="left">获取key的值的长度</td>
+</tr>
+<tr>
+<td align="left"><strong>hdel</strong> key field</td>
+<td align="left">删除key的值的field</td>
+</tr>
+<tr>
+<td align="left"><strong>hincrby</strong> key field increment</td>
+<td align="left">设置key的值的field的值加increment</td>
+</tr>
+<tr>
+<td align="left"><strong>hsetnx</strong> key field value</td>
+<td align="left">只有在key的值的field不存在时，才设置key的值的field的值</td>
+</tr>
+</tbody></table>
+<h3 id="Set"><a href="#Set" class="headerlink" title="Set"></a>Set</h3><p>string 类型的无序集合，底层为哈希表，与list类似，但是没有重复的值，每个值都是唯一的。</p>
+<p>底层：字典，用hash实现。</p>
+<table>
+<thead>
+<tr>
+<th align="left">cmd</th>
+<th align="left">explain</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>sadd</strong> key value</td>
+<td align="left">将一个或多个值插入到key的集合中</td>
+</tr>
+<tr>
+<td align="left"><strong>smembers</strong> key</td>
+<td align="left">获取key的值的所有元素</td>
+</tr>
+<tr>
+<td align="left"><strong>sismember</strong> key value</td>
+<td align="left">判断key的值是否包含value</td>
+</tr>
+<tr>
+<td align="left"><strong>scard</strong> key</td>
+<td align="left">获取key的值的长度</td>
+</tr>
+<tr>
+<td align="left"><strong>srem</strong> key value</td>
+<td align="left">删除key的值中的value</td>
+</tr>
+<tr>
+<td align="left"><strong>spop</strong> key</td>
+<td align="left">随机获取并删除key的值中的一个元素</td>
+</tr>
+<tr>
+<td align="left"><strong>srandmember</strong> key</td>
+<td align="left">随机获取key的值中的一个元素，但不删除</td>
+</tr>
+<tr>
+<td align="left"><strong>smove</strong> source destination value</td>
+<td align="left">将source的值中的value移动到destination的值中</td>
+</tr>
+<tr>
+<td align="left"><strong>sinter</strong> source1 … sourceN</td>
+<td align="left">获取所有source的值的交集</td>
+</tr>
+<tr>
+<td align="left"><strong>sunion</strong> source1 … sourceN</td>
+<td align="left">获取所有source的值的并集</td>
+</tr>
+<tr>
+<td align="left"><strong>sdiff</strong> source1 … sourceN</td>
+<td align="left">获取所有source的值的差集</td>
+</tr>
+</tbody></table>
+<h3 id="Zset"><a href="#Zset" class="headerlink" title="Zset"></a>Zset</h3><p>与set类似，但是一个有序集合，每个值都有一个score，score越小，编号越小</p>
+<p>底层：hash + 跳跃表</p>
+<table>
+<thead>
+<tr>
+<th align="left">cmd</th>
+<th align="left">explain</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>zadd</strong> key score value</td>
+<td align="left">将一个或多个值插入到key的有序集合中</td>
+</tr>
+<tr>
+<td align="left"><strong>zrange</strong> key start stop [withscores]</td>
+<td align="left">获取key的值的一部分，包含start和stop</td>
+</tr>
+<tr>
+<td align="left"><strong>zrangebyscore</strong> key min max [withscores]</td>
+<td align="left">获取key的值的一部分，包含min和max</td>
+</tr>
+<tr>
+<td align="left"><strong>zrevrangebyscore</strong> key max min [withscores]</td>
+<td align="left">获取key的值的一部分，包含max和min</td>
+</tr>
+<tr>
+<td align="left"><strong>zincrby</strong> key increment value</td>
+<td align="left">设置key的值的field的值加increment</td>
+</tr>
+<tr>
+<td align="left"><strong>zrem</strong> key value</td>
+<td align="left">删除key指定值的field</td>
+</tr>
+<tr>
+<td align="left"><strong>zcount</strong> key min max</td>
+<td align="left">获取指定区间的元素个数</td>
+</tr>
+<tr>
+<td align="left"><strong>zrank</strong> key value</td>
+<td align="left">获取key的值的field的编号，从0开始</td>
+</tr>
+</tbody></table>
+<h3 id="Bitmap"><a href="#Bitmap" class="headerlink" title="Bitmap"></a>Bitmap</h3><p>bitmaps 本身不是一种数据类型，就是字符串，但可以对位进行操作。可以把bitmaps想象成一个以位为单位的数组，每一位只能存储0或1，数组的下标在bitmaps中叫做偏移量offset。</p>
+<table>
+<thead>
+<tr>
+<th align="left">cmd</th>
+<th align="left">explain</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>setbit</strong> key offset value</td>
+<td align="left">value 只能是 0 或 1</td>
+</tr>
+<tr>
+<td align="left"><strong>getbit</strong> key offset</td>
+<td align="left">获取偏移位上的值</td>
+</tr>
+<tr>
+<td align="left"><strong>bitcount</strong> key [start end]</td>
+<td align="left">获取指定区间（未指定区间则全部）的<code>1</code>元素个数，<strong>区间单位是字节byte 而不是 bit</strong></td>
+</tr>
+<tr>
+<td align="left"><strong>bitop</strong> operation destkey srckey1 … srckeyN</td>
+<td align="left">进行指定操作，操作类型有：and, or, xor, not</td>
+</tr>
+</tbody></table>
+<h3 id="Geo"><a href="#Geo" class="headerlink" title="Geo"></a>Geo</h3><p>就是元素的二维坐标，在地图上就是经纬度。redis提供了经纬度设置、查询、范围查询、距离查询、经纬度Hash等功能。</p>
+<p>有效的经纬度范围是：-180&lt;&#x3D;经度&lt;&#x3D;180, -85&lt;&#x3D;纬度&lt;&#x3D;85，坐标位置超过范围时，返回错误。</p>
+<table>
+<thead>
+<tr>
+<th align="left">cmd</th>
+<th align="left">explain</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>geoadd</strong> key longitude latitude member [longitude latitude member …]</td>
+<td align="left">将一个或多个值插入到key的Geo中</td>
+</tr>
+<tr>
+<td align="left"><strong>geodist</strong> key member1 member2</td>
+<td align="left">获取两个元素之间的距离</td>
+</tr>
+<tr>
+<td align="left"><strong>geopos</strong> key member1 member2</td>
+<td align="left">获取两个元素的坐标</td>
+</tr>
+<tr>
+<td align="left"><strong>geodist</strong> key member1 member2 [m&#x2F;km&#x2F;ft&#x2F;mi]</td>
+<td align="left">获取两个元素之间的距离</td>
+</tr>
+<tr>
+<td align="left"><strong>georadius</strong> key longitude latitude radius [m&#x2F;km&#x2F;ft&#x2F;mi]</td>
+<td align="left">获取指定范围内的元素</td>
+</tr>
+</tbody></table>
+<h2 id="事物"><a href="#事物" class="headerlink" title="事物"></a>事物</h2><p>Redis 事务是一个单独的隔离操作：事务中的所有命令都会序列化、按顺序地执行。事务在执行的过程中，不会被其他客户端发送来的命令请求所打断。</p>
+<p><strong>Redis 事务的主要作用就是串联多个命令防止别的命令插队。</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; multi           <span class="comment"># 开始记录</span></span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379(TX)&gt; <span class="built_in">set</span> k1 v1   <span class="comment"># 命令入队</span></span><br><span class="line">QUEUED</span><br><span class="line">127.0.0.1:6379(TX)&gt; <span class="built_in">set</span> k2 v1</span><br><span class="line">QUEUED</span><br><span class="line">127.0.0.1:6379(TX)&gt; <span class="built_in">set</span> k3 v3</span><br><span class="line">QUEUED</span><br><span class="line">127.0.0.1:6379(TX)&gt; <span class="built_in">exec</span>        <span class="comment"># 执行命令</span></span><br><span class="line">1) OK</span><br><span class="line">2) OK</span><br><span class="line">3) OK</span><br><span class="line">127.0.0.1:6379&gt; get k3          <span class="comment"># 查看事物执行情况</span></span><br><span class="line"><span class="string">&quot;v3&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>从输入 Multi 命令开始，输入的命令都会依次进入命令队列中，但不会执行，直到输入 Exec 后，Redis 会将之前的命令队列中的命令依次执行。组队的过程中可以通过 discard 来放弃组队。</p>
+<h3 id="错误"><a href="#错误" class="headerlink" title="错误"></a>错误</h3><p>错误可能发生在<strong>组队阶段</strong>，或者<strong>执行阶段</strong>。</p>
+<ul>
+<li><strong>组队中某个命令出现了报告错误，执行时整个的所有队列都会被取消。</strong></li>
+<li><strong>如果执行阶段某个命令报出了错误，则只有报错的命令不会被执行，而其他的命令都会执行，不会回滚。</strong></li>
+</ul>
+<h3 id="事务三特性"><a href="#事务三特性" class="headerlink" title="事务三特性"></a>事务三特性</h3><ol>
+<li><strong>单独的隔离操作</strong><br> 事务中的所有命令都会序列化、按顺序地执行。事务在执行的过程中，不会被其他客户端发送来的命令请求所打断。</li>
+<li><strong>没有隔离级别的概念</strong><br> 队列中的命令没有提交之前都不会实际被执行，因为事务提交前任何指令都不会被实际执行</li>
+<li><strong>不保证原子性</strong><br> 事务中如果有一条命令执行失败，其后的命令仍然会被执行，没有回滚</li>
+</ol>
+<h2 id="hiredis-x2F-redis"><a href="#hiredis-x2F-redis" class="headerlink" title="hiredis&#x2F;redis++"></a>hiredis&#x2F;redis++</h2><p>异步操作的命令，或使用了回调函数的操作没有给出例子。</p>
+<h3 id="redis-cli-建立连接"><a href="#redis-cli-建立连接" class="headerlink" title="redis-cli 建立连接"></a>redis-cli 建立连接</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sw/redis++/redis++.h&gt;</span></span></span><br><span class="line"></span><br><span class="line">sw::<span class="function">redis::Redis <span class="title">redis</span><span class="params">(<span class="string">&quot;tcp://127.0.0.1:6379&quot;</span>)</span></span>;</span><br><span class="line">sw::<span class="function">redis::Redis <span class="title">redis</span><span class="params">(<span class="string">&quot;tcp://127.0.0.1:6379&quot;</span>, <span class="string">&quot;password&quot;</span>)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Key-ops"><a href="#Key-ops" class="headerlink" title="Key ops"></a>Key ops</h3><table>
+<thead>
+<tr>
+<th align="left">cmd</th>
+<th align="left"><code>redis++</code></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>keys</strong> *</td>
+<td align="left"><code>std::vector&lt;std::string&gt; keys = redis.keys(&quot;*&quot;);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>exists</strong> key</td>
+<td align="left"><code>bool exists = redis.exists(&quot;key&quot;);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>del</strong> key</td>
+<td align="left"><code>int deleted = redis.del(&quot;key&quot;);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>unlink</strong> key</td>
+<td align="left"><code>int unlinked = redis.unlink(&quot;key&quot;);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>type</strong> key</td>
+<td align="left"><code>sw::redis::RedisType type = redis.type(&quot;key&quot;);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>expire</strong> key seconds</td>
+<td align="left"><code>bool success = redis.expire(&quot;key&quot;, 60);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>ttl</strong> key</td>
+<td align="left"><code>long long ttl = redis.ttl(&quot;key&quot;);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>dbsize</strong></td>
+<td align="left"><code>long long size = redis.dbsize();</code></td>
+</tr>
+<tr>
+<td align="left"><strong>flushdb</strong></td>
+<td align="left"><code>bool success = redis.flushdb();</code></td>
+</tr>
+<tr>
+<td align="left"><strong>flushall</strong></td>
+<td align="left"><code>bool success = redis.flushall();</code></td>
+</tr>
+</tbody></table>
+<h3 id="String-ops"><a href="#String-ops" class="headerlink" title="String ops"></a>String ops</h3><table>
+<thead>
+<tr>
+<th align="left">cmd</th>
+<th align="left"><code>redis++</code></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>set</strong> key value</td>
+<td align="left"><code>bool success = redis.set(&quot;key&quot;, &quot;value&quot;);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>get</strong> key</td>
+<td align="left"><code>std::string value = redis.get(&quot;key&quot;);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>append</strong> key value</td>
+<td align="left"><code>int length = redis.append(&quot;key&quot;, &quot;value&quot;);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>strlen</strong> key</td>
+<td align="left"><code>int length = redis.strlen(&quot;key&quot;);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>setnx</strong> key value</td>
+<td align="left"><code>bool success = redis.setnx(&quot;key&quot;, &quot;value&quot;);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>incr</strong> key</td>
+<td align="left"><code>long long result = redis.incr(&quot;key&quot;);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>decr</strong> key</td>
+<td align="left"><code>long long result = redis.decr(&quot;key&quot;);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>incrby</strong> key increment</td>
+<td align="left"><code>long long result = redis.incrby(&quot;key&quot;, 10);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>decrby</strong> key decrement</td>
+<td align="left"><code>long long result = redis.decrby(&quot;key&quot;, 10);</code></td>
+</tr>
+</tbody></table>
+<p><strong>批量操作的命令</strong>：</p>
+<table>
+<thead>
+<tr>
+<th align="left">cmd</th>
+<th align="left">explain</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>mset</strong> key1 value1 … keyN valueN</td>
+<td align="left"><code>bool success = redis.mset(&#123;&quot;key1&quot;, &quot;value1&quot;, &quot;key2&quot;, &quot;value2&quot;&#125;);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>mget</strong> key1 … keyN</td>
+<td align="left"><code>std::vector&lt;std::string&gt; values = redis.mget(&#123;&quot;key1&quot;, &quot;key2&quot;&#125;);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>msetnx</strong> key1 value1 … keyN valueN</td>
+<td align="left"><code>bool success = redis.msetnx(&#123;&quot;key1&quot;, &quot;value1&quot;, &quot;key2&quot;, &quot;value2&quot;&#125;);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>getrange</strong> key start end</td>
+<td align="left"><code>std::string sub = redis.getrange(&quot;key&quot;, 1, 3);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>setrange</strong> key offset value</td>
+<td align="left"><code>int length = redis.setrange(&quot;key&quot;, 1, &quot;new&quot;);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>setex</strong> key seconds value</td>
+<td align="left"><code>bool success = redis.setex(&quot;key&quot;, 60, &quot;value&quot;);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>getset</strong> key value</td>
+<td align="left">设置key的值，并返回key的旧值</td>
+</tr>
+</tbody></table>
+<h3 id="List-ops"><a href="#List-ops" class="headerlink" title="List ops"></a>List ops</h3><table>
+<thead>
+<tr>
+<th align="left">cmd</th>
+<th align="left">explain</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>lpush</strong> key value</td>
+<td align="left"><code>int length = redis.lpush(&quot;list&quot;, &quot;element1&quot;, &quot;element2&quot;);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>rpush</strong> key value</td>
+<td align="left"><code>int length = redis.rpush(&quot;list&quot;, &quot;element1&quot;, &quot;element2&quot;);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>lrange</strong> key start stop</td>
+<td align="left"><code>std::vector&lt;std::string&gt; elements = redis.lrange(&quot;list&quot;, 0, -1);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>lpop</strong> key</td>
+<td align="left"><code>std::string element = redis.lpop(&quot;list&quot;);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>rpop</strong> key</td>
+<td align="left"><code>std::string element = redis.rpop(&quot;list&quot;);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>lpoplpush</strong> source destination</td>
+<td align="left"><code>bool success = redis.lpoplpush(&quot;source&quot;, &quot;destination&quot;);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>lpoprpush</strong> source destination</td>
+<td align="left"><code>bool success = redis.lpoprpush(&quot;source&quot;, &quot;destination&quot;);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>rpoprpush</strong> source destination</td>
+<td align="left"><code>bool success = redis.rpoprpush(&quot;source&quot;, &quot;destination&quot;);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>rpoplpush</strong> source destination</td>
+<td align="left"><code>bool success = redis.rpoplpush(&quot;source&quot;, &quot;destination&quot;);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>llen</strong> key</td>
+<td align="left"><code>int64_t len = redis.llen(&quot;mylist&quot;);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>lindex</strong> key index</td>
+<td align="left">获取key的值的第index个元素</td>
+</tr>
+<tr>
+<td align="left"><strong>linsert</strong> key before</td>
+<td align="left">after pivot value</td>
+</tr>
+<tr>
+<td align="left"><strong>lrem</strong> key count value</td>
+<td align="left">从左边删除count个值为value的元素</td>
+</tr>
+<tr>
+<td align="left"><strong>lset</strong> key index value</td>
+<td align="left">设置key的值的第index个元素的值</td>
+</tr>
+</tbody></table>
+<h3 id="Hash-ops"><a href="#Hash-ops" class="headerlink" title="Hash ops"></a>Hash ops</h3><table>
+<thead>
+<tr>
+<th align="left">cmd</th>
+<th align="left">explain</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>hset</strong> key field value</td>
+<td align="left"><code>bool success = redis.hset(&quot;hash&quot;, &quot;field&quot;, &quot;value&quot;);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>hget</strong> key field</td>
+<td align="left"><code>std::string value = redis.hget(&quot;hash&quot;, &quot;field&quot;);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>hmset</strong> key field1 value1 … fieldN valueN</td>
+<td align="left"><code>bool success = redis.hmset(&quot;hash&quot;, &#123;&#123;"field1", "value1"&#125;, &#123;"field2", "value2"&#125;&#125;);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>hexists</strong> key field</td>
+<td align="left"><code>bool exists = redis.hexists(&quot;hash&quot;, &quot;field&quot;);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>hkeys</strong> key</td>
+<td align="left"><code>std::vector&lt;std::string&gt; fields = redis.hkeys(&quot;hash&quot;);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>hvals</strong> key</td>
+<td align="left"><code>std::vector&lt;std::string&gt; values = redis.hvals(&quot;hash&quot;);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>hlen</strong> key</td>
+<td align="left"><code>int count = redis.hlen(&quot;hash&quot;);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>hdel</strong> key field</td>
+<td align="left"><code>bool success = redis.hdel(&quot;hash&quot;, &quot;field&quot;);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>hincrby</strong> key field increment</td>
+<td align="left"><code>int value = redis.hincrby(&quot;hash&quot;, &quot;field&quot;, 1);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>hsetnx</strong> key field value</td>
+<td align="left"><code>bool success = redis.hsetnx(&quot;hash&quot;, &quot;field&quot;, &quot;value&quot;);</code></td>
+</tr>
+</tbody></table>
+<h3 id="Set-ops"><a href="#Set-ops" class="headerlink" title="Set ops"></a>Set ops</h3><table>
+<thead>
+<tr>
+<th align="left">cmd</th>
+<th align="left">explain</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>sadd</strong> key value</td>
+<td align="left"><code>int count = redis.sadd(&quot;set&quot;, &#123;&quot;elem1&quot;, &quot;elem2&quot;, &quot;elem3&quot;&#125;);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>smembers</strong> key</td>
+<td align="left"><code>std::vector&lt;std::string&gt; members = redis.smembers(&quot;set&quot;);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>sismember</strong> key value</td>
+<td align="left"><code>bool exist = redis.sismember(&quot;set&quot;, &quot;elem&quot;);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>scard</strong> key</td>
+<td align="left"><code>int count = redis.scard(&quot;set&quot;);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>srem</strong> key value</td>
+<td align="left"><code>int count = redis.srem(&quot;set&quot;, &#123;&quot;elem1&quot;, &quot;elem2&quot;&#125;);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>spop</strong> key</td>
+<td align="left"><code>std::string elem = redis.spop(&quot;set&quot;);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>srandmember</strong> key</td>
+<td align="left"><code>std::vector&lt;std::string&gt; elems = redis.srandmember(&quot;set&quot;, 2);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>smove</strong> source destination value</td>
+<td align="left"><code>bool success = redis.smove(&quot;set1&quot;, &quot;set2&quot;, &quot;elem&quot;);</code></td>
+</tr>
+<tr>
+<td align="left"><strong>sinter</strong> source1 … sourceN</td>
+<td align="left"><code>std::vector&lt;std::string&gt; elems = redis.sinter(&#123;&quot;set1&quot;, &quot;set2&quot;&#125;);</code></td>
+</tr>
+</tbody></table>
+<h2 id="相关资料"><a href="#相关资料" class="headerlink" title="相关资料"></a>相关资料</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://www.runoob.com/redis/redis-tutorial.html">redis 菜鸟教程</a></li>
+<li><a target="_blank" rel="noopener" href="https://redis.io/commands/">官方命令文档查询</a></li>
+<li><a target="_blank" rel="noopener" href="https://redis.io/docs/clients/">Redis官方推荐的各语言的client库</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.runoob.com/w3cnote/python-redis-intro.html">python 中通过redis-py使用redis</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1Rv41177Af">【尚硅谷】Redis 6 入门到精通</a> 有讲义</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://yo-gurts.github.io">(ง'̀-'́)ง</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://yo-gurts.github.io/2022/06/24/Redis%E7%AC%94%E8%AE%B0/">https://yo-gurts.github.io/2022/06/24/Redis%E7%AC%94%E8%AE%B0/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://yo-gurts.github.io" target="_blank">(╯°□°）╯︵ ┻━┻ </a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/C/">C++</a><a class="post-meta__tags" href="/tags/Redis/">Redis</a><a class="post-meta__tags" href="/tags/Docker/">Docker</a></div><div class="post_share"><div class="social-share" data-image="https://s2.loli.net/2022/11/17/BeiQmkw4Ya1gvPx.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2022/06/03/OpenVSwitch-%E6%8E%A7%E5%88%B6%E5%99%A8ONOS/" title="OpenVSwitch-控制器ONOS"><img class="cover" src="https://s2.loli.net/2022/11/17/UeWP8jCq6dJZSGD.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">OpenVSwitch-控制器ONOS</div></div></a></div><div class="next-post pull-right"><a href="/2022/07/17/Linux%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7/" title="Linux网络编程-分析工具"><img class="cover" src="https://s2.loli.net/2022/11/17/9ZBEesyr14aJhPM.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Linux网络编程-分析工具</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2022/09/19/Cpp%E4%B8%89%E6%96%B9%E5%BA%93/" title="C++三方库"><img class="cover" src="https://s2.loli.net/2022/11/17/nuDZ3dsB6z4bfVJ.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-09-19</div><div class="title">C++三方库</div></div></a></div><div><a href="/2022/04/23/ProgramBasic_STL/" title="STL容器"><img class="cover" src="https://s2.loli.net/2022/11/17/UeWP8jCq6dJZSGD.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-04-23</div><div class="title">STL容器</div></div></a></div><div><a href="/2022/12/18/%E5%8D%81%E5%A4%A7%E7%BB%8F%E5%85%B8%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95%EF%BC%88%E5%8A%A8%E5%9B%BE%E6%BC%94%E7%A4%BA%EF%BC%89/" title="十大经典排序算法（动图演示）"><img class="cover" src="https://s2.loli.net/2022/11/17/BeiQmkw4Ya1gvPx.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-12-18</div><div class="title">十大经典排序算法（动图演示）</div></div></a></div><div><a href="/2022/05/12/OpenVSwitch-%E7%BC%96%E8%AF%91%E5%8F%8A%E5%90%AF%E5%8A%A8/" title="OpenVSwitch-编译及启动"><img class="cover" src="https://s2.loli.net/2022/11/17/BeiQmkw4Ya1gvPx.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-05-12</div><div class="title">OpenVSwitch-编译及启动</div></div></a></div></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://s2.loli.net/2024/09/17/3NdhvxIcPRVpufD.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">(ง'̀-'́)ง</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">35</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">46</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/yo-gurts"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/yo-gurts" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:yusong1117.u@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%89%E8%A3%85%E5%90%AF%E5%8A%A8"><span class="toc-number">1.</span> <span class="toc-text">安装启动</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="toc-number">1.1.</span> <span class="toc-text">配置文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Docker-%E8%BF%90%E8%A1%8C"><span class="toc-number">1.2.</span> <span class="toc-text">Docker 运行</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9F%BA%E7%A1%80%E6%93%8D%E4%BD%9C"><span class="toc-number">2.</span> <span class="toc-text">基础操作</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#redis-cli"><span class="toc-number">2.1.</span> <span class="toc-text">redis-cli</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Key"><span class="toc-number">2.2.</span> <span class="toc-text">Key</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#String"><span class="toc-number">2.3.</span> <span class="toc-text">String</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#List"><span class="toc-number">2.4.</span> <span class="toc-text">List</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Hash"><span class="toc-number">2.5.</span> <span class="toc-text">Hash</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Set"><span class="toc-number">2.6.</span> <span class="toc-text">Set</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Zset"><span class="toc-number">2.7.</span> <span class="toc-text">Zset</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Bitmap"><span class="toc-number">2.8.</span> <span class="toc-text">Bitmap</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Geo"><span class="toc-number">2.9.</span> <span class="toc-text">Geo</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8B%E7%89%A9"><span class="toc-number">3.</span> <span class="toc-text">事物</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%94%99%E8%AF%AF"><span class="toc-number">3.1.</span> <span class="toc-text">错误</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8B%E5%8A%A1%E4%B8%89%E7%89%B9%E6%80%A7"><span class="toc-number">3.2.</span> <span class="toc-text">事务三特性</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#hiredis-x2F-redis"><span class="toc-number">4.</span> <span class="toc-text">hiredis&#x2F;redis++</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#redis-cli-%E5%BB%BA%E7%AB%8B%E8%BF%9E%E6%8E%A5"><span class="toc-number">4.1.</span> <span class="toc-text">redis-cli 建立连接</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Key-ops"><span class="toc-number">4.2.</span> <span class="toc-text">Key ops</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#String-ops"><span class="toc-number">4.3.</span> <span class="toc-text">String ops</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#List-ops"><span class="toc-number">4.4.</span> <span class="toc-text">List ops</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Hash-ops"><span class="toc-number">4.5.</span> <span class="toc-text">Hash ops</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Set-ops"><span class="toc-number">4.6.</span> <span class="toc-text">Set ops</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%B8%E5%85%B3%E8%B5%84%E6%96%99"><span class="toc-number">5.</span> <span class="toc-text">相关资料</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2024/09/11/Cvitek-reboot/" title="Cvitek-busybox init/reboot/poweroff"><img src="https://s2.loli.net/2022/11/17/Zm4kDRxypb5ez3q.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Cvitek-busybox init/reboot/poweroff"/></a><div class="content"><a class="title" href="/2024/09/11/Cvitek-reboot/" title="Cvitek-busybox init/reboot/poweroff">Cvitek-busybox init/reboot/poweroff</a><time datetime="2024-09-11T09:57:02.000Z" title="发表于 2024-09-11 17:57:02">2024-09-11</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/08/11/Scripts-git_tools/" title="Scripts-管理多个 git 仓库"><img src="https://s2.loli.net/2022/11/17/9ZBEesyr14aJhPM.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Scripts-管理多个 git 仓库"/></a><div class="content"><a class="title" href="/2024/08/11/Scripts-git_tools/" title="Scripts-管理多个 git 仓库">Scripts-管理多个 git 仓库</a><time datetime="2024-08-11T03:37:00.000Z" title="发表于 2024-08-11 11:37:00">2024-08-11</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/06/04/Cvitek-usbcamera%E9%9C%80%E6%B1%82/" title="Alios USB camera 常见需求处理"><img src="https://s2.loli.net/2022/11/17/BeiQmkw4Ya1gvPx.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Alios USB camera 常见需求处理"/></a><div class="content"><a class="title" href="/2024/06/04/Cvitek-usbcamera%E9%9C%80%E6%B1%82/" title="Alios USB camera 常见需求处理">Alios USB camera 常见需求处理</a><time datetime="2024-06-04T03:19:42.000Z" title="发表于 2024-06-04 11:19:42">2024-06-04</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/05/15/USB-UVC_extension/" title="UVC 扩展单元"><img src="https://s2.loli.net/2022/11/17/hF7KodYmE6iPWqg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="UVC 扩展单元"/></a><div class="content"><a class="title" href="/2024/05/15/USB-UVC_extension/" title="UVC 扩展单元">UVC 扩展单元</a><time datetime="2024-05-15T14:26:44.000Z" title="发表于 2024-05-15 22:26:44">2024-05-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/04/14/gdb/" title="gdb"><img src="https://s2.loli.net/2022/11/17/nuDZ3dsB6z4bfVJ.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="gdb"/></a><div class="content"><a class="title" href="/2024/04/14/gdb/" title="gdb">gdb</a><time datetime="2024-04-13T16:33:49.000Z" title="发表于 2024-04-14 00:33:49">2024-04-14</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2024 By (ง'̀-'́)ง</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.13.0"></script><script src="/js/main.js?v=4.13.0"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.1
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, '']
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typesetPromise()
+}</script><script>(() => {
+  const initGitalk = () => {
+    const gitalk = new Gitalk(Object.assign({
+      clientID: 'b740056c42e9eadf273e',
+      clientSecret: 'e5f185fa9a6e27927f7a2672469435c68a288c95',
+      repo: 'Yo-gurts.github.io',
+      owner: 'yo-gurts',
+      admin: ['yo-gurts'],
+      id: '819cd060344aa56b48542353ab8e1661',
+      updateCountCallback: commentCount
+    },null))
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async() => {
+    if (typeof Gitalk === 'function') initGitalk()
+    else {
+      await getCSS('https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.min.css')
+      await getScript('https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.min.js')
+      initGitalk()
+    }
+  }
+  
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/canvas-fluttering-ribbon.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=4.13.0"></script></div></div></body></html>

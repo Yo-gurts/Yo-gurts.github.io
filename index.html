@@ -1,0 +1,551 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>(╯°□°）╯︵ ┻━┻  - !</title><meta name="author" content="(ง'̀-'́)ง"><meta name="copyright" content="(ง'̀-'́)ง"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://yo-gurts.github.io/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.13.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":600},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '(╯°□°）╯︵ ┻━┻ ',
+  isPost: false,
+  isHome: true,
+  isHighlightShrink: false,
+  isToc: false,
+  postUpdate: '2024-09-17 16:34:50'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+          const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+          const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+          const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+          if (t === undefined) {
+            if (isLightMode) activateLightMode()
+            else if (isDarkMode) activateDarkMode()
+            else if (isNotSpecified || hasNoSupport) {
+              const now = new Date()
+              const hour = now.getHours()
+              const isNight = hour <= 6 || hour >= 18
+              isNight ? activateDarkMode() : activateLightMode()
+            }
+            window.matchMedia('(prefers-color-scheme: dark)').addListener(e => {
+              if (saveToLocal.get('theme') === undefined) {
+                e.matches ? activateDarkMode() : activateLightMode()
+              }
+            })
+          } else if (t === 'light') activateLightMode()
+          else activateDarkMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="google-site-verification" content="MP347_Nl-SqfnOi3FZSI69WSb8J_rk_jEsa3jL4ODCI" /><meta name="generator" content="Hexo 6.1.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://s2.loli.net/2024/09/17/3NdhvxIcPRVpufD.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">35</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">46</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div></div></div></div><div class="page" id="body-wrap"><header class="full_page" id="page-header" style="background: transparent"><nav id="nav"><span id="blog-info"><a href="/" title="(╯°□°）╯︵ ┻━┻ "><span class="site-name">(╯°□°）╯︵ ┻━┻ </span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="site-info"><h1 id="site-title">(╯°□°）╯︵ ┻━┻ </h1><div id="site-subtitle"><span id="subtitle"></span></div><div id="site_social_icons"><a class="social-icon" href="https://github.com/yo-gurts" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:yusong1117.u@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div id="scroll-down"><i class="fas fa-angle-down scroll-down-effects"></i></div></header><main class="layout" id="content-inner"><div class="recent-posts" id="recent-posts"><div class="recent-post-item"><div class="post_cover left"><a href="/2024/09/11/Cvitek-reboot/" title="Cvitek-busybox init/reboot/poweroff"><img class="post-bg" src="https://s2.loli.net/2022/11/17/Zm4kDRxypb5ez3q.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Cvitek-busybox init/reboot/poweroff"></a></div><div class="recent-post-info"><a class="article-title" href="/2024/09/11/Cvitek-reboot/" title="Cvitek-busybox init/reboot/poweroff">Cvitek-busybox init/reboot/poweroff</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2024-09-11T09:57:02.000Z" title="发表于 2024-09-11 17:57:02">2024-09-11</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Linux/">Linux</a></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/Linux/">Linux</a><span class="article-meta-link">•</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/Cvitek/">Cvitek</a><span class="article-meta-link">•</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/reboot/">reboot</a><span class="article-meta-link">•</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/poweroff/">poweroff</a></span></div><div class="content">reboot&#x2F;poweroffboards/default/dts/cv181x/cv181x_base.dtsi 中定义了 restart-controller 设备。
+1234restart: restart-controller &#123;	compatible = &quot;cvitek,restart&quot;;	reg = &lt;0x0 0x05025000 0x0 0x2000&gt;;&#125;;
+
+drivers/power/reset/cvi-reboot.c 中实现了对应的一个平台驱动：
+123456789101112static const struct of_device_id cvi_reboot_of_match[] = &#123;	&#123; .compatible = &quot;cvitek,restart&quot; &#125;,	&#123;&#125;&#125;;static struct platform_driver cvi_reboot_driver = &#123;	.probe = cvi_reboot_p ...</div></div></div><div class="recent-post-item"><div class="post_cover right"><a href="/2024/08/11/Scripts-git_tools/" title="Scripts-管理多个 git 仓库"><img class="post-bg" src="https://s2.loli.net/2022/11/17/9ZBEesyr14aJhPM.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Scripts-管理多个 git 仓库"></a></div><div class="recent-post-info"><a class="article-title" href="/2024/08/11/Scripts-git_tools/" title="Scripts-管理多个 git 仓库">Scripts-管理多个 git 仓库</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2024-08-11T03:37:00.000Z" title="发表于 2024-08-11 11:37:00">2024-08-11</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Scripts/">Scripts</a></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/git/">git</a></span></div><div class="content">脚本12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061626364656667686970717273747576777879#!/bin/bash# ANSI颜色码RED=&#x27;\033[0;31m&#x27;GREEN=&#x27;\033[0;32m&#x27;YELLOW=&#x27;\033[0;33m&#x27;BLUE=&#x27;\033[0;34m&#x27;NC=&#x27;\033[0m&#x27; # 恢复默认颜色# Define special charactersOK_STATUS=$&#x27;\u2714&#x27;   # ✅FAIL_STATUS=$&#x27;\u274C&#x27; # ❌# 保存当前目录current_dir=$(pwd)command_to_execute=&quot;\$1&quot;# git logfunction git_log &#123 ...</div></div></div><div class="recent-post-item"><div class="post_cover left"><a href="/2024/06/04/Cvitek-usbcamera%E9%9C%80%E6%B1%82/" title="Alios USB camera 常见需求处理"><img class="post-bg" src="https://s2.loli.net/2022/11/17/BeiQmkw4Ya1gvPx.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Alios USB camera 常见需求处理"></a></div><div class="recent-post-info"><a class="article-title" href="/2024/06/04/Cvitek-usbcamera%E9%9C%80%E6%B1%82/" title="Alios USB camera 常见需求处理">Alios USB camera 常见需求处理</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2024-06-04T03:19:42.000Z" title="发表于 2024-06-04 11:19:42">2024-06-04</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Alios/">Alios</a></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/Alios/">Alios</a><span class="article-meta-link">•</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/USB/">USB</a></span></div><div class="content">[TOC]
+配置说明组件配置每个组件都有一个 .yaml 配置文件，主要关注：
+12def_config: # 组件的可配置项  CONFIG_XXX: 1
+
+def_config 下的配置都会以宏定义的形式来影响代码。就相当于在编译时多了 -DCONFIG_XXX=1 这样。
+Solution 配置Solution 也有一个 yaml 的配置文件，也包含 depends、def_config 等配置项，这里单独来讲主要是想强调 def_config 这个配置，Solution 下的配置文件中，可以修改任意组件的 def_config 。也就是说，每个组件下的配置文件中，def_config 下配置相当于是默认配置。如果 Solution 下的配置项与组件的下配置不一致，以 Solution 的为准。
+❗❗强调：Solution 下的配置会对所有组件生效，所以在定义配置的时候，注意配置名是否与其他组件重复了（可以重复，但要确认这是你期望的）。
+用户常用改动
+ 
+板卡内存大小
+  1CONFIG_DRAM_CFG: &quot;128m&quot;
+
+ 
+配置 UVC 数量。有的客户是单 ...</div></div></div><div class="recent-post-item"><div class="post_cover right"><a href="/2024/05/15/USB-UVC_extension/" title="UVC 扩展单元"><img class="post-bg" src="https://s2.loli.net/2022/11/17/hF7KodYmE6iPWqg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="UVC 扩展单元"></a></div><div class="recent-post-info"><a class="article-title" href="/2024/05/15/USB-UVC_extension/" title="UVC 扩展单元">UVC 扩展单元</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2024-05-15T14:26:44.000Z" title="发表于 2024-05-15 22:26:44">2024-05-15</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/USB/">USB</a></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/USB/">USB</a><span class="article-meta-link">•</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/UVC/">UVC</a></span></div><div class="content">常见问题
+ 
+UVC 扩展单元的作用是啥？
+
+《UVC 1.5 Class specification》 的 2.7, 3.7.2 中介绍了 UVC 的控制接口包含：输入终端、输出终端、相机终端、选择器单元、处理单元、编码单元、扩展单元。前几个都是类标准中有指定应该实现什么功能的，扩展单元就是专门给厂商实现自定义的一些功能。
+比如我们这里客户需要能给设备发送重启指令。
+
+
+ 
+和 UVC 的关系是啥？
+
+UVC 扩展单元是 UVC 的一个可选的小功能。
+
+
+ 
+如何实现与测试？
+
+测试可使用：
+
+Bus Hound，可给设备发送任意命令。分免费版和付费版，我们这里只用来发指令，免费版就够用了。官方网址：https://www.perisoft.net/bushound/index.htm
+UVCXU摄像头扩展单元调试工具UVCXU-USB中文网官方版，需要加QQ群下载。
+wireshark 抓包分析。
+
+
+BusHound 是直接转到驱动去发的，没有通过 windows 视频类驱动，而UVCXU调试工具时调用了  windows 视频类驱动，就会受到 windows 的一些限制。见：h ...</div></div></div><div class="recent-post-item"><div class="post_cover left"><a href="/2024/04/14/gdb/" title="gdb"><img class="post-bg" src="https://s2.loli.net/2022/11/17/nuDZ3dsB6z4bfVJ.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="gdb"></a></div><div class="recent-post-info"><a class="article-title" href="/2024/04/14/gdb/" title="gdb">gdb</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2024-04-13T16:33:49.000Z" title="发表于 2024-04-14 00:33:49">2024-04-14</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Tools/">Tools</a></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/gdb/">gdb</a></span></div><div class="content">GDB 备忘清单本清单提供了对 GDB 的入门简要概述，以及 GDB 常用示例，完整文档参阅 Debugging with gdb，该文档最后有 GDB index，可以快速查找命令。
+入门
+
+常用命令
+
+[] 内为命令缩写
+
+
+
+命令 [缩写]
+说明
+
+
+
+help[h]
+查看命令帮助。如 help run
+
+
+run[r]
+运行程序。可搭配参数使用
+
+
+start
+运行程序，停在第一条执行语句。可搭配参数使用
+
+
+list[l]
+查看程序源码
+
+
+break[b]
+设置断点。可指定文件名、函数名和行号等参数来设置断点
+
+
+watch
+设置监视点。当监视的变量发生更改时，程序会被中断
+
+
+delete
+删除断点等。可用于删除断点、监视点、display 等
+
+
+continue[c]
+继续执行程序。让程序继续执行，到下一个断点或程序结束
+
+
+next[n]
+单步执行程序，跳过函数调用
+
+
+step[s]
+单步执行程序，进入函数调用
+
+
+finish
+结束当前函数。返回到函数调用点
+
+
+kill
+杀死当前的调试进程
+
+
+backtrace[bt]
+查看函数调用栈。它会打印出当前的函数调 ...</div></div></div><div class="recent-post-item"><div class="post_cover right"><a href="/2024/01/15/VSCODE-clang-format/" title="CLANG FORMAT 格式化代码"><img class="post-bg" src="https://s2.loli.net/2022/11/17/hF7KodYmE6iPWqg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="CLANG FORMAT 格式化代码"></a></div><div class="recent-post-info"><a class="article-title" href="/2024/01/15/VSCODE-clang-format/" title="CLANG FORMAT 格式化代码">CLANG FORMAT 格式化代码</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2024-01-15T14:26:44.000Z" title="发表于 2024-01-15 22:26:44">2024-01-15</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Tools/">Tools</a></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/Clang/">Clang</a><span class="article-meta-link">•</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/Tools/">Tools</a></span></div><div class="content">VSCODE CLANG FORMAT 格式化
+获取 linux 的 clang-format.txt https://github.com/torvalds/linux/blob/master/.clang-format
+放到项目的根目录，并命名为 .clang-format
+vscode 准备 c&#x2F;c++ 插件，
+在VSCode中安装的多个插件均支持使用clang-format来对代码执行格式化，此时按照上述文章中的方法完成配置后，代码格式化并没有生效。后来无意中发现，需要在VSCode的配置文件中增加如下配置，从多个插件中选择默认启用的格式化工具。 123&quot;[cpp]&quot;: &#123;	&quot;editor.defaultFormatter&quot;: &quot;ms-vscode.cpptools&quot;&#125;
+
+
+Documentation&#x2F;process&#x2F;clang-format.rst
+https://clang.llvm.org/docs/ClangFormat.html
+https://clang.l ...</div></div></div><div class="recent-post-item"><div class="post_cover left"><a href="/2023/11/16/Cvitek-buildroot/" title="buildroot 打包 rootfs"><img class="post-bg" src="https://s2.loli.net/2022/11/17/Zm4kDRxypb5ez3q.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="buildroot 打包 rootfs"></a></div><div class="recent-post-info"><a class="article-title" href="/2023/11/16/Cvitek-buildroot/" title="buildroot 打包 rootfs">buildroot 打包 rootfs</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2023-11-16T15:45:42.000Z" title="发表于 2023-11-16 23:45:42">2023-11-16</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Linux/">Linux</a></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/Linux/">Linux</a><span class="article-meta-link">•</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/Buildroot/">Buildroot</a><span class="article-meta-link">•</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/Rootfs/">Rootfs</a><span class="article-meta-link">•</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/Cvitek/">Cvitek</a></span></div><div class="content">Cvitek buildroot 打包 rootfs 流程介绍
+基于 https://github.com/sophgo/cvi_mmf_sdk&#x2F;tree&#x2F;v4.1.0 的实现。
+
+概述在 cvi_mmf_sdk 中，支持两种生成 rootfs 的方式：
+
+基于 ramdisk 目录下的文件系统。
+基于 buildroot 打包生成文件系统。
+
+前者仅保留了常用的一些工具，因此生成的文件系统较小，不过新增工具比较麻烦。后者方便用户自己控制需要打包哪些工具。
+默认使用第一种方式来生成文件系统，可通过在板子的配置文件中加上 CONFIG_BUILDROOT_FS=y （如 cv1812cp_sophpi_duo_sd_defconfig#L30 中的例子），以启用 buildroot 来生成文件系统。
+rootfs 打包流程说明在 source cvisetup.sh 之后，就可以使用 pack_rootfs 命令来打包文件系统了。它本质上是定义在 common_functions.sh 中的一个 shell 函数，在设置必要的环境变量后，通过 make rootfs  ...</div></div></div><div class="recent-post-item"><div class="post_cover right"><a href="/2023/09/02/Linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B-syslog/" title="Linux 系统编程-syslog"><img class="post-bg" src="https://s2.loli.net/2022/11/17/Zm4kDRxypb5ez3q.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Linux 系统编程-syslog"></a></div><div class="recent-post-info"><a class="article-title" href="/2023/09/02/Linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B-syslog/" title="Linux 系统编程-syslog">Linux 系统编程-syslog</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2023-09-02T05:02:35.000Z" title="发表于 2023-09-02 13:02:35">2023-09-02</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Linux/">Linux</a></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/Linux/">Linux</a><span class="article-meta-link">•</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F/">日志系统</a></span></div><div class="content">syslog这里说的 syslog 仅仅是api，man 3 syslog 有详细的说明。简单来说，如下图所示，应用通过 syslog() 这个调用将日志信息传递给 syslogd（我们可以称为日志收集器）。syslogd 可以根据配置文件（一般位于 /etc/syslog.conf 来决定如何处理日志信息）。比如保存到某个文件、发送到远程主机、显示到控制台等。
+12345678910111213   app1               app2              app3 (产生日志)    │                   │                │    │                   │  syslog()      │ (AF_UNIX 传递日志)    │                   │                │    │           ┌───────▼──────┐         │    └──────────►│   syslogd    │◄────────┘ (接收日志)                └ ...</div></div></div><div class="recent-post-item"><div class="post_cover left"><a href="/2023/08/29/Linux%E5%86%85%E6%A0%B8-%E4%B8%AD%E6%96%AD/" title="Linux 内核-中断"><img class="post-bg" src="https://s2.loli.net/2022/11/17/hF7KodYmE6iPWqg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Linux 内核-中断"></a></div><div class="recent-post-info"><a class="article-title" href="/2023/08/29/Linux%E5%86%85%E6%A0%B8-%E4%B8%AD%E6%96%AD/" title="Linux 内核-中断">Linux 内核-中断</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2023-08-29T06:49:35.000Z" title="发表于 2023-08-29 14:49:35">2023-08-29</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Linux/">Linux</a></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/Linux/">Linux</a></span></div><div class="content">Linux 内核 — 中断什么是中断
+本节更多的是对中断涉及的内容进行简单介绍，后续才会对各个内容详细介绍。
+
+在 Linux 系统中，中断（Interrupt）是一种硬件或软件事件，它可以打断正在执行的 CPU 指令序列，使 CPU 转而处理某个特定事件。中断机制允许外部设备或系统组件通过发送信号来通知 CPU 某种事件的发生，这可以是来自硬件设备（如键盘、鼠标、硬盘等）的输入、定时器到期、网络数据包到达等等。
+中断的主要目的是提供一种异步通信的方式，让 CPU 能够及时响应外部事件，而不需要持续地轮询检查事件是否发生。这样可以大大提高系统的效率和响应速度。
+
+但中断过多反而会降低系统的效率！在网络收包处理中，往往采用中断+轮询的方式。
+
+在 Linux 系统中，每种类型的中断都有一个唯一的标识号，被称为中断号。当一个中断事件发生时，CPU 会立即暂停当前执行的指令，保存当前上下文，然后跳转到与中断号相关联的中断处理程序。中断处理程序是一段预先编写好的代码，负责处理特定类型的中断事件。处理完中断事件后，CPU 会恢复之前保存的上下文，并继续执行被中断的指令。
+
+
+中断号的分配方式。
+ ...</div></div></div><div class="recent-post-item"><div class="post_cover right"><a href="/2023/08/08/Linux%E5%86%85%E6%A0%B8-%E8%AE%BE%E5%A4%87%E6%A0%91/" title="设备树语法介绍"><img class="post-bg" src="https://s2.loli.net/2022/11/17/jypq1GDmIVfl8WM.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="设备树语法介绍"></a></div><div class="recent-post-info"><a class="article-title" href="/2023/08/08/Linux%E5%86%85%E6%A0%B8-%E8%AE%BE%E5%A4%87%E6%A0%91/" title="设备树语法介绍">设备树语法介绍</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2023-08-08T05:45:42.000Z" title="发表于 2023-08-08 13:45:42">2023-08-08</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Linux/">Linux</a></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/Linux/">Linux</a><span class="article-meta-link">•</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/Kernel/">Kernel</a><span class="article-meta-link">•</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/DTS/">DTS</a><span class="article-meta-link">•</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/Uboot/">Uboot</a><span class="article-meta-link">•</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/%E8%AE%BE%E5%A4%87%E6%A0%91/">设备树</a></span></div><div class="content">设备树语法
+什么是设备？ 直观点：键盘、鼠标、内存、CPU、显示器、wifi、网卡、显卡是设备。 底层点：SPI 、I2C、I2S 、mipi、gpio、USB 等控制器。
+
+Linux &#x2F; Uboot 是如何管理这些设备的呢？ 父子关系 I2C 等控制器与通过该控制器接入的设备，明显就是父子关系。 根设备
+ SPI、 I2C 控制器这样看起来没有关联的设备，他们就直接挂靠在根设备下。 
+
+为什么要有设备树？ Linux 支持的设备类型很多很多，不可能将所有设备都启用（会浪费大量的内存、CPU资源）。设备树就是用来告诉 Kernel 需要启用哪些设备。
+
+
+语法说明设备树 dtsi 文件中使用 c 语言的方式注释 /* 注释 */ 以及 // 注释，特别注意 # 是有特殊意义的，不是注释！！
+设备之间的父子关系，用文本表示出来是用 &#123;&#125; 管理的包含关系。
+123456789101112/ &#123; // ‘/’ 表示根设备	spi0: spi0@04180000 &#123; // spi0 是 SPI 控制器        compatible =  ...</div></div></div><div class="recent-post-item"><div class="post_cover left"><a href="/2023/08/03/Cvitek-%E5%AE%89%E5%85%A8%E5%90%AF%E5%8A%A8/" title="Cvitek-安全启动"><img class="post-bg" src="https://s2.loli.net/2022/11/17/Zm4kDRxypb5ez3q.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Cvitek-安全启动"></a></div><div class="recent-post-info"><a class="article-title" href="/2023/08/03/Cvitek-%E5%AE%89%E5%85%A8%E5%90%AF%E5%8A%A8/" title="Cvitek-安全启动">Cvitek-安全启动</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2023-08-03T09:55:02.000Z" title="发表于 2023-08-03 17:55:02">2023-08-03</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Cvitek/">Cvitek</a></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/Cvitek/">Cvitek</a><span class="article-meta-link">•</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/">启动流程</a><span class="article-meta-link">•</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/sha256/">sha256</a><span class="article-meta-link">•</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/rsa/">rsa</a><span class="article-meta-link">•</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/aes/">aes</a><span class="article-meta-link">•</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/uboot/">uboot</a><span class="article-meta-link">•</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/openssl/">openssl</a></span></div><div class="content">Cvitek-安全启动
+注：仅考虑 cv181x
+
+安全启动的意义：
+
+防止用户烧录未经授权的固件。（签名）
+防止通过固件拷贝，来抄袭产品。（签名+加密）
+
+原理介绍加密算法介绍
+
+盘点五种最常见加密算法！
+密码学基本概念
+
+
+算法整体上可以分为**不可逆加密，以及可逆加密，可逆加密又可以分为对称加密和非对称加密**。
+
+不可逆这部分称为 消息摘要 更好，摘要算法就是我们常说的散列函数、哈希函数（Hash Function），它能够把任意长度的数据“压缩”成固定长度、而且独一无二的“摘要”字符串，就好像是给这段数据生成了一个数字“指纹”。
+
+
+消息摘要散列算法，就是一种不可逆算法，无法从散列结果中反推出明文。可以用来检验数据是否被更改。
+散列算法中，明文通过散列算法生成散列值，散列值是长度固定的数据，和明文长度无关。
+
+散列算法的具体实现有很多种，常见的包括 MD5、SHA1、SHA-224、SHA-256 等等。
+散列算法常用于数字签名、消息认证、密码存储等场景。
+
+本文中，对 kernel、rootfs 的签名就是基于 sha256 实现（不过还用到了下面的 RSA）。
+
+
+
+
+名 ...</div></div></div><div class="recent-post-item"><div class="post_cover right"><a href="/2022/12/18/%E5%8D%81%E5%A4%A7%E7%BB%8F%E5%85%B8%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95%EF%BC%88%E5%8A%A8%E5%9B%BE%E6%BC%94%E7%A4%BA%EF%BC%89/" title="十大经典排序算法（动图演示）"><img class="post-bg" src="https://s2.loli.net/2022/11/17/BeiQmkw4Ya1gvPx.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="十大经典排序算法（动图演示）"></a></div><div class="recent-post-info"><a class="article-title" href="/2022/12/18/%E5%8D%81%E5%A4%A7%E7%BB%8F%E5%85%B8%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95%EF%BC%88%E5%8A%A8%E5%9B%BE%E6%BC%94%E7%A4%BA%EF%BC%89/" title="十大经典排序算法（动图演示）">十大经典排序算法（动图演示）</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2022-12-18T02:32:21.000Z" title="发表于 2022-12-18 10:32:21">2022-12-18</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E7%AE%97%E6%B3%95/">算法</a></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/C/">C++</a><span class="article-meta-link">•</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/%E6%8E%92%E5%BA%8F/">排序</a><span class="article-meta-link">•</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/%E7%AE%97%E6%B3%95/">算法</a></span></div><div class="content">
+本文来源于 www.cnblogs.com，将代码实现改为了 c++文中的动态图也可以在：visualgo.net&#x2F;zh&#x2F;sorting 查看，还有其他算法的可视化！另一个可视化排序过程的网站：cs.usfca.edu&#x2F;~galles&#x2F;visualization&#x2F;Algorithms.html，还包括数据结构的可视化
+
+0、算法概述0.1 算法分类十种常见排序算法可以分为两大类：
+
+比较类排序：通过比较来决定元素间的相对次序，由于其时间复杂度不能突破 O(nlogn)，因此也称为非线性时间比较类排序。
+非比较类排序：不通过比较来决定元素间的相对次序，它可以突破基于比较排序的时间下界，以线性时间运行，因此也称为线性时间非比较类排序。
+
+
+0.2 算法复杂度
+相关概念：
+
+稳定：如果 a 原本在 b 前面，而 a=b，排序之后 a 仍然在 b 的前面。
+不稳定：如果 a 原本在 b 的前面，而 a=b，排序之后 a 可能会出现在 b 的后面。
+时间复杂度：对排序数据的总的操作次数。反映当 n 变化时，操作次数呈现什么规律。
+空间复杂度：是 ...</div></div></div><div class="recent-post-item"><div class="post_cover left"><a href="/2022/11/01/OpenVSwitch-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" title="OpenVSwitch-数据结构"><img class="post-bg" src="https://s2.loli.net/2022/11/17/UeWP8jCq6dJZSGD.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="OpenVSwitch-数据结构"></a></div><div class="recent-post-info"><a class="article-title" href="/2022/11/01/OpenVSwitch-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" title="OpenVSwitch-数据结构">OpenVSwitch-数据结构</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2022-11-01T06:34:27.000Z" title="发表于 2022-11-01 14:34:27">2022-11-01</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/OpenVSwitch/">OpenVSwitch</a></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/OpenVSwitch/">OpenVSwitch</a></span></div><div class="content">常用宏
+include&#x2F;openvswitch&#x2F;util.h #119
+
+typeoftypeof不是C语言本身的关键词或运算符，它是GCC的一个扩展，作用正如其字面意思，用某种已有东西（变量、函数等）的类型去定义新的变量类型。
+1234typeof(int *)a, b;     // 等价于 int *a, *b;typeof(a) c;           // 等价于 int *c#define OVS_TYPEOF(OBJECT) typeof(OBJECT)
+
+offsetof获取结构体TYPE中某个成员MEMBER的偏移量（相对于结构体地址）。
+1234567891011121314151617181920212223242526/* /usr/lib/gcc/x86_64-linux-gnu/9/include/stddef.h */#define offsetof(TYPE, MEMBER) __builtin_offsetof (TYPE, MEMBER)/* 类似于 */#define offsetof(TYPE, MEMBER)    ((s ...</div></div></div><div class="recent-post-item"><div class="post_cover right"><a href="/2022/10/05/Linux%E8%A7%A3%E6%9E%90%E5%91%BD%E4%BB%A4%E8%A1%8C%E9%80%89%E9%A1%B9/" title="解析命令行选项"><img class="post-bg" src="https://s2.loli.net/2022/11/17/hF7KodYmE6iPWqg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="解析命令行选项"></a></div><div class="recent-post-info"><a class="article-title" href="/2022/10/05/Linux%E8%A7%A3%E6%9E%90%E5%91%BD%E4%BB%A4%E8%A1%8C%E9%80%89%E9%A1%B9/" title="解析命令行选项">解析命令行选项</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2022-10-05T15:03:51.000Z" title="发表于 2022-10-05 23:03:51">2022-10-05</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/c/">c</a></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/Linux/">Linux</a><span class="article-meta-link">•</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/c/">c</a></span></div><div class="content">支持短选项和长选项！
+
+短选项：形如-a，-v，以-加单个字符组成。-叫做选项标识符，选项标识符后面可以紧跟一个字符，这个字符叫做选项字符。选项字符后面可以紧跟一个或多个字符，这些字符叫做选项参数。如-lpthread选项字符为l，参数为pthread。
+长选项：形如--all，--version，以--加一个单词组成，用=跟参数。如--data=format选项为data，参数为format。
+
+12-lpthread -d format--data=format
+
+短选项解析 getopt()1234567#include &lt;unistd.h&gt;int getopt(int argc, char * const argv[],           const char *optstring);extern char *optarg;extern int optind, opterr, optopt;
+
+
+argc, argv为main函数参数中的argc, argv，代表命令行参数！
+optstring为
+optind为argv中下一个待处理的选项下标。默认值为1，当然如 ...</div></div></div><div class="recent-post-item"><div class="post_cover left"><a href="/2022/09/19/Cpp%E4%B8%89%E6%96%B9%E5%BA%93/" title="C++三方库"><img class="post-bg" src="https://s2.loli.net/2022/11/17/nuDZ3dsB6z4bfVJ.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="C++三方库"></a></div><div class="recent-post-info"><a class="article-title" href="/2022/09/19/Cpp%E4%B8%89%E6%96%B9%E5%BA%93/" title="C++三方库">C++三方库</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2022-09-19T13:57:30.000Z" title="发表于 2022-09-19 21:57:30">2022-09-19</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/C/">C++</a></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/Linux/">Linux</a><span class="article-meta-link">•</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/C/">C++</a><span class="article-meta-link">•</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/Redis/">Redis</a></span></div><div class="content">fmt格式化字符串，好像已经纳入C++20标准库，使用很方便！而且说是比printf还快~
+12345678910git clone --depth=1 https://github.com/fmtlib/fmt.gitcd fmt/mkdir buildcd buildcmake ..make -jsudo make install# g++ test.cpp -o debug -lfmt
+
+
+github 仓库，README中文档也较详细、使用简单
+官方文档、有代码示例
+
+fmtlog基于fmt的日志库，可以很方便的以fmt的方式格式化日志输出。
+12345678git clone https://github.com/MengRao/fmtlog.gitcd fmtloggit submodule initgit submodule update./build.sh# g++ test.cpp -o debug -lfmt -lfmtlog-static # 好像只能使用静态库
+
+
+官方仓库，也只有这里的README作为官方文档
+
+spdlog同样支持fmt格式输出的日志库，相对 ...</div></div></div><div class="recent-post-item"><div class="post_cover right"><a href="/2022/08/02/Linux%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-%E5%B9%B6%E5%8F%91%E6%9C%8D%E5%8A%A1%E5%99%A8/" title="Linux网络编程-并发服务器"><img class="post-bg" src="https://s2.loli.net/2022/11/17/BeiQmkw4Ya1gvPx.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Linux网络编程-并发服务器"></a></div><div class="recent-post-info"><a class="article-title" href="/2022/08/02/Linux%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-%E5%B9%B6%E5%8F%91%E6%9C%8D%E5%8A%A1%E5%99%A8/" title="Linux网络编程-并发服务器">Linux网络编程-并发服务器</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2022-08-02T06:07:42.000Z" title="发表于 2022-08-02 14:07:42">2022-08-02</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Linux/">Linux</a></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/Linux/">Linux</a><span class="article-meta-link">•</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/socket/">socket</a><span class="article-meta-link">•</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/select/">select</a><span class="article-meta-link">•</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/poll/">poll</a><span class="article-meta-link">•</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/epoll/">epoll</a></span></div><div class="content">前面socket中创建的server只有一个主线程，只能连接一个客户端。要实现可同时连接多个客户端，有几种方法：
+
+为每一个连接创建一个子进程处理。
+为每一个连接创建一个子线程处理。
+单线程，但使用select, poll, epoll等 IO 复用算法。
+
+多进程并发每产生一个连接时，就创建一个子进程去处理，父进程只负责监听以及回收子进程！
+回收子进程不能放在父进程的循环逻辑中，一种办法是通过注册信号SIGCHLD捕捉函数，在信号处理函数中完成子进程回收。
+1234567891011121314151617181. socket()             // 创建监听套接字 lfd2. bind()3. listen()4. while(1) &#123;    cfd = accept()      // 与客户端通信的 socket fd    pid = fork()        // 创建子进程    if (pid == 0) &#123;     // 子进程        close(lfd)      // 关闭用于建立连接的套接字 lfd        rea ...</div></div></div><div class="recent-post-item"><div class="post_cover left"><a href="/2022/07/30/Linux%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-%E7%BD%91%E5%8D%A1%E6%94%B6%E5%8C%85/" title="Linux网络编程-网卡收包"><img class="post-bg" src="https://s2.loli.net/2022/11/17/HCU2TbOi7a1nqLl.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Linux网络编程-网卡收包"></a></div><div class="recent-post-info"><a class="article-title" href="/2022/07/30/Linux%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-%E7%BD%91%E5%8D%A1%E6%94%B6%E5%8C%85/" title="Linux网络编程-网卡收包">Linux网络编程-网卡收包</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2022-07-30T01:43:08.000Z" title="发表于 2022-07-30 09:43:08">2022-07-30</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Linux/">Linux</a></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/Linux/">Linux</a></span></div><div class="content">在开始之前，我们先用一张图解释 linux 系统接收网络报文的过程。
+
+首先网络报文通过物理网线发送到网卡，
+网络驱动程序会把网络中的报文读出来放到 ring buffer 中，这个过程使用 DMA（Direct Memory Access），不需要 CPU 参与
+内核从 ring buffer 中读取报文进行处理，执行 IP 和 TCP/UDP 层的逻辑，最后把报文放到应用程序的 socket buffer 中
+应用程序从 socket buffer 中读取报文进行处理
+
+注意图中的几个 buffer 缓冲区！
+
+step1：网卡到ringbufferNIC 在接收到数据包之后，首先需要将数据同步到内核中，这中间的桥梁是 rx ring buffer。它是由 NIC 和驱动程序（内核）共享的一片区域，事实上，rx ring buffer 存储的并不是实际的 packet 数据，而是一个描述符，这个描述符指向了它真正的存储地址，具体流程如下：
+
+驱动在内存中分配一片缓冲区用来接收数据包，叫做 sk_buffer；
+将上述缓冲区的地址和大小（即接收描述符），加入到 rx ring buf ...</div></div></div><div class="recent-post-item"><div class="post_cover right"><a href="/2022/07/18/OpenVSwitch-%E6%B5%8B%E8%AF%95%E6%8B%93%E6%89%91/" title="OpenVSwitch-测试拓扑"><img class="post-bg" src="https://s2.loli.net/2022/11/17/BeiQmkw4Ya1gvPx.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="OpenVSwitch-测试拓扑"></a></div><div class="recent-post-info"><a class="article-title" href="/2022/07/18/OpenVSwitch-%E6%B5%8B%E8%AF%95%E6%8B%93%E6%89%91/" title="OpenVSwitch-测试拓扑">OpenVSwitch-测试拓扑</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2022-07-18T02:57:20.000Z" title="发表于 2022-07-18 10:57:20">2022-07-18</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/OpenVSwitch/">OpenVSwitch</a></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/OpenVSwitch/">OpenVSwitch</a><span class="article-meta-link">•</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/DPDK/">DPDK</a></span></div><div class="content">
+
+
+topo1
+
+
+
+
+
+
+topo2
+
+
+
+
+
+topo3
+
+
+
+
+
+topo4
+
+
+
+
+
+topo5
+
+
+
+
+
+topo1
+1234567891011121314151617## 删除之前的配置文件rm /usr/local/etc/openvswitch/*rm /usr/local/var/run/openvswitch/*rm /usr/local/var/log/openvswitch/*ovs-ctl --no-ovs-vswitchd start --system-id=randomovs-vsctl --no-wait set Open_vSwitch . other_config:pmd-cpu-mask=0x02ovs-vsctl --no-wait set Open_vSwitch . other_config:dpdk-socket-mem=&quot;1024&quot;ovs-vsctl --no-wait set Open_vSwitch . other_config:dpdk-init=trueovs-ctl --no-ovsdb-server -- ...</div></div></div><div class="recent-post-item"><div class="post_cover left"><a href="/2022/07/17/Linux%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7/" title="Linux网络编程-分析工具"><img class="post-bg" src="https://s2.loli.net/2022/11/17/9ZBEesyr14aJhPM.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Linux网络编程-分析工具"></a></div><div class="recent-post-info"><a class="article-title" href="/2022/07/17/Linux%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7/" title="Linux网络编程-分析工具">Linux网络编程-分析工具</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2022-07-17T11:32:32.000Z" title="发表于 2022-07-17 19:32:32">2022-07-17</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Linux/">Linux</a></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/Linux/">Linux</a></span></div><div class="content">
+
+
+名称
+功能
+
+
+
+dstat
+查看各种系统资源的统计信息，可保存到文件！
+
+
+iftop
+display bandwidth usage on an interface by host. 可指定TCP&#x2F;UDP端口
+
+
+ip
+show &#x2F; manipulate routing, network devices, interfaces and tunnels
+
+
+ip link
+
+
+
+ip route
+
+
+
+iptables
+administration tool for IPv4&#x2F;IPv6 packet filtering and NAT
+
+
+lsof
+list open files. 查看端口被谁占用
+
+
+nc
+arbitrary TCP and UDP connections and listens.
+
+
+netstat
+打印网络连接、路由表、连接的数据统计、伪装连接以及广播域成员
+
+
+ss
+another utility to investigate sockets.
+
+
+tcpdump
+抓包工具
+
+
+telnet
+user interface  ...</div></div></div><div class="recent-post-item"><div class="post_cover right"><a href="/2022/06/24/Redis%E7%AC%94%E8%AE%B0/" title="Redis笔记"><img class="post-bg" src="https://s2.loli.net/2022/11/17/BeiQmkw4Ya1gvPx.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Redis笔记"></a></div><div class="recent-post-info"><a class="article-title" href="/2022/06/24/Redis%E7%AC%94%E8%AE%B0/" title="Redis笔记">Redis笔记</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2022-06-24T06:00:44.000Z" title="发表于 2022-06-24 14:00:44">2022-06-24</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Redis/">Redis</a></span><span class="article-meta tags"><span class="article-meta-separator">|</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/C/">C++</a><span class="article-meta-link">•</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/Redis/">Redis</a><span class="article-meta-link">•</span><i class="fas fa-tag"></i><a class="article-meta__tags" href="/tags/Docker/">Docker</a></span></div><div class="content">Redis 是一个高性能的、键值对数据库，数据直接存储在内存中，只有需要持久化时才写入硬盘。
+安装启动ubuntu 下使用 apt 安装的 redis 版本较老，可采用源码安装。
+123456wget https://download.redis.io/releases/redis-6.2.6.tar.gz &amp;&amp; tar xzf redis-6.2.6.tar.gzcd redis-stable &amp;&amp; make -jmake testsudo make installsudo mkdir /etc/redis &amp;&amp; sudo cp redis.conf /etc/redis # 复制配置文件到 /etc
+
+安装完成后，会有以下命令可用：
+
+redis-cli: Redis客户端
+redis-server: Redis服务器启动命令
+redis-benchmark: 性能测试工具
+redis-check-aof: 修复有问题的AOF文件
+redis-check-rdb: 修复有问题的RDB文件
+redis-sentinel: Redis集群 ...</div></div></div><nav id="pagination"><div class="pagination"><span class="page-number current">1</span><a class="page-number" href="/page/2/#content-inner">2</a><a class="extend next" rel="next" href="/page/2/#content-inner"><i class="fas fa-chevron-right fa-fw"></i></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://s2.loli.net/2024/09/17/3NdhvxIcPRVpufD.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">(ง'̀-'́)ง</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">35</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">46</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/yo-gurts"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/yo-gurts" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:yusong1117.u@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2024/09/11/Cvitek-reboot/" title="Cvitek-busybox init/reboot/poweroff"><img src="https://s2.loli.net/2022/11/17/Zm4kDRxypb5ez3q.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Cvitek-busybox init/reboot/poweroff"/></a><div class="content"><a class="title" href="/2024/09/11/Cvitek-reboot/" title="Cvitek-busybox init/reboot/poweroff">Cvitek-busybox init/reboot/poweroff</a><time datetime="2024-09-11T09:57:02.000Z" title="发表于 2024-09-11 17:57:02">2024-09-11</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/08/11/Scripts-git_tools/" title="Scripts-管理多个 git 仓库"><img src="https://s2.loli.net/2022/11/17/9ZBEesyr14aJhPM.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Scripts-管理多个 git 仓库"/></a><div class="content"><a class="title" href="/2024/08/11/Scripts-git_tools/" title="Scripts-管理多个 git 仓库">Scripts-管理多个 git 仓库</a><time datetime="2024-08-11T03:37:00.000Z" title="发表于 2024-08-11 11:37:00">2024-08-11</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/06/04/Cvitek-usbcamera%E9%9C%80%E6%B1%82/" title="Alios USB camera 常见需求处理"><img src="https://s2.loli.net/2022/11/17/BeiQmkw4Ya1gvPx.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Alios USB camera 常见需求处理"/></a><div class="content"><a class="title" href="/2024/06/04/Cvitek-usbcamera%E9%9C%80%E6%B1%82/" title="Alios USB camera 常见需求处理">Alios USB camera 常见需求处理</a><time datetime="2024-06-04T03:19:42.000Z" title="发表于 2024-06-04 11:19:42">2024-06-04</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/05/15/USB-UVC_extension/" title="UVC 扩展单元"><img src="https://s2.loli.net/2022/11/17/hF7KodYmE6iPWqg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="UVC 扩展单元"/></a><div class="content"><a class="title" href="/2024/05/15/USB-UVC_extension/" title="UVC 扩展单元">UVC 扩展单元</a><time datetime="2024-05-15T14:26:44.000Z" title="发表于 2024-05-15 22:26:44">2024-05-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/04/14/gdb/" title="gdb"><img src="https://s2.loli.net/2022/11/17/nuDZ3dsB6z4bfVJ.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="gdb"/></a><div class="content"><a class="title" href="/2024/04/14/gdb/" title="gdb">gdb</a><time datetime="2024-04-13T16:33:49.000Z" title="发表于 2024-04-14 00:33:49">2024-04-14</time></div></div></div></div><div class="card-widget card-categories"><div class="item-headline">
+            <i class="fas fa-folder-open"></i>
+            <span>分类</span>
+            <a class="card-more-btn" href="/categories/" title="查看更多">
+    <i class="fas fa-angle-right"></i></a>
+            </div>
+            <ul class="card-category-list" id="aside-cat-list">
+            <li class="card-category-list-item "><a class="card-category-list-link" href="/categories/Alios/"><span class="card-category-list-name">Alios</span><span class="card-category-list-count">1</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/C/"><span class="card-category-list-name">C++</span><span class="card-category-list-count">2</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/Cvitek/"><span class="card-category-list-name">Cvitek</span><span class="card-category-list-count">1</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/Linux/"><span class="card-category-list-name">Linux</span><span class="card-category-list-count">17</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/OpenVSwitch/"><span class="card-category-list-name">OpenVSwitch</span><span class="card-category-list-count">5</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/Redis/"><span class="card-category-list-name">Redis</span><span class="card-category-list-count">1</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/Scripts/"><span class="card-category-list-name">Scripts</span><span class="card-category-list-count">1</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/Tensorflow/"><span class="card-category-list-name">Tensorflow</span><span class="card-category-list-count">1</span></a></li>
+            </ul></div><div class="card-widget card-tags"><div class="item-headline"><i class="fas fa-tags"></i><span>标签</span></div><div class="card-tag-cloud"><a href="/tags/%E6%8E%92%E5%BA%8F/" style="font-size: 1.1em; color: #999">排序</a> <a href="/tags/c/" style="font-size: 1.1em; color: #999">c</a> <a href="/tags/Buildroot/" style="font-size: 1.1em; color: #999">Buildroot</a> <a href="/tags/sha256/" style="font-size: 1.1em; color: #999">sha256</a> <a href="/tags/Rootfs/" style="font-size: 1.1em; color: #999">Rootfs</a> <a href="/tags/rsa/" style="font-size: 1.1em; color: #999">rsa</a> <a href="/tags/%E7%BA%BF%E7%A8%8B/" style="font-size: 1.2em; color: #999da3">线程</a> <a href="/tags/reboot/" style="font-size: 1.1em; color: #999">reboot</a> <a href="/tags/gdb/" style="font-size: 1.1em; color: #999">gdb</a> <a href="/tags/STL/" style="font-size: 1.1em; color: #999">STL</a> <a href="/tags/poll/" style="font-size: 1.1em; color: #999">poll</a> <a href="/tags/DTS/" style="font-size: 1.1em; color: #999">DTS</a> <a href="/tags/%E6%96%87%E4%BB%B6/" style="font-size: 1.1em; color: #999">文件</a> <a href="/tags/Redis/" style="font-size: 1.2em; color: #999da3">Redis</a> <a href="/tags/aes/" style="font-size: 1.1em; color: #999">aes</a> <a href="/tags/Uboot/" style="font-size: 1.1em; color: #999">Uboot</a> <a href="/tags/openssl/" style="font-size: 1.1em; color: #999">openssl</a> <a href="/tags/Tools/" style="font-size: 1.1em; color: #999">Tools</a> <a href="/tags/%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/" style="font-size: 1.1em; color: #999">启动流程</a> <a href="/tags/Makefile/" style="font-size: 1.1em; color: #999">Makefile</a> <a href="/tags/UVC/" style="font-size: 1.1em; color: #999">UVC</a> <a href="/tags/%E8%BF%9B%E7%A8%8B/" style="font-size: 1.3em; color: #99a1ac">进程</a> <a href="/tags/git/" style="font-size: 1.1em; color: #999">git</a> <a href="/tags/Kernel/" style="font-size: 1.1em; color: #999">Kernel</a> <a href="/tags/Clang/" style="font-size: 1.1em; color: #999">Clang</a> <a href="/tags/%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F/" style="font-size: 1.1em; color: #999">日志系统</a> <a href="/tags/Alios/" style="font-size: 1.1em; color: #999">Alios</a> <a href="/tags/Linux/" style="font-size: 1.5em; color: #99a9bf">Linux</a> <a href="/tags/Docker/" style="font-size: 1.2em; color: #999da3">Docker</a> <a href="/tags/%E7%BA%BF%E7%A8%8B%E6%B1%A0/" style="font-size: 1.1em; color: #999">线程池</a> <a href="/tags/%E9%94%81/" style="font-size: 1.1em; color: #999">锁</a> <a href="/tags/poweroff/" style="font-size: 1.1em; color: #999">poweroff</a> <a href="/tags/select/" style="font-size: 1.1em; color: #999">select</a> <a href="/tags/%E7%AE%97%E6%B3%95/" style="font-size: 1.1em; color: #999">算法</a> <a href="/tags/%E5%90%8C%E6%AD%A5/" style="font-size: 1.1em; color: #999">同步</a> <a href="/tags/DPDK/" style="font-size: 1.3em; color: #99a1ac">DPDK</a> <a href="/tags/Cvitek/" style="font-size: 1.3em; color: #99a1ac">Cvitek</a> <a href="/tags/Tensorflow/" style="font-size: 1.1em; color: #999">Tensorflow</a> <a href="/tags/USB/" style="font-size: 1.2em; color: #999da3">USB</a> <a href="/tags/C/" style="font-size: 1.4em; color: #99a5b6">C++</a></div></div><div class="card-widget card-archives"><div class="item-headline"><i class="fas fa-archive"></i><span>归档</span><a class="card-more-btn" href="/archives/" title="查看更多">
+    <i class="fas fa-angle-right"></i></a></div><ul class="card-archive-list"><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/09/"><span class="card-archive-list-date">九月 2024</span><span class="card-archive-list-count">1</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/08/"><span class="card-archive-list-date">八月 2024</span><span class="card-archive-list-count">1</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/06/"><span class="card-archive-list-date">六月 2024</span><span class="card-archive-list-count">1</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/05/"><span class="card-archive-list-date">五月 2024</span><span class="card-archive-list-count">1</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/04/"><span class="card-archive-list-date">四月 2024</span><span class="card-archive-list-count">1</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2024/01/"><span class="card-archive-list-date">一月 2024</span><span class="card-archive-list-count">1</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2023/11/"><span class="card-archive-list-date">十一月 2023</span><span class="card-archive-list-count">1</span></a></li><li class="card-archive-list-item"><a class="card-archive-list-link" href="/archives/2023/09/"><span class="card-archive-list-date">九月 2023</span><span class="card-archive-list-count">1</span></a></li></ul></div><div class="card-widget card-webinfo"><div class="item-headline"><i class="fas fa-chart-line"></i><span>网站资讯</span></div><div class="webinfo"><div class="webinfo-item"><div class="item-name">文章数目 :</div><div class="item-count">35</div></div><div class="webinfo-item"><div class="item-name">本站总字数 :</div><div class="item-count">154.7k</div></div><div class="webinfo-item"><div class="item-name">本站访客数 :</div><div class="item-count" id="busuanzi_value_site_uv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">本站总访问量 :</div><div class="item-count" id="busuanzi_value_site_pv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">最后更新时间 :</div><div class="item-count" id="last-push-date" data-lastPushDate="2024-09-17T08:34:50.389Z"><i class="fa-solid fa-spinner fa-spin"></i></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2024 By (ง'̀-'́)ง</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.13.0"></script><script src="/js/main.js?v=4.13.0"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>window.typedJSFn = {
+  init: (str) => {
+    window.typed = new Typed('#subtitle', Object.assign({
+      strings: str,
+      startDelay: 300,
+      typeSpeed: 150,
+      loop: true,
+      backSpeed: 50,
+    }, null))
+  },
+  run: (subtitleType) => {
+    if (false) {
+      if (typeof Typed === 'function') {
+        subtitleType()
+      } else {
+        getScript('https://cdn.jsdelivr.net/npm/typed.js@2.1.0/dist/typed.umd.min.js').then(subtitleType)
+      }
+    } else {
+      subtitleType()
+    }
+  }
+}
+</script><script>function subtitleType () {
+  getScript('https://sdk.jinrishici.com/v2/browser/jinrishici.js').then(() => {
+    jinrishici.load(result =>{
+      if (false) {
+        const sub = []
+        const content = result.data.content
+        sub.unshift(content)
+        typedJSFn.init(sub)
+      } else {
+        document.getElementById('subtitle').textContent = result.data.content
+      }
+    })
+  })
+}
+typedJSFn.run(subtitleType)
+</script></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/canvas-fluttering-ribbon.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=4.13.0"></script></div></div></body></html>

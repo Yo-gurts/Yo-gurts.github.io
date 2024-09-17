@@ -1,0 +1,466 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Linux系统编程-同步与锁 | (╯°□°）╯︵ ┻━┻ </title><meta name="author" content="(ง'̀-'́)ง"><meta name="copyright" content="(ง'̀-'́)ง"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Linux 线程同步与锁的介绍"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://yo-gurts.github.io/2022/05/06/Linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B-%E5%90%8C%E6%AD%A5%E4%B8%8E%E9%94%81/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.13.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":600},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Linux系统编程-同步与锁',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-05-06 22:00:59'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+          const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+          const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+          const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+          if (t === undefined) {
+            if (isLightMode) activateLightMode()
+            else if (isDarkMode) activateDarkMode()
+            else if (isNotSpecified || hasNoSupport) {
+              const now = new Date()
+              const hour = now.getHours()
+              const isNight = hour <= 6 || hour >= 18
+              isNight ? activateDarkMode() : activateLightMode()
+            }
+            window.matchMedia('(prefers-color-scheme: dark)').addListener(e => {
+              if (saveToLocal.get('theme') === undefined) {
+                e.matches ? activateDarkMode() : activateLightMode()
+              }
+            })
+          } else if (t === 'light') activateLightMode()
+          else activateDarkMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="google-site-verification" content="MP347_Nl-SqfnOi3FZSI69WSb8J_rk_jEsa3jL4ODCI" /><meta name="generator" content="Hexo 6.1.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://s2.loli.net/2024/09/17/3NdhvxIcPRVpufD.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">35</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">46</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background: transparent"><nav id="nav"><span id="blog-info"><a href="/" title="(╯°□°）╯︵ ┻━┻ "><span class="site-name">(╯°□°）╯︵ ┻━┻ </span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Linux系统编程-同步与锁</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2022-05-06T14:00:59.000Z" title="发表于 2022-05-06 22:00:59">2022-05-06</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-05-06T14:00:59.000Z" title="更新于 2022-05-06 22:00:59">2022-05-06</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Linux/">Linux</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">3.7k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>14分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Linux系统编程-同步与锁"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/2022/05/06/Linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B-%E5%90%8C%E6%AD%A5%E4%B8%8E%E9%94%81/#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>编程中、通信中所说的同步与生活中大家印象中的同步概念略有差异。“同”字应是指协同、协助、互相配合。<strong>主旨在协同步调，按预定的先后次序运行</strong></p>
+<p>线程同步，指一个线程发出某一功能调用时，在没有得到结果之前，该调用不返回。同时其它线程为保证数据一致性，不能调用该功能。</p>
+<p>线程同步可以通过锁来实现！与锁相关的部分函数的<code>man page</code>需要单独安装。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install manpages-posix-dev</span><br></pre></td></tr></table></figure>
+
+<h2 id="mutex-互斥量（互斥锁）"><a href="#mutex-互斥量（互斥锁）" class="headerlink" title="mutex 互斥量（互斥锁）"></a>mutex 互斥量（互斥锁）</h2><p>每个线程在对资源操作前都尝试先加锁，成功加锁才能操作，操作结束解锁。</p>
+<p>资源还是共享的，线程间也还是<strong>竞争</strong>的，但通过“锁”就将资源的访问变成互斥操作。</p>
+<p>互斥锁实质上是操作系统提供的一把“建议锁”（又称“协同锁”），建议程序中有多线程访问共享资源的时候使用该机制。但，并没有强制限定。因此，即使有了 mutex，如果有线程不按规则来访问数据，依然会造成数据混乱。</p>
+<p><strong>尽量保证锁的粒度，越小越好（访问共享数据前，加锁。访问结束立即解锁）</strong>。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 静态初始化</span></span><br><span class="line"><span class="type">pthead_mutex_t</span> muetx = PTHREAD_MUTEX_INITIALIZER;</span><br><span class="line"><span class="comment">// 下面几个函数都是 成功返回 0， 失败返回错误号</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_mutex_init</span><span class="params">(<span class="type">pthread_mutex_t</span> *<span class="keyword">restrict</span> mutex,</span></span><br><span class="line"><span class="params">        <span class="type">const</span> <span class="type">pthread_mutexattr_t</span> *<span class="keyword">restrict</span> attr)</span>;</span><br><span class="line"><span class="comment">// 销毁锁</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_mutex_destroy</span><span class="params">(<span class="type">pthread_mutex_t</span> *mutex)</span>;</span><br><span class="line"><span class="comment">// 加锁，若当前锁已被其它线程加锁，则阻塞，直到被其它线程解锁</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_mutex_lock</span><span class="params">(<span class="type">pthread_mutex_t</span> *mutex)</span>;</span><br><span class="line"><span class="comment">// trylock 尝试加锁，成功返回0，失败返回 EBUSY，不会阻塞</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_mutex_trylock</span><span class="params">(<span class="type">pthread_mutex_t</span> *mutex)</span>;</span><br><span class="line"><span class="comment">// 解锁</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_mutex_unlock</span><span class="params">(<span class="type">pthread_mutex_t</span> *mutex)</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="pthread-mutex-init-函数"><a href="#pthread-mutex-init-函数" class="headerlink" title="pthread_mutex_init 函数"></a>pthread_mutex_init 函数</h3><p>初始化互斥锁。</p>
+<p>如果互斥锁 mutex 是静态分配的（定义在全局，或加了 static 关键字修饰），可以直接使用宏进行初始化。</p>
+<p><code>pthead_mutex_t muetx = PTHREAD_MUTEX_INITIALIZER;</code></p>
+<p>局部变量应采用动态初始化，即使用 <code>pthread_mutex_init(&amp;mutex, NULL);</code> 初始化。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_mutex_init</span><span class="params">(<span class="type">pthread_mutex_t</span> *<span class="keyword">restrict</span> mutex,</span></span><br><span class="line"><span class="params">        <span class="type">const</span> <span class="type">pthread_mutexattr_t</span> *<span class="keyword">restrict</span> attr)</span>;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>mutex：互斥锁的地址</p>
+</li>
+<li><p>attr：互斥锁的属性，如果为 NULL，则使用默认属性（线程间共享）</p>
+</li>
+<li><p>返回值：0（成功），非 0（失败）</p>
+</li>
+<li><p>restrict：限定该指针不能拷贝到其他指针，<code>*restrict p = &amp;a, *p2 = *p</code>会报错。</p>
+</li>
+</ul>
+<blockquote>
+<p>pthread_mutexattr_t 的选项包括：</p>
+<ol>
+<li>PTHREAD_MUTEX_NORMAL：普通锁。普通锁不允许递归调用，如果线程试图对已经拥有的锁再次加锁，它将阻塞。</li>
+<li>PTHREAD_MUTEX_RECURSIVE：递归锁。递归锁允许线程多次加锁，每次必须解锁一次。</li>
+<li>PTHREAD_MUTEX_ERRORCHECK：检查锁。检查锁与普通锁相似，但它还允许线程检查是否当前已经拥有该锁。</li>
+<li>PTHREAD_MUTEX_DEFAULT：默认锁类型。默认锁类型是普通锁。</li>
+</ol>
+<p>用户可以根据需要使用不同类型的互斥量，例如递归锁用于处理递归函数，检查锁用于检测错误，而普通锁是一般的互斥量。</p>
+</blockquote>
+<h3 id="死锁"><a href="#死锁" class="headerlink" title="死锁"></a>死锁</h3><ol>
+<li>线程试图对同一个互斥量 A 加锁两次。</li>
+<li>线程 1 拥有 A 锁，请求获得 B 锁；线程 2 拥有 B 锁，请求获得 A 锁。</li>
+</ol>
+<h3 id="example"><a href="#example" class="headerlink" title="example"></a>example</h3><p>测试1：在不加锁的情况下，下面的<code>i++</code>和<code>printf</code>之间可能被另一个线程打断，导致输出的<code>i</code>的大小不连续！</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;time.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> i = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> *<span class="title function_">thread_func</span><span class="params">(<span class="type">void</span> *args)</span> &#123;</span><br><span class="line">    <span class="keyword">while</span>(<span class="number">1</span>) &#123;</span><br><span class="line">        i++;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;thread_func: %d \n&quot;</span>, i);</span><br><span class="line">        usleep(<span class="number">10</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="type">pthread_t</span> tid;</span><br><span class="line">    pthread_create(&amp;tid, <span class="literal">NULL</span>, thread_func, <span class="literal">NULL</span>);</span><br><span class="line">    <span class="keyword">while</span>(<span class="number">1</span>) &#123;</span><br><span class="line">        i++;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;main_func: %d \n&quot;</span>, i);</span><br><span class="line">        usleep(<span class="number">10</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// result:</span></span><br><span class="line"><span class="comment">// thread_func: 17982</span></span><br><span class="line"><span class="comment">// main_func: 17982</span></span><br><span class="line"><span class="comment">// thread_func: 17984</span></span><br><span class="line"><span class="comment">// main_func: 17984</span></span><br><span class="line"><span class="comment">// thread_func: 17986</span></span><br><span class="line"><span class="comment">// main_func: 17986</span></span><br><span class="line"><span class="comment">// thread_func: 17988</span></span><br><span class="line"><span class="comment">// main_func: 17988</span></span><br><span class="line"><span class="comment">// thread_func: 17990</span></span><br><span class="line"><span class="comment">// main_func: 17990</span></span><br><span class="line"><span class="comment">// thread_func: 17992</span></span><br><span class="line"><span class="comment">// main_func: 17992</span></span><br><span class="line"><span class="comment">// thread_func: 17994</span></span><br></pre></td></tr></table></figure>
+
+<p>加锁保证数据不被另一个线程修改！</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;time.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> i = <span class="number">0</span>;</span><br><span class="line"><span class="type">pthread_mutex_t</span> mutex_i = PTHREAD_MUTEX_INITIALIZER;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> *<span class="title function_">thread_func</span><span class="params">(<span class="type">void</span> *args)</span> &#123;</span><br><span class="line">    <span class="keyword">while</span>(<span class="number">1</span>) &#123;</span><br><span class="line">        pthread_mutex_lock(&amp;mutex_i);  <span class="comment">// 上锁</span></span><br><span class="line">        i++;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;thread_func: %d \n&quot;</span>, i);</span><br><span class="line">        pthread_mutex_unlock(&amp;mutex_i);  <span class="comment">// 解锁</span></span><br><span class="line">        usleep(<span class="number">10</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="type">pthread_t</span> tid;</span><br><span class="line">    pthread_create(&amp;tid, <span class="literal">NULL</span>, thread_func, <span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span>(<span class="number">1</span>) &#123;</span><br><span class="line">        pthread_mutex_lock(&amp;mutex_i);  <span class="comment">// 上锁</span></span><br><span class="line">        i++;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;main_func: %d \n&quot;</span>, i);</span><br><span class="line">        pthread_mutex_unlock(&amp;mutex_i);  <span class="comment">// 解锁</span></span><br><span class="line">        usleep(<span class="number">10</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// result:</span></span><br><span class="line"><span class="comment">// main_func: 19946</span></span><br><span class="line"><span class="comment">// thread_func: 19947</span></span><br><span class="line"><span class="comment">// main_func: 19948</span></span><br><span class="line"><span class="comment">// thread_func: 19949</span></span><br><span class="line"><span class="comment">// main_func: 19950</span></span><br><span class="line"><span class="comment">// thread_func: 19951</span></span><br><span class="line"><span class="comment">// main_func: 19952</span></span><br><span class="line"><span class="comment">// thread_func: 19953</span></span><br><span class="line"><span class="comment">// main_func: 19954</span></span><br><span class="line"><span class="comment">// thread_func: 19955</span></span><br><span class="line"><span class="comment">// main_func: 19956</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="rwlock-读写锁"><a href="#rwlock-读写锁" class="headerlink" title="rwlock 读写锁"></a>rwlock 读写锁</h2><ul>
+<li>读共享，写独占。</li>
+<li>写锁优先级高于读锁（读锁写锁同时来，优先处理写锁。读锁加锁成功后，写锁也必须等待读锁释放）。</li>
+<li>锁还是只有一把，但分<strong>以读模式加锁</strong>和<strong>以写模式加锁</strong>两种。</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 静态初始化</span></span><br><span class="line"><span class="type">pthread_rwlock_t</span> rwlock = PTHREAD_RWLOCK_INITIALIZER;</span><br><span class="line"><span class="comment">// 初始化读写锁</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_rwlock_init</span><span class="params">(<span class="type">pthread_rwlock_t</span> *<span class="keyword">restrict</span> rwlock,</span></span><br><span class="line"><span class="params">        <span class="type">const</span> <span class="type">pthread_rwlockattr_t</span> *<span class="keyword">restrict</span> attr)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_rwlock_destroy</span><span class="params">(<span class="type">pthread_rwlock_t</span> *rwlock)</span>;</span><br><span class="line"><span class="comment">// 加读锁，</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_rwlock_wrlock</span><span class="params">(<span class="type">pthread_rwlock_t</span> *rwlock)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_rwlock_rdlock</span><span class="params">(<span class="type">pthread_rwlock_t</span> *rwlock)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_rwlock_trywrlock</span><span class="params">(<span class="type">pthread_rwlock_t</span> *rwlock)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_rwlock_tryrdlock</span><span class="params">(<span class="type">pthread_rwlock_t</span> *rwlock)</span>;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_rwlock_unlock</span><span class="params">(<span class="type">pthread_rwlock_t</span> *rwlock)</span>;</span><br></pre></td></tr></table></figure>
+
+<h2 id="cond-条件变量"><a href="#cond-条件变量" class="headerlink" title="cond 条件变量"></a>cond 条件变量</h2><p>条件变量本身不是锁！但它也可以造成线程阻塞。通常与互斥锁配合使用。给多线程提供一个会合的场所。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 静态初始化</span></span><br><span class="line"><span class="type">pthread_cond_t</span> cond = PTHREAD_COND_INITIALIZER;</span><br><span class="line"><span class="comment">// 初始化条件变量</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_cond_init</span><span class="params">(<span class="type">pthread_cond_t</span> *<span class="keyword">restrict</span> cond,</span></span><br><span class="line"><span class="params">        <span class="type">const</span> <span class="type">pthread_condattr_t</span> *<span class="keyword">restrict</span> attr)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_cond_destroy</span><span class="params">(<span class="type">pthread_cond_t</span> *cond)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 阻塞等待条件变量满足</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_cond_wait</span><span class="params">(<span class="type">pthread_cond_t</span> *<span class="keyword">restrict</span> cond,</span></span><br><span class="line"><span class="params">        <span class="type">pthread_mutex_t</span> *<span class="keyword">restrict</span> mutex)</span>;</span><br><span class="line"><span class="comment">// 阻塞等待条件变量满足，最长等待到 abstime 时刻</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_cond_timedwait</span><span class="params">(<span class="type">pthread_cond_t</span> *<span class="keyword">restrict</span> cond,</span></span><br><span class="line"><span class="params">        <span class="type">pthread_mutex_t</span> *<span class="keyword">restrict</span> mutex,</span></span><br><span class="line"><span class="params">        <span class="type">const</span> <span class="keyword">struct</span> timespec *<span class="keyword">restrict</span> abstime)</span>;</span><br><span class="line"><span class="comment">// 唤醒（至少）一个阻塞在该条件变量上的线程，一般就理解为唤醒一个线程。</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_cond_signal</span><span class="params">(<span class="type">pthread_cond_t</span> *cond)</span>;</span><br><span class="line"><span class="comment">// 唤醒所有阻塞在该条件变量上的线程</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_cond_broadcast</span><span class="params">(<span class="type">pthread_cond_t</span> *cond)</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="pthread-cond-wait-函数"><a href="#pthread-cond-wait-函数" class="headerlink" title="pthread_cond_wait 函数"></a>pthread_cond_wait 函数</h3><p>阻塞等待一个条件变量！</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">pthread_cond_wait</span><span class="params">(<span class="type">pthread_cond_t</span> *<span class="keyword">restrict</span> cond,</span></span><br><span class="line"><span class="params">        <span class="type">pthread_mutex_t</span> *<span class="keyword">restrict</span> mutex)</span>;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>cond：条件变量的地址</li>
+<li>mutex：互斥锁的地址</li>
+<li>返回值：0（成功），非 0（失败）</li>
+</ul>
+<p>函数作用：</p>
+<ol>
+<li>阻塞等待条件变量 <code>cond</code> 满足</li>
+<li>释放已掌握的互斥锁（解锁互斥量）相当于 <code>pthread_mutex_unlock(&amp;mutex)</code>; <strong>1.2.两步为一个原子操作</strong>。</li>
+<li>当被唤醒，<code>pthread_cond_wait</code> 函数返回时，<strong>解除阻塞并重新申请获取互斥锁</strong> <code>pthread_mutex_lock(&amp;mutex)</code>;</li>
+</ol>
+<p><strong>注意：<code>pthread_cond_broadcast</code>会唤醒所有阻塞在该条件变量上的线程，但并不意味这所有线程会同时收到<code>pthread_cond_wait</code>函数返回，因为该函数返回前还有获取互斥锁这一步，任意一个线程获取锁后，其他线程都会阻塞等待！所以，实际上线程的唤醒任然有先后顺序！</strong></p>
+<p>此函数的原理不太好理解，建议看视频介绍<a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1KE411q7ee?p=176&t=290.8">条件变量原理</a>！</p>
+<h3 id="pthread-cond-timedwait-函数"><a href="#pthread-cond-timedwait-函数" class="headerlink" title="pthread_cond_timedwait 函数"></a>pthread_cond_timedwait 函数</h3><p>阻塞等待一个条件变量，最长等待到 abstime 时刻。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">pthread_cond_timedwait</span><span class="params">(<span class="type">pthread_cond_t</span> *<span class="keyword">restrict</span> cond,</span></span><br><span class="line"><span class="params">        <span class="type">pthread_mutex_t</span> *<span class="keyword">restrict</span> mutex,</span></span><br><span class="line"><span class="params">        <span class="type">const</span> <span class="keyword">struct</span> timespec *<span class="keyword">restrict</span> abstime)</span>;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>cond：条件变量的地址</li>
+<li>mutex：互斥锁的地址</li>
+<li>abstime：等待的时间，绝对时间（即从1970年1月1日零时起的纳秒数）</li>
+<li>返回值：0（成功），非 0（失败）</li>
+</ul>
+<h3 id="生产者消费者实现"><a href="#生产者消费者实现" class="headerlink" title="生产者消费者实现"></a>生产者消费者实现</h3><p>条件变量和互斥量是对产品列表加锁，无论是生产者还是消费者，想要生产或消费产品，都需要先获得锁，才能对产品列表进行操作！</p>
+<p>这里用到的核心函数就是[pthread_cond_wait](#pthread_cond_wait 函数)，只要理解该函数的逻辑，就容易理解下面的模型！</p>
+<p>此处实现的产品是后生产的产品先被消费（栈）！</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">msg</span> &#123;</span></span><br><span class="line">    <span class="type">int</span> num;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">msg</span> *<span class="title">next</span>;</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">msg</span> *<span class="title">product</span>;</span></span><br><span class="line"><span class="type">pthread_cond_t</span> has_product = PTHREAD_COND_INITIALIZER;</span><br><span class="line"><span class="type">pthread_mutex_t</span> lock = PTHREAD_MUTEX_INITIALIZER;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> *<span class="title function_">consumer</span><span class="params">(<span class="type">void</span> *arg)</span> &#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">msg</span> *<span class="title">p</span>;</span></span><br><span class="line">    <span class="keyword">while</span>(<span class="number">1</span>) &#123;</span><br><span class="line">        pthread_mutex_lock(&amp;lock);  <span class="comment">// 加锁防止其他消费者抢占</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">/* 多消费者时，这里必须用while，因为通过broadcast方式唤醒所有阻塞线程时（唤醒时所有线程要去争锁），</span></span><br><span class="line"><span class="comment">           有可能其他线程先获得锁，也就先消费了产品，到本线程时，可能已经没有产品了，因此还要先判断是否有产品！ */</span></span><br><span class="line">        <span class="keyword">while</span>(product == <span class="literal">NULL</span>) &#123;</span><br><span class="line">            <span class="comment">// 注意理解此函数会进行的操作（解锁+阻塞，收到唤醒解除阻塞+加锁）</span></span><br><span class="line">            pthread_cond_wait(&amp;has_product, &amp;lock);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        p = product;</span><br><span class="line">        product = product-&gt;next;    <span class="comment">// 模拟消费一个产品</span></span><br><span class="line">        <span class="comment">// 将 printf 也放在锁的范围，这样才能观察到产品是后生产先被消费</span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;consumer %lu --- product %d\n&quot;</span>, pthread_self(), p-&gt;num);</span><br><span class="line">        pthread_mutex_unlock(&amp;lock);</span><br><span class="line"></span><br><span class="line">        <span class="built_in">free</span>(p);</span><br><span class="line">        sleep(rand() % <span class="number">5</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> *<span class="title function_">producer</span><span class="params">(<span class="type">void</span> *arg)</span> &#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">msg</span> *<span class="title">p</span>;</span></span><br><span class="line">    <span class="keyword">while</span>(<span class="number">1</span>) &#123;</span><br><span class="line">        p = <span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(<span class="keyword">struct</span> msg));</span><br><span class="line">        p-&gt;num = rand() % <span class="number">1000</span> + <span class="number">1</span>;    <span class="comment">// 模拟生产一个产品</span></span><br><span class="line"></span><br><span class="line">        pthread_mutex_lock(&amp;lock);</span><br><span class="line">        <span class="comment">// 将 printf 也放在锁的范围，这样才能观察到产品是后生产先被消费</span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;producer %lu --- product %d\n&quot;</span>, pthread_self(), p-&gt;num);</span><br><span class="line">        p-&gt;next = product;</span><br><span class="line">        product = p;    <span class="comment">// 这种实现是栈的方式，后生产的产品先出</span></span><br><span class="line">        pthread_mutex_unlock(&amp;lock);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 将一个阻塞在该条件变量上的线程唤醒</span></span><br><span class="line">        <span class="comment">// pthread_cond_signal(&amp;has_product);</span></span><br><span class="line">        pthread_cond_broadcast(&amp;has_product);</span><br><span class="line">        sleep(rand() % <span class="number">2</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="type">pthread_t</span> cons, prod;</span><br><span class="line">    pthread_create(&amp;prod, <span class="literal">NULL</span>, producer, <span class="literal">NULL</span>);</span><br><span class="line">    pthread_create(&amp;cons, <span class="literal">NULL</span>, consumer, <span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line">    <span class="type">pthread_t</span> cons1, cons2; <span class="comment">// 模拟多消费者</span></span><br><span class="line">    pthread_create(&amp;cons1, <span class="literal">NULL</span>, consumer, <span class="literal">NULL</span>);</span><br><span class="line">    pthread_create(&amp;cons2, <span class="literal">NULL</span>, consumer, <span class="literal">NULL</span>);</span><br><span class="line">    pthread_join(cons1, <span class="literal">NULL</span>);</span><br><span class="line">    pthread_join(cons2, <span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line">    pthread_join(prod, <span class="literal">NULL</span>);</span><br><span class="line">    pthread_join(cons, <span class="literal">NULL</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="sem-信号量"><a href="#sem-信号量" class="headerlink" title="sem 信号量"></a>sem 信号量</h2><p>进化版的互斥锁，加锁的线程数量 N 可以自定义，即同时访问数据的线程数量可以为 N。</p>
+<p><strong>初值为N，并不是最大值为N，但若调用sem_post，N值还会变大！</strong></p>
+<p>同样是建议锁，虽然支持多次加锁，但信号量本身并不能保证数据不紊乱，而是需要底层数据结构支持并发操作。</p>
+<p><strong>信号和信号量毫无关系！！</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;semaphore.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">sem_init</span><span class="params">(<span class="type">sem_t</span> *sem, <span class="type">int</span> pshared, <span class="type">unsigned</span> <span class="type">int</span> value)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">sem_destroy</span><span class="params">(<span class="type">sem_t</span> *sem)</span>;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">sem_wait</span><span class="params">(<span class="type">sem_t</span> *sem)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">sem_trywait</span><span class="params">(<span class="type">sem_t</span> *sem)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">sem_timedwait</span><span class="params">(<span class="type">sem_t</span> *sem, <span class="type">const</span> <span class="keyword">struct</span> timespec *abs_timeout)</span>;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">sem_post</span><span class="params">(<span class="type">sem_t</span> *sem)</span>;</span><br></pre></td></tr></table></figure>
+
+<p>信号量可以应用与线程、<strong>进程</strong>之间的同步！</p>
+<h3 id="sem-init-函数"><a href="#sem-init-函数" class="headerlink" title="sem_init 函数"></a>sem_init 函数</h3><p>初始化信号量，可以设置是否共享，以及初始值。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;semaphore.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">sem_init</span><span class="params">(<span class="type">sem_t</span> *sem, <span class="type">int</span> pshared, <span class="type">unsigned</span> <span class="type">int</span> value)</span>;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>sem</code>：信号量的地址</li>
+<li><code>pshared</code>：是否共享，<code>0</code>（用于线程间同步），<code>1</code>（<strong>用于进程间同步，在进程间共享</strong>）</li>
+<li><code>value</code>：N 值，可同时访问数据的线程数量.</li>
+<li>返回值：0（成功），-1（失败）</li>
+</ul>
+<h3 id="3类信号量"><a href="#3类信号量" class="headerlink" title="3类信号量"></a>3类信号量</h3><p>信号量有三种类型：</p>
+<ul>
+<li><strong>Posⅸ 有名信号量</strong>：可用于进程或线程间的同步。</li>
+<li><strong>Posix 无名信号量</strong>：基于内存的信号量，存放在内存区中，可用于进程或线程间的同步。<strong>常用于多线程间同步</strong>。</li>
+<li><strong>System V信号量（IPC机制）</strong>：<strong>在内核中维护</strong>，可用于进程或线程间的同步。常用于进程间同步。</li>
+</ul>
+<p>在多线程下，全局变量可在线程间共享，因此将信号量设置为全局变量即可。但在多进程环境下，每个进程间并不共享变量！这三类信号量的共享机制为：</p>
+<ul>
+<li><strong>有名信号量</strong>通过文件系统中的<strong>路径名对应的文件名</strong>进行维护（<strong>信号量只是通过文件名进行标识</strong>，信号量的值并不存放到这个文件中，除非信号量存放在空间映射到这个文件上）。</li>
+<li><strong>无名信号量</strong>通过用户空间内存进行维护，无名信号量要想在进程间通信，<strong>该内存必须为共享内存区</strong>*。如上面的<code>pshared</code>参数！</li>
+<li><strong>System V信号量（IPC机制）</strong>并不在用户空间创建，它由内核维护。它的标识是使用<code>IPC Key</code>！</li>
+</ul>
+<h3 id="生产者消费者实现2"><a href="#生产者消费者实现2" class="headerlink" title="生产者消费者实现2"></a>生产者消费者实现2</h3><p>这个与上面基于条件变量的实现逻辑不同，建议先看视频<a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1KE411q7ee?p=183&spm_id_from=pageDriver">基于信号量实现生产者消费者模型</a>理解实现的原理，再看具体实现代码。</p>
+<p>注意，对信号量初始化时，将 <code>product_num</code> 初始化为0，但仍然可以调用<code>sem_post</code>, <code>sem_wait</code>等函数，这与上面所说的最多只能有 N (这里为0) 是不是矛盾?怎么实现多个消费者？</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;semaphore.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;time.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> NUM 10</span></span><br><span class="line"></span><br><span class="line"><span class="type">sem_t</span> blank_num;</span><br><span class="line"><span class="type">sem_t</span> product_num;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> products[NUM];</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> *<span class="title function_">producer</span><span class="params">(<span class="type">void</span> *arg)</span> &#123;</span><br><span class="line">    <span class="type">int</span> i = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span>(<span class="number">1</span>) &#123;</span><br><span class="line">        sem_wait(&amp;blank_num);   <span class="comment">// 空格为空时阻塞 blank_num--</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// 生产一个产品</span></span><br><span class="line">        products[i] = rand() % <span class="number">1000</span>;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;produce product: %d in index: %d\n&quot;</span>, products[i], i);</span><br><span class="line">        sem_post(&amp;product_num); <span class="comment">// product_num++</span></span><br><span class="line"></span><br><span class="line">        i = (i+<span class="number">1</span>) % NUM;    <span class="comment">// 环形队列</span></span><br><span class="line">        sleep(rand() % <span class="number">3</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> *<span class="title function_">consumer</span><span class="params">(<span class="type">void</span> *arg)</span> &#123;</span><br><span class="line">    <span class="type">int</span> i = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span>(<span class="number">1</span>) &#123;</span><br><span class="line">        sem_wait(&amp;product_num); <span class="comment">// 当产品为空时阻塞 product_num--</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// 消费产品</span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;consume product: %d in index: %d\n&quot;</span>, products[i], i);</span><br><span class="line">        sem_post(&amp;blank_num);   <span class="comment">// blank_num++</span></span><br><span class="line"></span><br><span class="line">        i = (i+<span class="number">1</span>) % NUM;</span><br><span class="line">        sleep(rand() % <span class="number">3</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="type">pthread_t</span> prod, cons;</span><br><span class="line"></span><br><span class="line">    sem_init(&amp;product_num, <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line">    sem_init(&amp;blank_num, <span class="number">0</span>, NUM);</span><br><span class="line"></span><br><span class="line">    pthread_create(&amp;prod, <span class="literal">NULL</span>, producer, <span class="literal">NULL</span>);</span><br><span class="line">    pthread_create(&amp;cons, <span class="literal">NULL</span>, consumer, <span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line">    pthread_join(prod, <span class="literal">NULL</span>);</span><br><span class="line">    pthread_join(cons, <span class="literal">NULL</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="对比总结"><a href="#对比总结" class="headerlink" title="对比总结"></a>对比总结</h2><table>
+<thead>
+<tr>
+<th>pthread_mutex_t</th>
+<th>pthread_rwlock_t</th>
+<th>pthread_cond_t</th>
+<th>sem_t</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>pthread_mutex_init</td>
+<td>pthread_rwlock_init</td>
+<td>pthread_cond_init</td>
+<td>sem_init</td>
+</tr>
+<tr>
+<td>pthread_mutex_lock</td>
+<td>pthread_rwlock_wrlock<br />pthread_rwlock_rdlock</td>
+<td>pthread_cond_wait</td>
+<td>sem_wait</td>
+</tr>
+<tr>
+<td>pthread_mutex_trylock</td>
+<td>pthread_rwlock_trywrlock<br />pthread_rwlock_tryrdlock</td>
+<td></td>
+<td>sem_trywait</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>pthread_cond_timedwait</td>
+<td>sem_timedwait</td>
+</tr>
+<tr>
+<td>pthread_mutex_unlock</td>
+<td>pthread_rwlock_unlock</td>
+<td>pthread_cond_signal<br />pthread_cond_broadcast</td>
+<td>sem_post</td>
+</tr>
+<tr>
+<td>pthread_mutex_destroy</td>
+<td>pthread_rwlock_destroy</td>
+<td>pthread_cond_destroy</td>
+<td>sem_destroy</td>
+</tr>
+</tbody></table>
+<p>下面的方法有助于理解其实现原理，但不是真实情况：</p>
+<ul>
+<li><code>mutex</code>可以看作一个整数，且只有两种取值：0和1。<ul>
+<li>init ：将 <code>i</code> 的值设置为1。</li>
+<li>lock ：相当于 <code>i--</code>，将 <code>i</code> 的值从 1 变为 0。如果 <code>i</code> 为0，则阻塞。</li>
+<li>unlock ：相当于 <code>i++</code>，若 i 已经为 1，i 将不会变化。</li>
+</ul>
+</li>
+<li><code>sem</code> 相当于初值为 N 的互斥量<ul>
+<li>init ：初始化 <code>i</code>，初始值为 N。</li>
+<li>wait ：相当于 <code>i--</code>，若 <code>i</code> 为0，则阻塞。</li>
+<li>post ：相当于 <code>i++</code>，若 <code>i</code> 已经达到 N，还是会 <code>++</code>！（注意与 <code>mutex</code> 区分）</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// mutex</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="type">pthread_mutex_t</span> m;</span><br><span class="line">    pthread_mutex_init(&amp;m, <span class="literal">NULL</span>);</span><br><span class="line">    pthread_mutex_unlock(&amp;m);</span><br><span class="line">    pthread_mutex_lock(&amp;m);     <span class="built_in">printf</span>(<span class="string">&quot;lock 1\n&quot;</span>);</span><br><span class="line">    pthread_mutex_lock(&amp;m);     <span class="built_in">printf</span>(<span class="string">&quot;lock 2\n&quot;</span>); <span class="comment">// 阻塞</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// sem</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="type">sem_t</span> s;</span><br><span class="line">    sem_init(&amp;s, <span class="number">1</span>, <span class="number">3</span>);</span><br><span class="line">    sem_post(&amp;s);</span><br><span class="line">    sem_wait(&amp;s);   <span class="built_in">printf</span>(<span class="string">&quot;wait 1\n&quot;</span>);</span><br><span class="line">    sem_wait(&amp;s);   <span class="built_in">printf</span>(<span class="string">&quot;wait 2\n&quot;</span>);</span><br><span class="line">    sem_wait(&amp;s);   <span class="built_in">printf</span>(<span class="string">&quot;wait 3\n&quot;</span>);</span><br><span class="line">    sem_wait(&amp;s);   <span class="built_in">printf</span>(<span class="string">&quot;wait 4\n&quot;</span>);</span><br><span class="line">    sem_wait(&amp;s);   <span class="built_in">printf</span>(<span class="string">&quot;wait 5\n&quot;</span>); <span class="comment">// 阻塞</span></span><br><span class="line">    sem_destroy(&amp;s);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="内核锁"><a href="#内核锁" class="headerlink" title="内核锁"></a>内核锁</h2><p>上面几种锁都是在用户态使用，在内核中，也有类似的实现。</p>
+<table>
+<thead>
+<tr>
+<th>头文件</th>
+<th>结构</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>&lt;asm/semaphore.h&gt;</code></td>
+<td><code>struct semaphore</code></td>
+<td>信号量&#x2F;互斥量</td>
+</tr>
+<tr>
+<td><code>&lt;linux/rwsem.h&gt;</code></td>
+<td><code>struct rw_semaphore</code></td>
+<td>读写锁</td>
+</tr>
+<tr>
+<td><code>&lt;linux/completion.h&gt;</code></td>
+<td><code>struct completion</code></td>
+<td>类似条件变量</td>
+</tr>
+<tr>
+<td><code>&lt;linux/spinlock.h&gt;</code></td>
+<td><code>spinlock_t</code></td>
+<td>自旋锁</td>
+</tr>
+<tr>
+<td><code>&lt;linux/spinlock.h&gt;</code></td>
+<td><code>rwlock_t</code></td>
+<td>自旋读写锁</td>
+</tr>
+</tbody></table>
+<p>加锁总会影响系统的性能，在一些场景下可以考虑不加锁的算法！如：环形队列、原子变量、位操作、顺序锁<code>seqlock</code>、读取-拷贝-更新(RCU)。</p>
+<h2 id="锁陷阱"><a href="#锁陷阱" class="headerlink" title="锁陷阱"></a>锁陷阱</h2><ol>
+<li>不允许一个持锁者第 2 次请求锁！</li>
+<li>获得多个锁可能是危险的，当多个锁必须获得时，它们应当一直以同样顺序获得！</li>
+<li>尽量保证锁的粒度，越小越好（访问共享数据前，加锁，访问结束立即解锁）。</li>
+</ol>
+<h2 id="相关资料"><a href="#相关资料" class="headerlink" title="相关资料"></a>相关资料</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1KE411q7ee?p=172&spm_id_from=pageDriver">读写锁优先级</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1KE411q7ee?p=176&t=290.8">条件变量原理</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1KE411q7ee?p=180&t=471.6">生产者-多个消费者</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1KE411q7ee?p=183&spm_id_from=pageDriver">基于信号量实现生产者消费者模型</a></li>
+<li>《Linux 设备驱动程序》</li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_28812525/article/details/105229968">信号量类型</a></li>
+<li>《Linux&#x2F;UNIX系统编程手册–45.2&#x2F;47》</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://yo-gurts.github.io">(ง'̀-'́)ง</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://yo-gurts.github.io/2022/05/06/Linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B-%E5%90%8C%E6%AD%A5%E4%B8%8E%E9%94%81/">https://yo-gurts.github.io/2022/05/06/Linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B-%E5%90%8C%E6%AD%A5%E4%B8%8E%E9%94%81/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://yo-gurts.github.io" target="_blank">(╯°□°）╯︵ ┻━┻ </a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Linux/">Linux</a><a class="post-meta__tags" href="/tags/%E5%90%8C%E6%AD%A5/">同步</a><a class="post-meta__tags" href="/tags/%E9%94%81/">锁</a></div><div class="post_share"><div class="social-share" data-image="https://s2.loli.net/2022/11/17/jypq1GDmIVfl8WM.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2022/05/04/Linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B-%E7%BA%BF%E7%A8%8B/" title="Linux系统编程-线程"><img class="cover" src="https://s2.loli.net/2022/11/17/BeiQmkw4Ya1gvPx.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Linux系统编程-线程</div></div></a></div><div class="next-post pull-right"><a href="/2022/05/08/Linux%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-socket/" title="Linux网络编程-socket"><img class="cover" src="https://s2.loli.net/2022/11/17/NGf2mpwasOYzVIA.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Linux网络编程-socket</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2023/11/16/Cvitek-buildroot/" title="buildroot 打包 rootfs"><img class="cover" src="https://s2.loli.net/2022/11/17/Zm4kDRxypb5ez3q.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-11-16</div><div class="title">buildroot 打包 rootfs</div></div></a></div><div><a href="/2022/09/19/Cpp%E4%B8%89%E6%96%B9%E5%BA%93/" title="C++三方库"><img class="cover" src="https://s2.loli.net/2022/11/17/nuDZ3dsB6z4bfVJ.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-09-19</div><div class="title">C++三方库</div></div></a></div><div><a href="/2024/09/11/Cvitek-reboot/" title="Cvitek-busybox init&#x2F;reboot&#x2F;poweroff"><img class="cover" src="https://s2.loli.net/2022/11/17/Zm4kDRxypb5ez3q.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-09-11</div><div class="title">Cvitek-busybox init&#x2F;reboot&#x2F;poweroff</div></div></a></div><div><a href="/2023/08/08/Linux%E5%86%85%E6%A0%B8-%E8%AE%BE%E5%A4%87%E6%A0%91/" title="设备树语法介绍"><img class="cover" src="https://s2.loli.net/2022/11/17/jypq1GDmIVfl8WM.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-08-08</div><div class="title">设备树语法介绍</div></div></a></div><div><a href="/2023/08/29/Linux%E5%86%85%E6%A0%B8-%E4%B8%AD%E6%96%AD/" title="Linux 内核-中断"><img class="cover" src="https://s2.loli.net/2022/11/17/hF7KodYmE6iPWqg.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-08-29</div><div class="title">Linux 内核-中断</div></div></a></div><div><a href="/2023/09/02/Linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B-syslog/" title="Linux 系统编程-syslog"><img class="cover" src="https://s2.loli.net/2022/11/17/Zm4kDRxypb5ez3q.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-09-02</div><div class="title">Linux 系统编程-syslog</div></div></a></div></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://s2.loli.net/2024/09/17/3NdhvxIcPRVpufD.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">(ง'̀-'́)ง</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">35</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">46</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/yo-gurts"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/yo-gurts" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:yusong1117.u@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#mutex-%E4%BA%92%E6%96%A5%E9%87%8F%EF%BC%88%E4%BA%92%E6%96%A5%E9%94%81%EF%BC%89"><span class="toc-number">1.</span> <span class="toc-text">mutex 互斥量（互斥锁）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#pthread-mutex-init-%E5%87%BD%E6%95%B0"><span class="toc-number">1.1.</span> <span class="toc-text">pthread_mutex_init 函数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%AD%BB%E9%94%81"><span class="toc-number">1.2.</span> <span class="toc-text">死锁</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#example"><span class="toc-number">1.3.</span> <span class="toc-text">example</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#rwlock-%E8%AF%BB%E5%86%99%E9%94%81"><span class="toc-number">2.</span> <span class="toc-text">rwlock 读写锁</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#cond-%E6%9D%A1%E4%BB%B6%E5%8F%98%E9%87%8F"><span class="toc-number">3.</span> <span class="toc-text">cond 条件变量</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#pthread-cond-wait-%E5%87%BD%E6%95%B0"><span class="toc-number">3.1.</span> <span class="toc-text">pthread_cond_wait 函数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#pthread-cond-timedwait-%E5%87%BD%E6%95%B0"><span class="toc-number">3.2.</span> <span class="toc-text">pthread_cond_timedwait 函数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%9F%E4%BA%A7%E8%80%85%E6%B6%88%E8%B4%B9%E8%80%85%E5%AE%9E%E7%8E%B0"><span class="toc-number">3.3.</span> <span class="toc-text">生产者消费者实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#sem-%E4%BF%A1%E5%8F%B7%E9%87%8F"><span class="toc-number">4.</span> <span class="toc-text">sem 信号量</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#sem-init-%E5%87%BD%E6%95%B0"><span class="toc-number">4.1.</span> <span class="toc-text">sem_init 函数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3%E7%B1%BB%E4%BF%A1%E5%8F%B7%E9%87%8F"><span class="toc-number">4.2.</span> <span class="toc-text">3类信号量</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%9F%E4%BA%A7%E8%80%85%E6%B6%88%E8%B4%B9%E8%80%85%E5%AE%9E%E7%8E%B02"><span class="toc-number">4.3.</span> <span class="toc-text">生产者消费者实现2</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AF%B9%E6%AF%94%E6%80%BB%E7%BB%93"><span class="toc-number">5.</span> <span class="toc-text">对比总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%85%E6%A0%B8%E9%94%81"><span class="toc-number">6.</span> <span class="toc-text">内核锁</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%94%81%E9%99%B7%E9%98%B1"><span class="toc-number">7.</span> <span class="toc-text">锁陷阱</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%B8%E5%85%B3%E8%B5%84%E6%96%99"><span class="toc-number">8.</span> <span class="toc-text">相关资料</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2024/09/11/Cvitek-reboot/" title="Cvitek-busybox init/reboot/poweroff"><img src="https://s2.loli.net/2022/11/17/Zm4kDRxypb5ez3q.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Cvitek-busybox init/reboot/poweroff"/></a><div class="content"><a class="title" href="/2024/09/11/Cvitek-reboot/" title="Cvitek-busybox init/reboot/poweroff">Cvitek-busybox init/reboot/poweroff</a><time datetime="2024-09-11T09:57:02.000Z" title="发表于 2024-09-11 17:57:02">2024-09-11</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/08/11/Scripts-git_tools/" title="Scripts-管理多个 git 仓库"><img src="https://s2.loli.net/2022/11/17/9ZBEesyr14aJhPM.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Scripts-管理多个 git 仓库"/></a><div class="content"><a class="title" href="/2024/08/11/Scripts-git_tools/" title="Scripts-管理多个 git 仓库">Scripts-管理多个 git 仓库</a><time datetime="2024-08-11T03:37:00.000Z" title="发表于 2024-08-11 11:37:00">2024-08-11</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/06/04/Cvitek-usbcamera%E9%9C%80%E6%B1%82/" title="Alios USB camera 常见需求处理"><img src="https://s2.loli.net/2022/11/17/BeiQmkw4Ya1gvPx.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Alios USB camera 常见需求处理"/></a><div class="content"><a class="title" href="/2024/06/04/Cvitek-usbcamera%E9%9C%80%E6%B1%82/" title="Alios USB camera 常见需求处理">Alios USB camera 常见需求处理</a><time datetime="2024-06-04T03:19:42.000Z" title="发表于 2024-06-04 11:19:42">2024-06-04</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/05/15/USB-UVC_extension/" title="UVC 扩展单元"><img src="https://s2.loli.net/2022/11/17/hF7KodYmE6iPWqg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="UVC 扩展单元"/></a><div class="content"><a class="title" href="/2024/05/15/USB-UVC_extension/" title="UVC 扩展单元">UVC 扩展单元</a><time datetime="2024-05-15T14:26:44.000Z" title="发表于 2024-05-15 22:26:44">2024-05-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/04/14/gdb/" title="gdb"><img src="https://s2.loli.net/2022/11/17/nuDZ3dsB6z4bfVJ.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="gdb"/></a><div class="content"><a class="title" href="/2024/04/14/gdb/" title="gdb">gdb</a><time datetime="2024-04-13T16:33:49.000Z" title="发表于 2024-04-14 00:33:49">2024-04-14</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2024 By (ง'̀-'́)ง</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.13.0"></script><script src="/js/main.js?v=4.13.0"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.1
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, '']
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typesetPromise()
+}</script><script>(() => {
+  const initGitalk = () => {
+    const gitalk = new Gitalk(Object.assign({
+      clientID: 'b740056c42e9eadf273e',
+      clientSecret: 'e5f185fa9a6e27927f7a2672469435c68a288c95',
+      repo: 'Yo-gurts.github.io',
+      owner: 'yo-gurts',
+      admin: ['yo-gurts'],
+      id: 'aec0ef502dbb50d19b7080e878e09547',
+      updateCountCallback: commentCount
+    },null))
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async() => {
+    if (typeof Gitalk === 'function') initGitalk()
+    else {
+      await getCSS('https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.min.css')
+      await getScript('https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.min.js')
+      initGitalk()
+    }
+  }
+  
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/canvas-fluttering-ribbon.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=4.13.0"></script></div></div></body></html>

@@ -1,0 +1,566 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Linux系统编程-线程 | (╯°□°）╯︵ ┻━┻ </title><meta name="author" content="(ง'̀-'́)ง"><meta name="copyright" content="(ง'̀-'́)ง"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Linux 中线程的相关知识"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://yo-gurts.github.io/2022/05/04/Linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B-%E7%BA%BF%E7%A8%8B/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.13.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":600},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Linux系统编程-线程',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-05-04 21:19:30'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+          const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+          const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+          const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+          if (t === undefined) {
+            if (isLightMode) activateLightMode()
+            else if (isDarkMode) activateDarkMode()
+            else if (isNotSpecified || hasNoSupport) {
+              const now = new Date()
+              const hour = now.getHours()
+              const isNight = hour <= 6 || hour >= 18
+              isNight ? activateDarkMode() : activateLightMode()
+            }
+            window.matchMedia('(prefers-color-scheme: dark)').addListener(e => {
+              if (saveToLocal.get('theme') === undefined) {
+                e.matches ? activateDarkMode() : activateLightMode()
+              }
+            })
+          } else if (t === 'light') activateLightMode()
+          else activateDarkMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="google-site-verification" content="MP347_Nl-SqfnOi3FZSI69WSb8J_rk_jEsa3jL4ODCI" /><meta name="generator" content="Hexo 6.1.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://s2.loli.net/2024/09/17/3NdhvxIcPRVpufD.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">35</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">46</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background: transparent"><nav id="nav"><span id="blog-info"><a href="/" title="(╯°□°）╯︵ ┻━┻ "><span class="site-name">(╯°□°）╯︵ ┻━┻ </span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Linux系统编程-线程</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2022-05-04T13:19:30.000Z" title="发表于 2022-05-04 21:19:30">2022-05-04</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-05-04T13:19:30.000Z" title="更新于 2022-05-04 21:19:30">2022-05-04</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Linux/">Linux</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">4.6k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>16分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Linux系统编程-线程"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/2022/05/04/Linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B-%E7%BA%BF%E7%A8%8B/#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h2 id="线程概念"><a href="#线程概念" class="headerlink" title="线程概念"></a>线程概念</h2><blockquote>
+<p>虽然可以使用诸多进程来相互协作实现需要并发才能完成的功能，但进程间的协作有着重要的限制：<strong>每个进程有自己的独立空间</strong>。这种限制导致进程之间的协作存在明显缺陷：如果相互协作的进程需要动态共享大量的数据，则操作起来十分麻烦。就像一群人之间的协作一样，由于每个人都是独立的个体，各有不同的喜好和习惯，协作难免产生误解和沟通困难。如果一件事情让一个人来处理，协作上就不会发生问题。因此，如果能够让一个进程内部实现并发来完成一个复杂的任务，协作上的难度就会少很多。</p>
+<p>在进程内部实现并发就是进程出现的动机，如下图所示：</p>
+<p><img src="/../images/Linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B-%E7%BA%BF%E7%A8%8B/image-20221128233112246.png" alt="image-20221128233112246"></p>
+</blockquote>
+<p>Linux 下，线程又称为<code>LWP: light weight process</code>，轻量级进程。</p>
+<table>
+<thead>
+<tr>
+<th>进程</th>
+<th>线程</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>有独立的进程地址空间</strong></td>
+<td>没有独立的地址空间，多个线程共享</td>
+</tr>
+<tr>
+<td>有独立的 PCB</td>
+<td>有独立的 PCB （但PCB中指向内存资源的三级页表相同）</td>
+</tr>
+<tr>
+<td>分配资源的最小单位</td>
+<td>CPU 执行的最小单位</td>
+</tr>
+<tr>
+<td>查看 <code>ps aux / ps ajx</code></td>
+<td>查看线程号 <code>ps -Lf 进程id</code></td>
+</tr>
+</tbody></table>
+<p><strong>传统意义上的 UNIX 进程只是多线程程序的一个特例，该进程只包含一个线程。</strong></p>
+<p>进程中创建线程后，原进程也降为线程了！进程相当于独居，创建线程后就变成合租（共享地址空间）。</p>
+<p><img src="/../images/Linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B-%E7%BA%BF%E7%A8%8B/image-20220504212829735.png" alt="image-20220504212829735"></p>
+<p>线程是 CPU 执行的最小单位，以下图为例，A分配的CPU时间为<code>3/5</code>，而 B, C 各只有 <code>1/5</code>。但也不是说线程越多越好，如下图右为的曲线。</p>
+<p><img src="/../images/Linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B-%E7%BA%BF%E7%A8%8B/image-20220504213809444.png" alt="image-20220504213809444"></p>
+<h3 id="线程共享资源"><a href="#线程共享资源" class="headerlink" title="线程共享资源"></a>线程共享资源</h3><ol>
+<li>文件描述符表</li>
+<li>每种信号的处理方式</li>
+<li>当前工作目录</li>
+<li>用户 ID 和组 ID</li>
+<li>内存地址空间 (text&#x2F;data&#x2F;bss&#x2F;heap&#x2F;共享库 <strong>全局变量</strong>)，不包括栈。</li>
+</ol>
+<h3 id="线程非共享资源"><a href="#线程非共享资源" class="headerlink" title="线程非共享资源"></a>线程非共享资源</h3><ol>
+<li>线程 ID</li>
+<li>处理器现场和栈指针（内核栈）</li>
+<li>独立的栈空间（用户空间栈）</li>
+<li>errno 变量</li>
+<li>信号屏蔽字</li>
+<li>调度优先级</li>
+</ol>
+<h3 id="线程的优缺点"><a href="#线程的优缺点" class="headerlink" title="线程的优缺点"></a>线程的优缺点</h3><p>优点：</p>
+<ol>
+<li>提高程序并发性</li>
+<li>开销小</li>
+<li>数据通信、共享数据方便。只需将数据复制到共享（全局或堆）变量中即可。</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li>库函数，不稳定</li>
+<li>调试、编写困难、gdb 不支持</li>
+<li>对信号支持不好。</li>
+</ol>
+<p>优点相对突出，缺点均不是硬伤。Linux 下由于实现方法导致进程、线程差别不是很大。</p>
+<h2 id="常用-API"><a href="#常用-API" class="headerlink" title="常用 API"></a>常用 API</h2><p>线程相关的函数的<code>man page</code>可能需要额外下载，<code>sudo apt install manpages-posix manpages-posix-dev</code>，也可通过<code>man -k pthread</code>查看相关的函数。</p>
+<blockquote>
+<p>除了上面下载<code>manpage</code>，也可以<a target="_blank" rel="noopener" href="https://man7.org/linux/man-pages/index.html">在线查看manpage</a></p>
+<p><code>Pthread</code>相关的源码也可<a target="_blank" rel="noopener" href="https://sourceware.org/git/?p=glibc.git;a=tree;f=nptl;h=d0ce23d37e9b77d6ff82ffdee0f7a1f8f137aa41;hb=HEAD">在线查看</a></p>
+<p><a target="_blank" rel="noopener" href="https://elixir.bootlin.com/glibc/glibc-2.36/source">glibc source code</a></p>
+</blockquote>
+<h3 id="pthread-self"><a href="#pthread-self" class="headerlink" title="pthread_self"></a>pthread_self</h3><p>获取线程 id，类似与进程中的 <code>getpid()</code>！</p>
+<p>线程 id 是在<strong>进程地址空间内部</strong>，用来标识线程身份的 id。通过 <code>ps -LF 进程id</code> 得到的是线程号<code>LWP</code>，是操作系统用来区分以分配CPU资源标识，与进程ID的功能类似。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">pthread_t</span> <span class="title function_">pthread_self</span><span class="params">(<span class="type">void</span>)</span>;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>返回值：线程 id</li>
+</ul>
+<h3 id="pthread-create"><a href="#pthread-create" class="headerlink" title="pthread_create"></a>pthread_create</h3><p>创建线程，编译和链接时加 <code>-lpthread</code>！</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_create</span><span class="params">(<span class="type">pthread_t</span> *thread, <span class="type">const</span> <span class="type">pthread_attr_t</span> *attr,</span></span><br><span class="line"><span class="params">                    <span class="type">void</span> *(*start_routine) (<span class="type">void</span> *), <span class="type">void</span> *arg)</span>;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>thread：线程 id，传出参数</li>
+<li>attr: 线程属性，默认为 NULL</li>
+<li>start_routine：线程入口函数，函数原型要与 <code>void *(*start_routine) (void *arg)</code> 一致</li>
+<li>arg：上一个参数“传入线程入口函数”的参数</li>
+<li>返回值：0 成功，非 0 失败，返回的是 errno</li>
+</ul>
+<p>循环创建多个线程：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;errno.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;time.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">void</span> *<span class="title function_">thread_func</span><span class="params">(<span class="type">void</span> *arg)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;this is %dth thread, pid = %d, tid = %ld\n&quot;</span>, (<span class="type">int</span>)arg, getpid(), pthread_self());</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="type">long</span> <span class="type">long</span> ret, i;</span><br><span class="line">    <span class="type">pthread_t</span> tid;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; <span class="number">5</span>; i++) &#123;</span><br><span class="line">        ret = pthread_create(&amp;tid, <span class="literal">NULL</span>, thread_func, (<span class="type">void</span> *)i);</span><br><span class="line">        <span class="keyword">if</span> (ret != <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">&quot;pthread_create error: %s\n&quot;</span>, strerror(ret));</span><br><span class="line">            <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    sleep(<span class="number">3</span>);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;main: pid = %d, tid = %ld\n&quot;</span>, getpid(), pthread_self());</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>注意上面的代码中，线程入口函数的参数是一个整型变量，而不是指针！</p>
+<p>通过值传递，避免与主线程中的变量冲突。若传入的参数是一个指针，因为线程创建需要一定的时间，而这段时间内，主线程可能会改变这个指针的值。导致结果与预期不一致。</p>
+<p>检查线程返回错误号，不能使用 <code>perror()</code>，只能用 <code>strerror()</code>！</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;pthread_create error: %s\n&quot;</span>, strerror(ret));</span><br></pre></td></tr></table></figure>
+
+<h3 id="pthread-exit"><a href="#pthread-exit" class="headerlink" title="pthread_exit"></a>pthread_exit</h3><p>在线程函数函数内部调用，直接结束当前线程，可设置线程退出值。结束之后仍然需要 <code>pthread_join</code> 回收线程资源。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">pthread_exit</span><span class="params">(<span class="type">void</span> *retval)</span>;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>retval：退出值，无则设 NULL</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> *<span class="title function_">thread_func</span><span class="params">(<span class="type">void</span> *arg)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">int</span> i = (<span class="type">int</span>)arg;</span><br><span class="line">    <span class="keyword">if</span> (i == <span class="number">2</span>) &#123;</span><br><span class="line">        <span class="comment">// exit(0);         // 退出进程（会把所有线程都退出！）</span></span><br><span class="line">        <span class="comment">// return NULL;     // 退出到调用者</span></span><br><span class="line">        pthread_exit(<span class="literal">NULL</span>); <span class="comment">// 退出当前线程</span></span><br><span class="line">        pthread_exit((<span class="type">void</span>*)<span class="number">0</span>); <span class="comment">// 设定线程退出值</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;this is %dth thread, pid = %d, tid = %ld\n&quot;</span>, i, getpid(), pthread_self());</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="pthread-join"><a href="#pthread-join" class="headerlink" title="pthread_join"></a>pthread_join</h3><p>阻塞回收线程，类似于进程中的 <code>waitpid()</code>！<strong>注意，回收线程不一定是由父线程完成，兄弟线程之间可互相回收！</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_join</span><span class="params">(<span class="type">pthread_t</span> thread, <span class="type">void</span> **retval)</span>;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>retval：线程的返回值，传出参数</li>
+<li>返回值：0 成功，非 0 失败，返回的是 errno</li>
+</ul>
+<h3 id="pthread-cancel"><a href="#pthread-cancel" class="headerlink" title="pthread_cancel"></a>pthread_cancel</h3><p>杀死线程，类似于进程中的 <code>kill()</code>！</p>
+<p>被杀死的线程会调用 <code>pthread_exit()</code>，并且会返回 <code>PTHREAD_CANCELED</code>！</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_cancel</span><span class="params">(<span class="type">pthread_t</span> thread)</span>;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>thread：要杀死的线程 id</li>
+<li>返回值：0 成功，非 0 失败，返回的是 errno</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> *<span class="title function_">thread_func</span><span class="params">(<span class="type">void</span> *arg)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">while</span>(<span class="number">1</span>) &#123;</span><br><span class="line">        <span class="comment">// pthread_testcancel()</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在上面的线程函数中，由于没有进入系统调用，无法用 <code>pthread_cancel()</code> 来杀死线程！</p>
+<p><code>pthread_cancel</code> 只有线程进入系统调用后，才能被杀死！如果子线程逻辑上没有调用系统调用，可以在程序中手动添加取消点 <code>pthread_testcancel()</code>。</p>
+<h3 id="pthread-detach"><a href="#pthread-detach" class="headerlink" title="pthread_detach"></a>pthread_detach</h3><p>设置线程分离，这样线程结束时，线程资源 PCB 会被自动释放，而不需要等待主线程回收！</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_detach</span><span class="params">(<span class="type">pthread_t</span> thread)</span>;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>thread：要分离的线程 id</li>
+<li>返回值：0 成功，非 0 失败，返回的是 errno</li>
+</ul>
+<p>分离后，再次调用 <code>pthread_join()</code> 时，会报错 <code>Invalid argument</code>！</p>
+<h3 id="pthread-cleanup-push-x2F-pop"><a href="#pthread-cleanup-push-x2F-pop" class="headerlink" title="pthread_cleanup_push&#x2F;pop"></a>pthread_cleanup_push&#x2F;pop</h3><p><code>pthread_cleanup_push</code> 和 <code>pthread_cleanup_pop</code> 是 C 语言 POSIX 线程库 (pthreads) 中的函数，它们用于在线程退出时自动执行清理动作。</p>
+<ul>
+<li><code>pthread_cleanup_push</code> 用于注册清理函数，该函数将在线程退出时自动调用。该函数的第一个参数是清理函数的地址，第二个参数是一个指针，该指针用于传递给清理函数的参数。</li>
+<li><code>pthread_cleanup_pop</code> 用于弹出最近注册的清理函数。如果第二个参数为非零值，则立即调用清理函数。如果第二个参数为零，则在线程退出时自动调用清理函数。</li>
+</ul>
+<p>只有在<code>push</code>和<code>pop</code>这两个函数中间线程退出时，才会执行对应的清理函数。退出的原因有：</p>
+<ul>
+<li>其他线程使用 <code>pthread_cancel()</code> 杀死了此线程。</li>
+<li>线程自己调用了 <code>pthread_exit()</code>。</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">pthread_cleanup_push</span><span class="params">(<span class="type">void</span> (*routine)(<span class="type">void</span> *),</span></span><br><span class="line"><span class="params">                          <span class="type">void</span> *arg)</span>;</span><br><span class="line"><span class="type">void</span> <span class="title function_">pthread_cleanup_pop</span><span class="params">(<span class="type">int</span> execute)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* example */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">cleanup</span><span class="params">(<span class="type">void</span> *arg)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">&quot;Cleaning up: &quot;</span> &lt;&lt; *(<span class="type">int</span> *)arg &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> *<span class="title function_">thread_func</span><span class="params">(<span class="type">void</span> *arg)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">int</span> *i = (<span class="type">int</span> *)arg;</span><br><span class="line"></span><br><span class="line">    pthread_cleanup_push(cleanup, i);</span><br><span class="line">    <span class="type">int</span> cnt = <span class="number">10</span>;</span><br><span class="line">    <span class="keyword">while</span>(cnt--) &#123;</span><br><span class="line">        sleep(<span class="number">1</span>);</span><br><span class="line">        <span class="keyword">if</span> (cnt == <span class="number">3</span>)</span><br><span class="line">            pthread_exit(<span class="literal">NULL</span>);</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; cnt &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    pthread_cleanup_pop(<span class="number">0</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>routine</code>：清理函数指针；</li>
+<li><code>arg</code>：清理函数的传入参数。</li>
+<li><code>execute</code>：第二个参数是一个整数，它控制清理函数是在线程退出时自动调用，还是在该函数被调用时立即调用。<ul>
+<li>如果第二个参数为 0，则在线程退出时自动调用清理函数。</li>
+<li>如果第二个参数非 0，则在该函数被调用时立即调用清理函数。</li>
+</ul>
+</li>
+</ul>
+<h3 id="进程线程对比"><a href="#进程线程对比" class="headerlink" title="进程线程对比"></a>进程线程对比</h3><table>
+<thead>
+<tr>
+<th>进程</th>
+<th>线程</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>fork()</code></td>
+<td><code>pthread_create()</code></td>
+</tr>
+<tr>
+<td><code>getpid()</code></td>
+<td><code>pthread_self()</code></td>
+</tr>
+<tr>
+<td><code>exit()</code></td>
+<td><code>pthread_exit()</code></td>
+</tr>
+<tr>
+<td><code>wait()/waitpid()</code></td>
+<td><code>pthread_join()</code></td>
+</tr>
+<tr>
+<td><code>kill()</code></td>
+<td><code>pthread_cancel()</code></td>
+</tr>
+<tr>
+<td></td>
+<td><code>pthread_detach()</code></td>
+</tr>
+</tbody></table>
+<h2 id="线程属性"><a href="#线程属性" class="headerlink" title="线程属性"></a>线程属性</h2><blockquote>
+<p><a target="_blank" rel="noopener" href="https://elixir.bootlin.com/glibc/glibc-2.36/source/sysdeps/nptl/internaltypes.h#L26">pthread_attr</a></p>
+</blockquote>
+<p>在线程创建时，就可以设置线程的属性，主要有：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">pthread_attr</span> &#123;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sched_param</span>  <span class="title">schedparam</span>;</span>     <span class="comment">/* 线程的调度参数：优先级 */</span></span><br><span class="line">    <span class="type">int</span>                 schedpolicy;    <span class="comment">/* 线程调度策略 */</span></span><br><span class="line">    <span class="type">int</span>                 flags;          <span class="comment">/* 线程的分离状态、作用域属性 */</span></span><br><span class="line">    <span class="type">size_t</span>              guardsize;      <span class="comment">/* 线程栈末尾的警戒缓冲区大小 */</span></span><br><span class="line">    <span class="type">void</span> *              stackaddr;      <span class="comment">/* 线程栈的位置（最低地址） */</span></span><br><span class="line">    <span class="type">size_t</span> s            tacksize;       <span class="comment">/* 线程栈的位置（最低地址） */</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Allocated via a call to __pthread_attr_extension once needed.  */</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">pthread_attr_extension</span> *<span class="title">extension</span>;</span></span><br><span class="line">    <span class="type">void</span> *unused;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sched_param</span> &#123;</span></span><br><span class="line">    <span class="type">int</span> sched_priority;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">pthread_attr_extension</span> &#123;</span></span><br><span class="line">    <span class="comment">/* Affinity map.  */</span></span><br><span class="line">    <span class="type">cpu_set_t</span> *cpuset;</span><br><span class="line">    <span class="type">size_t</span> cpusetsize;</span><br><span class="line"></span><br><span class="line">    <span class="type">sigset_t</span> sigmask;</span><br><span class="line">    <span class="type">bool</span> sigmask_set;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>一般不直接对线程属性实例进行修改，而是通过提供的函数来设置！<strong>下面介绍的函数都是对线程属性实例进行了修改，也就是说，执行执行函数后也还没有任何一个线程受到这些属性的影响。只有用该实例去创建新线程时才生效</strong>。</p>
+<p>如果想修改当前运行中的线程的属性，往往有对应的不带<code>attr</code>的函数。</p>
+<p><code>man pthread_attr_init</code>中有获取线程属性并打印输出的例子，可以查看线程的默认属性。</p>
+<h3 id="pthread-attr-init-x2F-destroy"><a href="#pthread-attr-init-x2F-destroy" class="headerlink" title="pthread_attr_init&#x2F;destroy"></a>pthread_attr_init&#x2F;destroy</h3><p>对线程属性实例初始化和销毁的函数。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">pthread_attr_t</span> attr;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_attr_init</span><span class="params">(<span class="type">pthread_attr_t</span> *attr)</span>;    <span class="comment">// 初始化线程属性</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_attr_destroy</span><span class="params">(<span class="type">pthread_attr_t</span> *attr)</span>; <span class="comment">// 销毁线程属性</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>attr：线程属性结构体指针</li>
+<li>返回值：0 成功，非 0 失败，返回的是 errno</li>
+</ul>
+<p><code>init</code> 与 <code>destroy</code> 函数要配套使用，类似于 <code>malloc()</code> 与 <code>free()</code>！</p>
+<p>可以看到上面<code>pthread_attr</code>的结构体中有指针成员，就会涉及到动态内存分配<code>malloc</code>和内存释放<code>free</code>，因此每次用完<code>attr</code>后需要调用<code>destroy</code>释放内存，避免内存泄露。</p>
+<h3 id="pthread-attr-setdetachstate-x2F-get"><a href="#pthread-attr-setdetachstate-x2F-get" class="headerlink" title="pthread_attr_setdetachstate&#x2F;get"></a>pthread_attr_setdetachstate&#x2F;get</h3><p>设置线程分离，这样线程结束时，线程资源 PCB 会被自动释放，而不需要等待主线程回收！</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_attr_setdetachstate</span><span class="params">(<span class="type">pthread_attr_t</span> *attr, <span class="type">int</span> detachstate)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_attr_getdetachstate</span><span class="params">(<span class="type">const</span> <span class="type">pthread_attr_t</span> *attr, <span class="type">int</span> *detachstate)</span>;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>attr</code>：线程属性结构体指针</li>
+<li><code>detachstate</code>：线程分离状态，可以是以下值：<ul>
+<li><code>PTHREAD_CREATE_JOINABLE</code>：线程分离状态为非分离（默认选项）</li>
+<li><code>PTHREAD_CREATE_DETACHED</code>：线程分离状态为分离</li>
+</ul>
+</li>
+<li>返回值：0 成功，非 0 失败，返回的是 <code>errno</code></li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> *<span class="title function_">thread_func</span><span class="params">(<span class="type">void</span> *arg)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">while</span>(<span class="number">1</span>) &#123;</span><br><span class="line">        sleep(<span class="number">1</span>);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;thread func. \n&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="type">pthread_t</span> tid;</span><br><span class="line">    <span class="type">pthread_attr_t</span> attr;</span><br><span class="line">    pthread_attr_init(&amp;attr);</span><br><span class="line">    <span class="comment">// 设置线程属性为 分离</span></span><br><span class="line">    pthread_attr_setdetachstate(&amp;attr, PTHREAD_CREATE_DETACHED);</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> ret = pthread_create(&amp;tid, &amp;attr, thread_func, <span class="literal">NULL</span>);</span><br><span class="line">    <span class="keyword">if</span> (ret != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;pthread_create error: %s\n&quot;</span>, strerror(ret));</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    pthread_attr_destroy(&amp;attr);</span><br><span class="line">    ret = pthread_join(tid, <span class="literal">NULL</span>);</span><br><span class="line">    <span class="keyword">if</span> (ret != <span class="number">0</span>) <span class="comment">// 报错说明设置线程分离状态成功</span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;pthread join error: %s\n&quot;</span>, strerror(ret));</span><br><span class="line">    <span class="comment">// 主线程结束，子线程也被 结束！</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="pthread-attr-setschedpolicy-x2F-get"><a href="#pthread-attr-setschedpolicy-x2F-get" class="headerlink" title="pthread_attr_setschedpolicy&#x2F;get"></a>pthread_attr_setschedpolicy&#x2F;get</h3><p>设置线程调度的策略，支持的有：<code>SCHED_FIFO</code>, <code>SCHED_RR</code>, <code>SCHED_OTHER</code>，关于这几种策略的描述见：<a target="_blank" rel="noopener" href="https://man7.org/linux/man-pages/man7/sched.7.html#DESCRIPTION">man7 sched</a></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_attr_setschedpolicy</span><span class="params">(<span class="type">pthread_attr_t</span> *attr, <span class="type">int</span> policy)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_attr_getschedpolicy</span><span class="params">(<span class="type">const</span> <span class="type">pthread_attr_t</span> *attr, <span class="type">int</span> *policy)</span>;</span><br></pre></td></tr></table></figure>
+
+<p>返回值：成功返回，失败返回错误号。</p>
+<ul>
+<li><code>SCHED_FIFO</code>：设置了该策略的线程会一直运行，直到它被IO阻塞或被更高优先级的线程抢占，或者它调用<code>sched_yield</code>。</li>
+<li><code>SCHED_RR</code>：基于<code>SCHED_FIFO</code>，但设置了最大执行时间<code>quantum</code>，执行这么长时间后就会中止，并放入该优先级的调度队列末尾。</li>
+<li><code>SCHED_OTHER</code>：<code>Linux</code>的默认策略，是一种相对<em>公平</em>的调度策略，类似与时间片轮转，但高优先级分配的时间会更多。</li>
+</ul>
+<h3 id="pthread-attr-setschedparam-x2F-get"><a href="#pthread-attr-setschedparam-x2F-get" class="headerlink" title="pthread_attr_setschedparam&#x2F;get"></a>pthread_attr_setschedparam&#x2F;get</h3><p><code>SCHED_FIFO</code>是基于优先级抢占的，该函数用于设置线程进行调度时的优先级。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_attr_setschedparam</span><span class="params">(<span class="type">pthread_attr_t</span> *attr,</span></span><br><span class="line"><span class="params">                               <span class="type">const</span> <span class="keyword">struct</span> sched_param *param)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_attr_getschedparam</span><span class="params">(<span class="type">const</span> <span class="type">pthread_attr_t</span> *attr,</span></span><br><span class="line"><span class="params">                               <span class="keyword">struct</span> sched_param *param)</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> sched_param &#123;</span><br><span class="line">    <span class="type">int</span> sched_priority;     <span class="comment">/* Scheduling priority */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h3 id="pthread-attr-setinheritsched-x2F-get"><a href="#pthread-attr-setinheritsched-x2F-get" class="headerlink" title="pthread_attr_setinheritsched&#x2F;get"></a>pthread_attr_setinheritsched&#x2F;get</h3><p>设置线程的继承属性，其实只有<strong>调度属性</strong>可以继承。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_attr_setinheritsched</span><span class="params">(<span class="type">pthread_attr_t</span> *attr,</span></span><br><span class="line"><span class="params">                                 <span class="type">int</span> inheritsched)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_attr_getinheritsched</span><span class="params">(<span class="type">const</span> <span class="type">pthread_attr_t</span> *attr,</span></span><br><span class="line"><span class="params">                                 <span class="type">int</span> *inheritsched)</span>;</span><br></pre></td></tr></table></figure>
+
+<p><code>inheritsched</code>只有两种取值：</p>
+<ul>
+<li><code>PTHREAD_INHERIT_SCHED</code>：新线程将继承调用<code>pthread_create</code>的线程的调度策略。</li>
+<li><code>PTHREAD_EXPLICIT_SCHED</code>：新线程的调度策略以线程属性中指定的为准。</li>
+</ul>
+<p><strong>也就是说，在使用<code>pthread_attr_setschedpolicy</code>时，必须也要设置<code>PTHREAD_EXPLICIT_SCHED</code>，否则调度策略不会生效</strong>。</p>
+<h3 id="pthread-attr-setscope-x2F-get"><a href="#pthread-attr-setscope-x2F-get" class="headerlink" title="pthread_attr_setscope&#x2F;get"></a>pthread_attr_setscope&#x2F;get</h3><p>线程作用域属性描述特定线程将与哪些线程竞争资源。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_attr_setscope</span><span class="params">(<span class="type">pthread_attr_t</span> *attr, <span class="type">int</span> scope)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_attr_getscope</span><span class="params">(<span class="type">const</span> <span class="type">pthread_attr_t</span> *attr, <span class="type">int</span> *scope)</span>;</span><br></pre></td></tr></table></figure>
+
+<p>线程可以在两种竞争域内竞争资源，也是<code>scope</code>的两种取值：</p>
+<ul>
+<li><code>PTHREAD_SCOPE_SYSTEM</code>：系统域，与系统中的所有线程。一个具有系统域的线程将与整个系统中所有具有系统域的线程按照优先级竞争处理器资源，进行调度。</li>
+<li><code>PTHREAD_SCOPE_PROCESS</code>：进程域，与同一进程内的其他线程竞争。</li>
+</ul>
+<h3 id="pthread-attr-setguardsize-x2F-get"><a href="#pthread-attr-setguardsize-x2F-get" class="headerlink" title="pthread_attr_setguardsize&#x2F;get"></a>pthread_attr_setguardsize&#x2F;get</h3><p>设置线程栈保护区的大小，<strong>默认保护大小与系统页面大小相同</strong>。</p>
+<p>在线程栈的末尾分配之一至少<code>guardsize</code>字节的区域作为堆栈保护区，如果一个线程溢出它的堆栈到保护区，在大多数硬架构上，会产生<code>SIGSEGV</code>信号，从而通知它溢出。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_attr_setguardsize</span><span class="params">(<span class="type">pthread_attr_t</span> *attr, <span class="type">size_t</span> guardsize)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_attr_getguardsize</span><span class="params">(<span class="type">const</span> <span class="type">pthread_attr_t</span> *attr, <span class="type">size_t</span> *guardsize)</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="pthread-attr-setstackaddr-x2F-get"><a href="#pthread-attr-setstackaddr-x2F-get" class="headerlink" title="pthread_attr_setstackaddr&#x2F;get"></a>pthread_attr_setstackaddr&#x2F;get</h3><p>当进程栈地址空间不够用时，指定新建线程使用由<code>malloc</code>分配的空间作为自己的栈空间。</p>
+<p><a target="_blank" rel="noopener" href="https://man7.org/linux/man-pages/man3/pthread_attr_setstackaddr.3.html#NOTES">Do not use these functions!</a></p>
+<h3 id="pthread-attr-setstacksize-x2F-get"><a href="#pthread-attr-setstacksize-x2F-get" class="headerlink" title="pthread_attr_setstacksize&#x2F;get"></a>pthread_attr_setstacksize&#x2F;get</h3><p>设置线程栈的大小，默认线程栈的大小为<code>8M</code>。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_attr_setstacksize</span><span class="params">(<span class="type">pthread_attr_t</span> *attr, <span class="type">size_t</span> stacksize)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_attr_getstacksize</span><span class="params">(<span class="type">const</span> <span class="type">pthread_attr_t</span> *attr, <span class="type">size_t</span> *stacksize)</span>;</span><br></pre></td></tr></table></figure>
+
+<p>当进程中有很多线程时，可能需要减小每个线程栈的默认大小，防止进程的地址空间不够用。</p>
+<p>当线程调用的函数会分配很大的局部变量或者函数调用层次很深时，可能需要增大线程栈的默认大小。</p>
+<h3 id="pthread-attr-setaffinity-np-x2F-get"><a href="#pthread-attr-setaffinity-np-x2F-get" class="headerlink" title="pthread_attr_setaffinity_np&#x2F;get"></a>pthread_attr_setaffinity_np&#x2F;get</h3><p>设置线程的CPU亲和性，让线程在指定的某一个核或一组核上运行。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> _GNU_SOURCE             <span class="comment">/* See feature_test_macros(7) */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_attr_setaffinity_np</span><span class="params">(<span class="type">pthread_attr_t</span> *attr,</span></span><br><span class="line"><span class="params">                                <span class="type">size_t</span> cpusetsize, <span class="type">const</span> <span class="type">cpu_set_t</span> *cpuset)</span>;</span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_attr_getaffinity_np</span><span class="params">(<span class="type">const</span> <span class="type">pthread_attr_t</span> *attr,</span></span><br><span class="line"><span class="params">                                <span class="type">size_t</span> cpusetsize, <span class="type">cpu_set_t</span> *cpuset)</span>;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>cpusetsize</code>：应该指定 <code>cpuset</code> 参数的字节数，通常设定为<code>sizeof(cpu_set_t)</code>。</li>
+<li><code>cpuset</code>：核的掩码。</li>
+</ul>
+<p>虽然 <code>cpu_set_t</code> 数据类型实现为一个位掩码，但应该将其看成是一个不透明的结构。</p>
+<p>所有对这个结构的操作都应该使用宏来完成，下面是部分常用的：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* man CPU_SET */</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sched.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">CPU_ZERO</span><span class="params">(<span class="type">cpu_set_t</span> *<span class="built_in">set</span>)</span>;          <span class="comment">/* 将 set 初始化为空 */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">CPU_SET</span><span class="params">(<span class="type">int</span> cpu, <span class="type">cpu_set_t</span> *<span class="built_in">set</span>)</span>;  <span class="comment">/* 将 CPU cpu 添加到 set 中 */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">CPU_CLR</span><span class="params">(<span class="type">int</span> cpu, <span class="type">cpu_set_t</span> *<span class="built_in">set</span>)</span>;  <span class="comment">/* 从 set 中删除 CPU cpu */</span></span><br><span class="line"><span class="type">int</span>  <span class="title function_">CPU_ISSET</span><span class="params">(<span class="type">int</span> cpu, <span class="type">cpu_set_t</span> *<span class="built_in">set</span>)</span>;<span class="comment">/* 在 CPU cpu 是 set 的一个成员时返回 true */</span></span><br></pre></td></tr></table></figure>
+
+<p>注意上面宏参数<code>cpu</code>编号是从0开始。</p>
+<h3 id="pthread-getattr-np"><a href="#pthread-getattr-np" class="headerlink" title="pthread_getattr_np"></a>pthread_getattr_np</h3><p>获取当前线程的属性，写入到<code>attr</code>中。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> _GNU_SOURCE             <span class="comment">/* See feature_test_macros(7) */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_getattr_np</span><span class="params">(<span class="type">pthread_t</span> thread, <span class="type">pthread_attr_t</span> *attr)</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="运行时调整线程属性"><a href="#运行时调整线程属性" class="headerlink" title="运行时调整线程属性"></a>运行时调整线程属性</h3><p>除了上面在线程创建时设置属性，部分属性也支持运行时进行调整。</p>
+<table>
+<thead>
+<tr>
+<th>静态设置</th>
+<th>运行时</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>pthread_attr_setschedparam</code></td>
+<td><code>pthread_setschedparam</code></td>
+</tr>
+<tr>
+<td><code>pthread_attr_setaffinity_np</code></td>
+<td><code>pthread_setaffinity_np</code></td>
+</tr>
+</tbody></table>
+<h3 id="CPU亲和性"><a href="#CPU亲和性" class="headerlink" title="CPU亲和性"></a>CPU亲和性</h3><p>设置进程在某一个核或一组核上运行，在某些情况下可以提升性能。如果该进程有多个线程，它们都只能在指定的一组核上面运行。也可单独为某一个线程设置亲和性。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sched.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">sched_setaffinity</span><span class="params">(<span class="type">pid_t</span> pid, <span class="type">size_t</span> cpusetsize,</span></span><br><span class="line"><span class="params">                        <span class="type">const</span> <span class="type">cpu_set_t</span> *mask)</span>;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">sched_getaffinity</span><span class="params">(<span class="type">pid_t</span> pid, <span class="type">size_t</span> cpusetsize,</span></span><br><span class="line"><span class="params">                        <span class="type">cpu_set_t</span> *mask)</span>;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>pid</code>：要设置的进程号，也可简单的用<code>0</code>来表示调用进程，也可用<code>gettid()</code>传入线程号</li>
+<li><code>cpusetsize</code>：应该指定 <code>mask</code> 参数的字节数，通常设定为<code>sizeof(cpu_set_t)</code></li>
+<li><code>mask</code>：核的掩码。</li>
+<li>返回值：成功返回0，失败返回<code>-1</code>，并设置<code>errno</code><ul>
+<li>如果<code>mask</code>中指定的 CPU 与系统中的所有 CPU 都不匹配，返回<code>EINVAL</code>错误</li>
+</ul>
+</li>
+</ul>
+<p><code>taskset -p PID</code> 可查看当前进程的<code>mask</code>，可通过 <code>taskset -pc $pid</code> 来获取某线程与CPU核心的亲和性。</p>
+<h2 id="线程注意事项"><a href="#线程注意事项" class="headerlink" title="线程注意事项"></a>线程注意事项</h2><ol>
+<li>主线程退出其他线程不退出，主线程应调用 pthread_exit</li>
+<li>避免僵尸线程：<ul>
+<li>pthread_join</li>
+<li>pthread_detach</li>
+<li>pthread_create 指定分离属性</li>
+<li>被 join 线程可能在 join 函数返回前就释放完自己的所有内存资源，所以不应当返回被回收线程栈中的值;</li>
+</ul>
+</li>
+<li>malloc 和 mmap 申请的内存可以被其他线程释放</li>
+<li>应避免在多线程模型中调用 fork 除非，马上 exec，子进程中只有调用 fork 的线程存在，其他线程在子进程中均 pthread_exit</li>
+<li>信号的复杂语义很难和多线程共存，应避免在多线程引入信号机制 （多线程中，信号由哪个线程处理不确定！每个线程各有信号屏蔽字mask，共享未决信号集，如果想指定某个线程处理特定信号，可通过设置其他线程的信号屏蔽字）</li>
+</ol>
+<h2 id="一次性初始化"><a href="#一次性初始化" class="headerlink" title="一次性初始化"></a>一次性初始化</h2><blockquote>
+<p>Linux-Unix系统编程手册——31.2节</p>
+</blockquote>
+<p>多线程程序有时有这样的需求：不管创建了多少线程，有些初始化动作只能发生一次。如果由主线程来创建新线程，那么这一点易如反掌，可以在创建依赖于该初始化的线程之前进行初始化。不过，对于库函数而言，这样处理就不可行，因为调用者在初次调用库函数之前可能已经创建了这些线程。故而需要这样的库函数：无论首次为任何线程所调用，都会执行初始化动作。</p>
+<h3 id="pthread-once-函数"><a href="#pthread-once-函数" class="headerlink" title="pthread_once 函数"></a>pthread_once 函数</h3><p>保证无论多少线程、无论调用多少次<code>pthread_once</code>，都只会执行一次<code>init_routine</code>初始化函数。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">pthread_once</span><span class="params">(<span class="type">pthread_once_t</span> *once_control,</span></span><br><span class="line"><span class="params">                 <span class="type">void</span> (*init_routine)(<span class="type">void</span>))</span>;</span><br><span class="line"><span class="type">pthread_once_t</span> once_control = PTHREAD_ONCE_INIT;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>once_control</code>：必须是一指针，指向初始化为 <code>PTHREAD_ONCE_INIT</code> 的静态变量。</li>
+<li><code>init_routine</code>：需要执行的函数，该函数没有任何参数。</li>
+<li>成功返回<code>0</code>。</li>
+</ul>
+<h2 id="相关资料"><a href="#相关资料" class="headerlink" title="相关资料"></a>相关资料</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1KE411q7ee?p=148&spm_id_from=pageDriver">线程原理–三级页表</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1KE411q7ee?p=153&spm_id_from=pageDriver">循环创建子线程</a></li>
+<li><a target="_blank" rel="noopener" href="https://man7.org/linux/man-pages/index.html">在线查看manpage</a></li>
+<li><a target="_blank" rel="noopener" href="https://elixir.bootlin.com/glibc/glibc-2.36/source">glibc source code</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/FREMONT/p/9480376.html">线程属性</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_38232598/article/details/114263105">线程&#x2F;进程和核绑定（CPU亲和性）</a></li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://yo-gurts.github.io">(ง'̀-'́)ง</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://yo-gurts.github.io/2022/05/04/Linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B-%E7%BA%BF%E7%A8%8B/">https://yo-gurts.github.io/2022/05/04/Linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B-%E7%BA%BF%E7%A8%8B/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://yo-gurts.github.io" target="_blank">(╯°□°）╯︵ ┻━┻ </a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Linux/">Linux</a><a class="post-meta__tags" href="/tags/%E7%BA%BF%E7%A8%8B/">线程</a><a class="post-meta__tags" href="/tags/%E8%BF%9B%E7%A8%8B/">进程</a></div><div class="post_share"><div class="social-share" data-image="https://s2.loli.net/2022/11/17/BeiQmkw4Ya1gvPx.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2022/05/02/Linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B-%E4%BF%A1%E5%8F%B7/" title="Linux系统编程-信号"><img class="cover" src="https://s2.loli.net/2022/11/17/hF7KodYmE6iPWqg.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Linux系统编程-信号</div></div></a></div><div class="next-post pull-right"><a href="/2022/05/06/Linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B-%E5%90%8C%E6%AD%A5%E4%B8%8E%E9%94%81/" title="Linux系统编程-同步与锁"><img class="cover" src="https://s2.loli.net/2022/11/17/jypq1GDmIVfl8WM.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Linux系统编程-同步与锁</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2022/04/25/Linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B-%E8%BF%9B%E7%A8%8B/" title="Linux系统编程-进程"><img class="cover" src="https://s2.loli.net/2022/11/17/jypq1GDmIVfl8WM.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-04-25</div><div class="title">Linux系统编程-进程</div></div></a></div><div><a href="/2022/04/25/Linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B-%E8%BF%9B%E7%A8%8B%E9%80%9A%E4%BF%A1/" title="Linux系统编程-进程通信"><img class="cover" src="https://s2.loli.net/2022/11/17/HCU2TbOi7a1nqLl.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-04-25</div><div class="title">Linux系统编程-进程通信</div></div></a></div><div><a href="/2022/05/16/Linux%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-%E7%BA%BF%E7%A8%8B%E6%B1%A0/" title="Linux网络编程-线程池"><img class="cover" src="https://s2.loli.net/2022/11/17/UeWP8jCq6dJZSGD.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-05-16</div><div class="title">Linux网络编程-线程池</div></div></a></div><div><a href="/2023/11/16/Cvitek-buildroot/" title="buildroot 打包 rootfs"><img class="cover" src="https://s2.loli.net/2022/11/17/Zm4kDRxypb5ez3q.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-11-16</div><div class="title">buildroot 打包 rootfs</div></div></a></div><div><a href="/2022/09/19/Cpp%E4%B8%89%E6%96%B9%E5%BA%93/" title="C++三方库"><img class="cover" src="https://s2.loli.net/2022/11/17/nuDZ3dsB6z4bfVJ.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-09-19</div><div class="title">C++三方库</div></div></a></div><div><a href="/2024/09/11/Cvitek-reboot/" title="Cvitek-busybox init&#x2F;reboot&#x2F;poweroff"><img class="cover" src="https://s2.loli.net/2022/11/17/Zm4kDRxypb5ez3q.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-09-11</div><div class="title">Cvitek-busybox init&#x2F;reboot&#x2F;poweroff</div></div></a></div></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://s2.loli.net/2024/09/17/3NdhvxIcPRVpufD.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">(ง'̀-'́)ง</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">35</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">46</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/yo-gurts"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/yo-gurts" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:yusong1117.u@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BA%BF%E7%A8%8B%E6%A6%82%E5%BF%B5"><span class="toc-number">1.</span> <span class="toc-text">线程概念</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BA%BF%E7%A8%8B%E5%85%B1%E4%BA%AB%E8%B5%84%E6%BA%90"><span class="toc-number">1.1.</span> <span class="toc-text">线程共享资源</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BA%BF%E7%A8%8B%E9%9D%9E%E5%85%B1%E4%BA%AB%E8%B5%84%E6%BA%90"><span class="toc-number">1.2.</span> <span class="toc-text">线程非共享资源</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BA%BF%E7%A8%8B%E7%9A%84%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="toc-number">1.3.</span> <span class="toc-text">线程的优缺点</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%B8%E7%94%A8-API"><span class="toc-number">2.</span> <span class="toc-text">常用 API</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#pthread-self"><span class="toc-number">2.1.</span> <span class="toc-text">pthread_self</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#pthread-create"><span class="toc-number">2.2.</span> <span class="toc-text">pthread_create</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#pthread-exit"><span class="toc-number">2.3.</span> <span class="toc-text">pthread_exit</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#pthread-join"><span class="toc-number">2.4.</span> <span class="toc-text">pthread_join</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#pthread-cancel"><span class="toc-number">2.5.</span> <span class="toc-text">pthread_cancel</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#pthread-detach"><span class="toc-number">2.6.</span> <span class="toc-text">pthread_detach</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#pthread-cleanup-push-x2F-pop"><span class="toc-number">2.7.</span> <span class="toc-text">pthread_cleanup_push&#x2F;pop</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%9B%E7%A8%8B%E7%BA%BF%E7%A8%8B%E5%AF%B9%E6%AF%94"><span class="toc-number">2.8.</span> <span class="toc-text">进程线程对比</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BA%BF%E7%A8%8B%E5%B1%9E%E6%80%A7"><span class="toc-number">3.</span> <span class="toc-text">线程属性</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#pthread-attr-init-x2F-destroy"><span class="toc-number">3.1.</span> <span class="toc-text">pthread_attr_init&#x2F;destroy</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#pthread-attr-setdetachstate-x2F-get"><span class="toc-number">3.2.</span> <span class="toc-text">pthread_attr_setdetachstate&#x2F;get</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#pthread-attr-setschedpolicy-x2F-get"><span class="toc-number">3.3.</span> <span class="toc-text">pthread_attr_setschedpolicy&#x2F;get</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#pthread-attr-setschedparam-x2F-get"><span class="toc-number">3.4.</span> <span class="toc-text">pthread_attr_setschedparam&#x2F;get</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#pthread-attr-setinheritsched-x2F-get"><span class="toc-number">3.5.</span> <span class="toc-text">pthread_attr_setinheritsched&#x2F;get</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#pthread-attr-setscope-x2F-get"><span class="toc-number">3.6.</span> <span class="toc-text">pthread_attr_setscope&#x2F;get</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#pthread-attr-setguardsize-x2F-get"><span class="toc-number">3.7.</span> <span class="toc-text">pthread_attr_setguardsize&#x2F;get</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#pthread-attr-setstackaddr-x2F-get"><span class="toc-number">3.8.</span> <span class="toc-text">pthread_attr_setstackaddr&#x2F;get</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#pthread-attr-setstacksize-x2F-get"><span class="toc-number">3.9.</span> <span class="toc-text">pthread_attr_setstacksize&#x2F;get</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#pthread-attr-setaffinity-np-x2F-get"><span class="toc-number">3.10.</span> <span class="toc-text">pthread_attr_setaffinity_np&#x2F;get</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#pthread-getattr-np"><span class="toc-number">3.11.</span> <span class="toc-text">pthread_getattr_np</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%90%E8%A1%8C%E6%97%B6%E8%B0%83%E6%95%B4%E7%BA%BF%E7%A8%8B%E5%B1%9E%E6%80%A7"><span class="toc-number">3.12.</span> <span class="toc-text">运行时调整线程属性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CPU%E4%BA%B2%E5%92%8C%E6%80%A7"><span class="toc-number">3.13.</span> <span class="toc-text">CPU亲和性</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BA%BF%E7%A8%8B%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="toc-number">4.</span> <span class="toc-text">线程注意事项</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E6%AC%A1%E6%80%A7%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc-number">5.</span> <span class="toc-text">一次性初始化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#pthread-once-%E5%87%BD%E6%95%B0"><span class="toc-number">5.1.</span> <span class="toc-text">pthread_once 函数</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%B8%E5%85%B3%E8%B5%84%E6%96%99"><span class="toc-number">6.</span> <span class="toc-text">相关资料</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2024/09/11/Cvitek-reboot/" title="Cvitek-busybox init/reboot/poweroff"><img src="https://s2.loli.net/2022/11/17/Zm4kDRxypb5ez3q.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Cvitek-busybox init/reboot/poweroff"/></a><div class="content"><a class="title" href="/2024/09/11/Cvitek-reboot/" title="Cvitek-busybox init/reboot/poweroff">Cvitek-busybox init/reboot/poweroff</a><time datetime="2024-09-11T09:57:02.000Z" title="发表于 2024-09-11 17:57:02">2024-09-11</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/08/11/Scripts-git_tools/" title="Scripts-管理多个 git 仓库"><img src="https://s2.loli.net/2022/11/17/9ZBEesyr14aJhPM.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Scripts-管理多个 git 仓库"/></a><div class="content"><a class="title" href="/2024/08/11/Scripts-git_tools/" title="Scripts-管理多个 git 仓库">Scripts-管理多个 git 仓库</a><time datetime="2024-08-11T03:37:00.000Z" title="发表于 2024-08-11 11:37:00">2024-08-11</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/06/04/Cvitek-usbcamera%E9%9C%80%E6%B1%82/" title="Alios USB camera 常见需求处理"><img src="https://s2.loli.net/2022/11/17/BeiQmkw4Ya1gvPx.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Alios USB camera 常见需求处理"/></a><div class="content"><a class="title" href="/2024/06/04/Cvitek-usbcamera%E9%9C%80%E6%B1%82/" title="Alios USB camera 常见需求处理">Alios USB camera 常见需求处理</a><time datetime="2024-06-04T03:19:42.000Z" title="发表于 2024-06-04 11:19:42">2024-06-04</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/05/15/USB-UVC_extension/" title="UVC 扩展单元"><img src="https://s2.loli.net/2022/11/17/hF7KodYmE6iPWqg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="UVC 扩展单元"/></a><div class="content"><a class="title" href="/2024/05/15/USB-UVC_extension/" title="UVC 扩展单元">UVC 扩展单元</a><time datetime="2024-05-15T14:26:44.000Z" title="发表于 2024-05-15 22:26:44">2024-05-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/04/14/gdb/" title="gdb"><img src="https://s2.loli.net/2022/11/17/nuDZ3dsB6z4bfVJ.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="gdb"/></a><div class="content"><a class="title" href="/2024/04/14/gdb/" title="gdb">gdb</a><time datetime="2024-04-13T16:33:49.000Z" title="发表于 2024-04-14 00:33:49">2024-04-14</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2024 By (ง'̀-'́)ง</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.13.0"></script><script src="/js/main.js?v=4.13.0"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.1
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, '']
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typesetPromise()
+}</script><script>(() => {
+  const initGitalk = () => {
+    const gitalk = new Gitalk(Object.assign({
+      clientID: 'b740056c42e9eadf273e',
+      clientSecret: 'e5f185fa9a6e27927f7a2672469435c68a288c95',
+      repo: 'Yo-gurts.github.io',
+      owner: 'yo-gurts',
+      admin: ['yo-gurts'],
+      id: '160b4c3ee998a586daa4fcc630ff0bd3',
+      updateCountCallback: commentCount
+    },null))
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async() => {
+    if (typeof Gitalk === 'function') initGitalk()
+    else {
+      await getCSS('https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.min.css')
+      await getScript('https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.min.js')
+      initGitalk()
+    }
+  }
+  
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/canvas-fluttering-ribbon.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=4.13.0"></script></div></div></body></html>

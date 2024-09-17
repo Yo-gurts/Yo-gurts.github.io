@@ -1,0 +1,740 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>gdb | (╯°□°）╯︵ ┻━┻ </title><meta name="author" content="(ง'̀-'́)ง"><meta name="copyright" content="(ง'̀-'́)ง"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="GDB 备忘清单本清单提供了对 GDB 的入门简要概述，以及 GDB 常用示例，完整文档参阅 Debugging with gdb，该文档最后有 GDB index，可以快速查找命令。 入门  常用命令  [] 内为命令缩写    命令 [缩写] 说明    help[h] 查看命令帮助。如 hel"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://yo-gurts.github.io/2024/04/14/gdb/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.13.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":600},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'gdb',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-04-14 00:33:49'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+          const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+          const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+          const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+          if (t === undefined) {
+            if (isLightMode) activateLightMode()
+            else if (isDarkMode) activateDarkMode()
+            else if (isNotSpecified || hasNoSupport) {
+              const now = new Date()
+              const hour = now.getHours()
+              const isNight = hour <= 6 || hour >= 18
+              isNight ? activateDarkMode() : activateLightMode()
+            }
+            window.matchMedia('(prefers-color-scheme: dark)').addListener(e => {
+              if (saveToLocal.get('theme') === undefined) {
+                e.matches ? activateDarkMode() : activateLightMode()
+              }
+            })
+          } else if (t === 'light') activateLightMode()
+          else activateDarkMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="google-site-verification" content="MP347_Nl-SqfnOi3FZSI69WSb8J_rk_jEsa3jL4ODCI" /><meta name="generator" content="Hexo 6.1.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://s2.loli.net/2024/09/17/3NdhvxIcPRVpufD.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">35</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">46</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background: transparent"><nav id="nav"><span id="blog-info"><a href="/" title="(╯°□°）╯︵ ┻━┻ "><span class="site-name">(╯°□°）╯︵ ┻━┻ </span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">gdb</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2024-04-13T16:33:49.000Z" title="发表于 2024-04-14 00:33:49">2024-04-14</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2024-04-13T16:33:49.000Z" title="更新于 2024-04-14 00:33:49">2024-04-14</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Tools/">Tools</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">2k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>7分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="gdb"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/2024/04/14/gdb/#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="GDB-备忘清单"><a href="#GDB-备忘清单" class="headerlink" title="GDB 备忘清单"></a>GDB 备忘清单</h1><p>本清单提供了对 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/GNU_Debugger">GDB</a> 的入门简要概述，以及 <code>GDB</code> 常用示例，完整文档参阅 <a target="_blank" rel="noopener" href="https://www.eecs.umich.edu/courses/eecs373/readings/Debugger.pdf">Debugging with gdb</a>，该文档最后有 <code>GDB index</code>，可以快速查找命令。</p>
+<h2 id="入门"><a href="#入门" class="headerlink" title="入门"></a>入门</h2><!--rehype:body-class=cols-2-->
+
+<h3 id="常用命令"><a href="#常用命令" class="headerlink" title="常用命令"></a>常用命令</h3><!--rehype:wrap-class=row-span-2-->
+
+<p><code>[]</code> 内为命令缩写</p>
+<table>
+<thead>
+<tr>
+<th align="left">命令 <code>[缩写]</code></th>
+<th align="left">说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><code>help[h]</code></td>
+<td align="left"><strong>查看命令帮助</strong>。如 <code>help run</code></td>
+</tr>
+<tr>
+<td align="left"><code>run[r]</code></td>
+<td align="left"><strong>运行程序</strong>。可搭配参数使用</td>
+</tr>
+<tr>
+<td align="left"><code>start</code></td>
+<td align="left"><strong>运行程序，停在第一条执行语句</strong>。可搭配参数使用</td>
+</tr>
+<tr>
+<td align="left"><code>list[l]</code></td>
+<td align="left"><strong>查看程序源码</strong></td>
+</tr>
+<tr>
+<td align="left"><code>break[b]</code></td>
+<td align="left"><strong>设置断点</strong>。可指定文件名、函数名和行号等参数来设置断点</td>
+</tr>
+<tr>
+<td align="left"><code>watch</code></td>
+<td align="left"><strong>设置监视点</strong>。当监视的变量发生更改时，程序会被中断</td>
+</tr>
+<tr>
+<td align="left"><code>delete</code></td>
+<td align="left"><strong>删除断点等</strong>。可用于删除断点、监视点、<code>display</code> 等</td>
+</tr>
+<tr>
+<td align="left"><code>continue[c]</code></td>
+<td align="left"><strong>继续执行程序</strong>。让程序继续执行，到下一个断点或程序结束</td>
+</tr>
+<tr>
+<td align="left"><code>next[n]</code></td>
+<td align="left"><strong>单步执行程序，跳过函数调用</strong></td>
+</tr>
+<tr>
+<td align="left"><code>step[s]</code></td>
+<td align="left"><strong>单步执行程序，进入函数调用</strong></td>
+</tr>
+<tr>
+<td align="left"><code>finish</code></td>
+<td align="left"><strong>结束当前函数</strong>。返回到函数调用点</td>
+</tr>
+<tr>
+<td align="left"><code>kill</code></td>
+<td align="left"><strong>杀死当前的调试进程</strong></td>
+</tr>
+<tr>
+<td align="left"><code>backtrace[bt]</code></td>
+<td align="left"><strong>查看函数调用栈</strong>。它会打印出当前的函数调用栈</td>
+</tr>
+<tr>
+<td align="left"><code>frame[fr]</code></td>
+<td align="left"><strong>切换栈帧</strong>。以查看该栈帧中的局部变量和参数等</td>
+</tr>
+<tr>
+<td align="left"><code>info</code></td>
+<td align="left"><strong>查看程序状态信息</strong>。例如断点、寄存器、线程、局部变量等</td>
+</tr>
+<tr>
+<td align="left"><code>show</code></td>
+<td align="left"><strong>查看 <code>gdb</code> 配置信息</strong>。与 <code>info</code> 不同， <code>show</code> 查看 <code>GDB</code> 本身的配置信息</td>
+</tr>
+<tr>
+<td align="left"><code>set</code></td>
+<td align="left"><strong>设置变量值</strong>。有时指定变量类型才能设置，如 <code>set *(int*)(&amp;a) = 3</code></td>
+</tr>
+<tr>
+<td align="left"><code>whatis</code></td>
+<td align="left"><strong>查看变量、函数类型</strong>。例如，<code>whatis a</code> 可以显示变量 <code>a</code> 的类型</td>
+</tr>
+<tr>
+<td align="left"><code>ptype</code></td>
+<td align="left"><strong>查看变量、函数类型</strong>。会显示完整的结构体类型</td>
+</tr>
+<tr>
+<td align="left"><code>print[p]</code></td>
+<td align="left"><strong>打印变量的值</strong>。例如，<code>print x</code> 可以显示变量 <code>x</code> 的当前值</td>
+</tr>
+<tr>
+<td align="left"><code>display</code></td>
+<td align="left"><strong>持续打印变量的值</strong>。与 <code>print</code> 类似，但它会在每次停下时自动输出值</td>
+</tr>
+<tr>
+<td align="left"><code>thread</code></td>
+<td align="left"><strong>切换线程</strong>。例如，<code>thread 2</code> 切换到编号为 <code>2</code> 的线程</td>
+</tr>
+<tr>
+<td align="left"><code>signal</code></td>
+<td align="left"><strong>向进程发送信号</strong>。例如，<code>signal 9</code> 发送编号为 <code>9</code> 的信号</td>
+</tr>
+</tbody></table>
+<!--rehype:className=left-align-->
+
+<h3 id="启动调试"><a href="#启动调试" class="headerlink" title="启动调试"></a>启动调试</h3><p>启动进程，不带参数</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># gdb &lt;program&gt;</span></span><br><span class="line">(gdb) run</span><br></pre></td></tr></table></figure>
+
+<p>启动进程，带参数 <code>&lt;args&gt;</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># gdb &lt;program&gt;</span></span><br><span class="line">(gdb) run &lt;args&gt;</span><br></pre></td></tr></table></figure>
+
+<p>启动 <code>gdb</code> 时传入参数，<code>run</code> 就不用传入了</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># gdb --args &lt;program&gt; 1 2 3</span></span><br><span class="line">(gdb) run</span><br></pre></td></tr></table></figure>
+
+<p>通过 <code>set</code> 设置参数</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># gdb &lt;program&gt;</span></span><br><span class="line">(gdb) <span class="built_in">set</span> args 1 2 3</span><br><span class="line">(gdb) run</span><br></pre></td></tr></table></figure>
+
+<p>显示运行时将要或已经传递给程序的参数</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(gdb) show args</span><br></pre></td></tr></table></figure>
+
+<p>在启动进程前，添加环境变量</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(gdb) <span class="built_in">set</span> <span class="built_in">env</span> DEBUG 1</span><br></pre></td></tr></table></figure>
+
+<p>在启动进程前，清除环境变量</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(gdb) <span class="built_in">unset</span> <span class="built_in">env</span> DEBUG</span><br></pre></td></tr></table></figure>
+
+<p>通过进程号 <code>123</code> 连接到正在运行的进程</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(gdb) attach 123</span><br></pre></td></tr></table></figure>
+
+<h3 id="core-dump-文件"><a href="#core-dump-文件" class="headerlink" title="core dump 文件"></a>core dump 文件</h3><!--rehype:wrap-class=row-span-2-->
+
+<p>默认情况下，<code>linux</code> 系统中程序崩溃时也不会生成 <code>core dump</code> 文件，需要先启用</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">ulimit</span> -c unlimited</span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;/tmp/core-%e-%p-%t&quot;</span> &gt; /proc/sys/kernel/core_pattern</span><br></pre></td></tr></table></figure>
+
+<p>调试 <code>core</code> 文件</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gdb program /tmp/core-file</span><br></pre></td></tr></table></figure>
+
+<h3 id="查看源码"><a href="#查看源码" class="headerlink" title="查看源码"></a>查看源码</h3><!--rehype:wrap-class=row-span-2-->
+
+<table>
+<thead>
+<tr>
+<th align="left">命令</th>
+<th align="left">说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><code>(gdb) list 30</code></td>
+<td align="left">查看第 <code>30</code> 行为中心的上下 <code>5</code> 行源码</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) list main</code></td>
+<td align="left">查看 <code>main</code> 函数为中心的上下 <code>5</code> 行源码</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) list file.c:30</code></td>
+<td align="left">查看 <code>file.c</code> 文件中 <code>30</code> 行的源码</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) list file.c:main</code></td>
+<td align="left">查看 <code>file.c</code> 文件中 <code>main</code> 函数</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) disassemble</code></td>
+<td align="left">查看当前可执行文件的汇编源码</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) disassemble myfun</code></td>
+<td align="left">查看指定函数的汇编源码</td>
+</tr>
+</tbody></table>
+<h3 id="流程控制"><a href="#流程控制" class="headerlink" title="流程控制"></a>流程控制</h3><!--rehype:wrap-class=row-span-2-->
+
+<table>
+<thead>
+<tr>
+<th align="left">命令</th>
+<th align="left">说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><code>(gdb) step[s]</code></td>
+<td align="left">执行源码级别的单步进入操作</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) stepi[si]</code></td>
+<td align="left">执行指令级别的单步进入操作</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) next[n]</code></td>
+<td align="left">执行源码级别的单步跳过操作</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) nexti[ni]</code></td>
+<td align="left">执行指令级别的单步跳过操作</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) continue[c]</code></td>
+<td align="left">继续执行，到下一个断点或程序结束</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) finish</code></td>
+<td align="left">运行完当前函数，并返回到函数调用点</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) return</code></td>
+<td align="left">直接退出当前函数，不执行剩下代码块</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) return expression</code></td>
+<td align="left">可以指定返回值的内容</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) until</code></td>
+<td align="left">结束当前循环</td>
+</tr>
+</tbody></table>
+<h3 id="断点命令"><a href="#断点命令" class="headerlink" title="断点命令"></a>断点命令</h3><!--rehype:wrap-class=row-span-2-->
+
+<table>
+<thead>
+<tr>
+<th align="left">命令</th>
+<th align="left">说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><code>(gdb) break main</code></td>
+<td align="left">在所有名为 <code>main</code> 的函数处设置一个断点</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) break test.c:12</code></td>
+<td align="left">在文件 <code>test.c</code> 的第 <code>12</code> 行设置断点</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) break test.c:func</code></td>
+<td align="left">在文件 <code>test.c</code> 的 <code>func</code> 函数处设置断点</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) rbreak regular-expression</code></td>
+<td align="left">在正则表达式匹配的函数名上设置断点</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) break foo if a &lt; 100</code></td>
+<td align="left">设置<strong>条件断点</strong>，条件满足才停止</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) info break</code></td>
+<td align="left">列出所有断点位置、编号</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) delete 2</code></td>
+<td align="left">删除指定编号的断点</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) clear</code></td>
+<td align="left">删除刚才停止处的断点</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) disable 1</code></td>
+<td align="left"><code>disable</code> 指定编号的断点</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) enable 1</code></td>
+<td align="left"><code>enable</code> 指定编号的断点</td>
+</tr>
+</tbody></table>
+<h3 id="watch-命令"><a href="#watch-命令" class="headerlink" title="watch 命令"></a>watch 命令</h3><table>
+<thead>
+<tr>
+<th align="left">命令</th>
+<th align="left">说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><code>(gdb) watch var</code></td>
+<td align="left">监视变量，当值变化时会输出新、旧值</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) info break</code></td>
+<td align="left">列出断点，也包括 <code>watchpoint</code></td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) i watch</code></td>
+<td align="left">只列出 <code>watchpoint</code></td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) delete 1</code></td>
+<td align="left">删除指定的 <code>watchpoint</code></td>
+</tr>
+</tbody></table>
+<h3 id="查看变量"><a href="#查看变量" class="headerlink" title="查看变量"></a>查看变量</h3><!--rehype:wrap-class=row-span-2-->
+
+<table>
+<thead>
+<tr>
+<th align="left">命令</th>
+<th align="left">说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><code>(gdb) info args</code></td>
+<td align="left">查看传入参数信息</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) info local</code></td>
+<td align="left">查看当前栈帧（函数）的本地变量</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) print var</code></td>
+<td align="left">查看指定变量的值</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) print/x var</code></td>
+<td align="left">以十六进制输出变量的值</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) print ptr</code></td>
+<td align="left">假设 <code>int *ptr=&amp;a</code>，输出变量 <code>a</code> 的地址</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) print *ptr</code></td>
+<td align="left">假设 <code>int *ptr=&amp;a</code>，输出变量 <code>a</code> 的值</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) print *ptr@5</code></td>
+<td align="left">假设 <code>int ptr[5]</code>，输出数组的值</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) display var</code></td>
+<td align="left">与 <code>print</code> 作用相同，但每次停下来都自动输出变量的值</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) info display</code></td>
+<td align="left">列出所有设置了 <code>display</code> 的变量</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) undisplay 1</code></td>
+<td align="left">与 <code>display</code> 相反，不能指定变量名，只能是编号</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) delete display 1</code></td>
+<td align="left">与 <code>undisplay</code> 类似，通过编号取消显示</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) whatis var</code></td>
+<td align="left">查看变量类型</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) ptype var</code></td>
+<td align="left">比 <code>type</code> 更详细，会给出结构体的定义</td>
+</tr>
+</tbody></table>
+<h3 id="导入符号表"><a href="#导入符号表" class="headerlink" title="导入符号表"></a>导入符号表</h3><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>(gdb) add-symbol-file xxx.so 0xd0832000</code></td>
+<td>导入 <code>xxx.so</code> 中 <code>.text</code> 部分的内容</td>
+</tr>
+<tr>
+<td><code>(gdb) add-symbol-file xxx.so 0xd0832000 -s .bss 0xxxxxx</code></td>
+<td>通过 <code>-s</code> 可以导入额外的段</td>
+</tr>
+<tr>
+<td><code>(gdb) add-symbol-file xxx.so 0xd0832000 -s .data 0xxxxxx</code></td>
+<td></td>
+</tr>
+</tbody></table>
+<h3 id="frame-栈帧"><a href="#frame-栈帧" class="headerlink" title="frame 栈帧"></a>frame 栈帧</h3><p>每当一个函数被调用时，一个新的栈帧 <code>frame</code> 就会被压入栈中，栈帧包含了该函数的局部变量、参数、返回地址和其他信息，当函数执行完毕后，这个栈帧会被弹出栈并销毁。</p>
+<table>
+<thead>
+<tr>
+<th align="left">命令</th>
+<th align="left">说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><code>(gdb) frame</code></td>
+<td align="left">显示当前栈帧和源代码行</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) backtrace</code></td>
+<td align="left">打印出当前正在执行的所有栈帧</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) backtrace 5</code></td>
+<td align="left">只显示最近调用的 <code>5</code> 个栈帧</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) frame 2</code></td>
+<td align="left">切换到第 <code>2</code> 个栈帧，以查看信息</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) up</code></td>
+<td align="left">切换到上一级调用栈帧</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) down</code></td>
+<td align="left">切换到下一级调用栈帧</td>
+</tr>
+</tbody></table>
+<h3 id="函数调用"><a href="#函数调用" class="headerlink" title="函数调用"></a>函数调用</h3><p><code>call</code> 和 <code>print</code> 调用的函数如果存在全局变量、静态变量的修改，在函数返回后会恢复到调用之前的值，这两个调用不会影响程序的状态</p>
+<table>
+<thead>
+<tr>
+<th align="left">命令</th>
+<th align="left">说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><code>(gdb) call func(a, b)</code></td>
+<td align="left">调用指定的函数，不影响主线程变量</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) print func(a, b)</code></td>
+<td align="left">与 <code>call</code> 类似</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) finish</code></td>
+<td align="left">结束当前运行的函数</td>
+</tr>
+</tbody></table>
+<h3 id="信号"><a href="#信号" class="headerlink" title="信号"></a>信号</h3><!--rehype:wrap-class=row-span-2-->
+
+<p><code>linux</code> 下使用 <code>kill -l</code> 查看信号编号与信号名，使用 <code>info signal</code> 查看信号的处理方式、描述等：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">(gdb) info signal</span><br><span class="line">Signal        Stop  Print   Pass to program Description</span><br><span class="line"></span><br><span class="line">SIGHUP        Yes   Yes     Yes             Hangup</span><br><span class="line">SIGINT        Yes   Yes     No              Interrupt</span><br><span class="line">SIGQUIT       Yes   Yes     Yes             Quit</span><br><span class="line">SIGILL        Yes   Yes     Yes             Illegal instruction</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th align="left">命令</th>
+<th align="left">说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><code>(gdb) signal SIGKILL</code></td>
+<td align="left">向进程发送信号，用信号名或编号表示</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) signal 9</code></td>
+<td align="left">向进程发送信号，用信号名或编号表示</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) handle &lt;signal&gt; actions</code></td>
+<td align="left">指定信号的处理方式，选择如下，可以组合</td>
+</tr>
+<tr>
+<td align="left"><code>stop/nostop</code></td>
+<td align="left">收到信号是否停止进程，类似断点</td>
+</tr>
+<tr>
+<td align="left"><code>print/noprint</code></td>
+<td align="left">收到信号是否输出消息</td>
+</tr>
+<tr>
+<td align="left"><code>pass/nopass</code></td>
+<td align="left">是否将信号传递给程序</td>
+</tr>
+</tbody></table>
+<h3 id="线程"><a href="#线程" class="headerlink" title="线程"></a>线程</h3><table>
+<thead>
+<tr>
+<th align="left">命令</th>
+<th align="left">说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><code>(gdb) info threads</code></td>
+<td align="left">列出所有线程，标识当前所在线程</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) thread 2</code></td>
+<td align="left">切换到编号为 <code>2</code> 的线程</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) break file.c:23 thread all</code></td>
+<td align="left">在所有线程中相应的行上设置断点</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) thread apply all command</code></td>
+<td align="left">让所有线程执行 <code>gdb</code> 命令</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) thread apply ID1 ID2 command</code></td>
+<td align="left">让指定线程执行 <code>gdb</code> 命令</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) set scheduler-locking off</code></td>
+<td align="left">所有线程都执行，这是默认值</td>
+</tr>
+<tr>
+<td align="left"><code>(gdb) set scheduler-locking on</code></td>
+<td align="left">只让当前线程执行</td>
+</tr>
+</tbody></table>
+<h2 id="另见"><a href="#另见" class="headerlink" title="另见"></a>另见</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://carlyleliu.github.io/2022/%E5%BA%94%E7%94%A8%E5%B4%A9%E6%BA%83%E8%B0%83%E8%AF%95%E5%88%86%E6%9E%90">应用崩溃调试分析</a></li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://yo-gurts.github.io">(ง'̀-'́)ง</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://yo-gurts.github.io/2024/04/14/gdb/">https://yo-gurts.github.io/2024/04/14/gdb/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://yo-gurts.github.io" target="_blank">(╯°□°）╯︵ ┻━┻ </a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/gdb/">gdb</a></div><div class="post_share"><div class="social-share" data-image="https://s2.loli.net/2022/11/17/nuDZ3dsB6z4bfVJ.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2024/01/15/VSCODE-clang-format/" title="CLANG FORMAT 格式化代码"><img class="cover" src="https://s2.loli.net/2022/11/17/hF7KodYmE6iPWqg.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">CLANG FORMAT 格式化代码</div></div></a></div><div class="next-post pull-right"><a href="/2024/05/15/USB-UVC_extension/" title="UVC 扩展单元"><img class="cover" src="https://s2.loli.net/2022/11/17/hF7KodYmE6iPWqg.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">UVC 扩展单元</div></div></a></div></nav><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://s2.loli.net/2024/09/17/3NdhvxIcPRVpufD.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">(ง'̀-'́)ง</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">35</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">46</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/yo-gurts"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/yo-gurts" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:yusong1117.u@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#GDB-%E5%A4%87%E5%BF%98%E6%B8%85%E5%8D%95"><span class="toc-number">1.</span> <span class="toc-text">GDB 备忘清单</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%A5%E9%97%A8"><span class="toc-number">1.1.</span> <span class="toc-text">入门</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4"><span class="toc-number">1.1.1.</span> <span class="toc-text">常用命令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%AF%E5%8A%A8%E8%B0%83%E8%AF%95"><span class="toc-number">1.1.2.</span> <span class="toc-text">启动调试</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#core-dump-%E6%96%87%E4%BB%B6"><span class="toc-number">1.1.3.</span> <span class="toc-text">core dump 文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E6%BA%90%E7%A0%81"><span class="toc-number">1.1.4.</span> <span class="toc-text">查看源码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B5%81%E7%A8%8B%E6%8E%A7%E5%88%B6"><span class="toc-number">1.1.5.</span> <span class="toc-text">流程控制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%AD%E7%82%B9%E5%91%BD%E4%BB%A4"><span class="toc-number">1.1.6.</span> <span class="toc-text">断点命令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#watch-%E5%91%BD%E4%BB%A4"><span class="toc-number">1.1.7.</span> <span class="toc-text">watch 命令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E5%8F%98%E9%87%8F"><span class="toc-number">1.1.8.</span> <span class="toc-text">查看变量</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%BC%E5%85%A5%E7%AC%A6%E5%8F%B7%E8%A1%A8"><span class="toc-number">1.1.9.</span> <span class="toc-text">导入符号表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#frame-%E6%A0%88%E5%B8%A7"><span class="toc-number">1.1.10.</span> <span class="toc-text">frame 栈帧</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8"><span class="toc-number">1.1.11.</span> <span class="toc-text">函数调用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%A1%E5%8F%B7"><span class="toc-number">1.1.12.</span> <span class="toc-text">信号</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BA%BF%E7%A8%8B"><span class="toc-number">1.1.13.</span> <span class="toc-text">线程</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%A6%E8%A7%81"><span class="toc-number">1.2.</span> <span class="toc-text">另见</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2024/09/11/Cvitek-reboot/" title="Cvitek-busybox init/reboot/poweroff"><img src="https://s2.loli.net/2022/11/17/Zm4kDRxypb5ez3q.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Cvitek-busybox init/reboot/poweroff"/></a><div class="content"><a class="title" href="/2024/09/11/Cvitek-reboot/" title="Cvitek-busybox init/reboot/poweroff">Cvitek-busybox init/reboot/poweroff</a><time datetime="2024-09-11T09:57:02.000Z" title="发表于 2024-09-11 17:57:02">2024-09-11</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/08/11/Scripts-git_tools/" title="Scripts-管理多个 git 仓库"><img src="https://s2.loli.net/2022/11/17/9ZBEesyr14aJhPM.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Scripts-管理多个 git 仓库"/></a><div class="content"><a class="title" href="/2024/08/11/Scripts-git_tools/" title="Scripts-管理多个 git 仓库">Scripts-管理多个 git 仓库</a><time datetime="2024-08-11T03:37:00.000Z" title="发表于 2024-08-11 11:37:00">2024-08-11</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/06/04/Cvitek-usbcamera%E9%9C%80%E6%B1%82/" title="Alios USB camera 常见需求处理"><img src="https://s2.loli.net/2022/11/17/BeiQmkw4Ya1gvPx.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Alios USB camera 常见需求处理"/></a><div class="content"><a class="title" href="/2024/06/04/Cvitek-usbcamera%E9%9C%80%E6%B1%82/" title="Alios USB camera 常见需求处理">Alios USB camera 常见需求处理</a><time datetime="2024-06-04T03:19:42.000Z" title="发表于 2024-06-04 11:19:42">2024-06-04</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/05/15/USB-UVC_extension/" title="UVC 扩展单元"><img src="https://s2.loli.net/2022/11/17/hF7KodYmE6iPWqg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="UVC 扩展单元"/></a><div class="content"><a class="title" href="/2024/05/15/USB-UVC_extension/" title="UVC 扩展单元">UVC 扩展单元</a><time datetime="2024-05-15T14:26:44.000Z" title="发表于 2024-05-15 22:26:44">2024-05-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/04/14/gdb/" title="gdb"><img src="https://s2.loli.net/2022/11/17/nuDZ3dsB6z4bfVJ.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="gdb"/></a><div class="content"><a class="title" href="/2024/04/14/gdb/" title="gdb">gdb</a><time datetime="2024-04-13T16:33:49.000Z" title="发表于 2024-04-14 00:33:49">2024-04-14</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2024 By (ง'̀-'́)ง</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.13.0"></script><script src="/js/main.js?v=4.13.0"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.1
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, '']
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typesetPromise()
+}</script><script>(() => {
+  const initGitalk = () => {
+    const gitalk = new Gitalk(Object.assign({
+      clientID: 'b740056c42e9eadf273e',
+      clientSecret: 'e5f185fa9a6e27927f7a2672469435c68a288c95',
+      repo: 'Yo-gurts.github.io',
+      owner: 'yo-gurts',
+      admin: ['yo-gurts'],
+      id: '949fec74b5e9dc44adfe343ba1241857',
+      updateCountCallback: commentCount
+    },null))
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async() => {
+    if (typeof Gitalk === 'function') initGitalk()
+    else {
+      await getCSS('https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.min.css')
+      await getScript('https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.min.js')
+      initGitalk()
+    }
+  }
+  
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/canvas-fluttering-ribbon.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=4.13.0"></script></div></div></body></html>

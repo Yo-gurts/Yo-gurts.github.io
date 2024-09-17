@@ -1,0 +1,455 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>STL容器 | (╯°□°）╯︵ ┻━┻ </title><meta name="author" content="(ง'̀-'́)ง"><meta name="copyright" content="(ง'̀-'́)ง"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="线程安全：  这里列出的C++ 标准库中的容器都不是线程安全的！多个线程读时不需要加锁，但有一个线程写时，所有读写线程都需要加锁！  效率说明：  emplace_back() 是c11新加的，功能与 push_back() 一样，但效率更高，推荐优先使用  序列式容器 序列式容器 hackingc"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://yo-gurts.github.io/2022/04/23/ProgramBasic_STL/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.13.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":600},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'STL容器',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-04-23 13:28:02'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+          const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+          const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+          const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+          if (t === undefined) {
+            if (isLightMode) activateLightMode()
+            else if (isDarkMode) activateDarkMode()
+            else if (isNotSpecified || hasNoSupport) {
+              const now = new Date()
+              const hour = now.getHours()
+              const isNight = hour <= 6 || hour >= 18
+              isNight ? activateDarkMode() : activateLightMode()
+            }
+            window.matchMedia('(prefers-color-scheme: dark)').addListener(e => {
+              if (saveToLocal.get('theme') === undefined) {
+                e.matches ? activateDarkMode() : activateLightMode()
+              }
+            })
+          } else if (t === 'light') activateLightMode()
+          else activateDarkMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="google-site-verification" content="MP347_Nl-SqfnOi3FZSI69WSb8J_rk_jEsa3jL4ODCI" /><meta name="generator" content="Hexo 6.1.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://s2.loli.net/2024/09/17/3NdhvxIcPRVpufD.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">35</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">46</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background: transparent"><nav id="nav"><span id="blog-info"><a href="/" title="(╯°□°）╯︵ ┻━┻ "><span class="site-name">(╯°□°）╯︵ ┻━┻ </span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">STL容器</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2022-04-23T05:28:02.000Z" title="发表于 2022-04-23 13:28:02">2022-04-23</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-04-23T05:28:02.000Z" title="更新于 2022-04-23 13:28:02">2022-04-23</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/C/">C++</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">3.1k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>11分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="STL容器"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/2022/04/23/ProgramBasic_STL/#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>线程安全：</p>
+<ul>
+<li>这里列出的<code>C++</code> 标准库中的容器都不是线程安全的！多个线程读时不需要加锁，但有一个线程写时，所有读写线程都需要加锁！</li>
+</ul>
+<p>效率说明：</p>
+<ul>
+<li><code>emplace_back()</code> 是c11新加的，功能与 <code>push_back()</code> 一样，但效率更高，推荐优先使用</li>
+</ul>
+<h2 id="序列式容器"><a href="#序列式容器" class="headerlink" title="序列式容器"></a>序列式容器</h2><blockquote>
+<p><a target="_blank" rel="noopener" href="https://hackingcpp.com/cpp/std/sequence_containers.html">序列式容器 hackingcpp</a></p>
+</blockquote>
+<h3 id="Array"><a href="#Array" class="headerlink" title="Array"></a>Array</h3><p><img src="/../images/ProgramBasic_STL/array_thumb.svg" alt="standard library sequence container &#39;array"></p>
+<p><strong>固定大小的数组</strong>，必须在建立时就指明其大小。</p>
+<ul>
+<li><code>.front()</code>：返回第一元素的<strong>引用</strong>，你可以使用这些操作函数更改元素内容</li>
+<li><code>.back()</code>：返回最末元素的<strong>引用</strong>，<code>c.back() = 10</code></li>
+</ul>
+<h3 id="Vector"><a href="#Vector" class="headerlink" title="Vector"></a>Vector</h3><p><img src="/../images/ProgramBasic_STL/vector_thumb.svg" alt="standard library sequence container &#39;vector"></p>
+<p><code>Vector</code> 是一个 <code>dynamic array</code>。</p>
+<p>大小可变，但内存重新分配很耗时间。</p>
+<p><strong>在<code>Vector</code>尾部附加元素或移除元素都很快速</strong>，但是在<code>Vector</code>的中段或起始段安插元素就比较费时</p>
+<ul>
+<li><code>.front()</code>：返回第一元素的<strong>引用</strong> (不检查是否存在第一元素)</li>
+<li><code>.back()</code>：返回最末元素的<strong>引用</strong> (不检查是否存在最末元素)，<code>c.back() = 10</code></li>
+<li><code>.push_back(elem)</code>：尾部附加元素</li>
+<li><code>.pop_back()</code>：移除最后一个元素</li>
+<li><code>.insert(pos, elem)</code>：在iterator 位置 pos 之前方插入一个 elem 拷贝，并返回新元素的位置</li>
+<li><code>.insert(pos, n, elem)</code>：在iterator 位置 pos 之前方插入 n 个 elem 拷贝，并返回第一个新元素的位置</li>
+<li><code>.emplace(pos, args...)</code>：在iterator 位置 pos 之前方插入一个以 args 为初值的元素，并返回新元素的位置</li>
+<li><code>.emplace_back(args...)</code>：附加一个以 args 为初值的元素于未尾，不返回任何东西</li>
+<li><code>.resize(num)</code>：将元素数量改为 num (如果 <code>size()</code> 变大，多出来的新元素都需以 default 构造函数完成初始化)</li>
+<li><code>.resize(num, elem)</code>：将元素数量改为 num (如果 <code>size()</code> 变大，多出来的新元素都是 elem 的拷贝)</li>
+<li><code>.clear()</code>：移除所有元素，将容器清空</li>
+</ul>
+<h3 id="Deque"><a href="#Deque" class="headerlink" title="Deque"></a>Deque</h3><p><img src="/../images/ProgramBasic_STL/deque_thumb.svg" alt="standard library sequence container &#39;deque"></p>
+<p>“double-ended queue”的缩写。它是一个dynamic array，可以向两端发展。如图所示，<strong>并不是一段连续的内存</strong>。</p>
+<p>因此<strong>不论在尾部或头部安插元素都十分迅速</strong>。在<strong>中间部分安插元素则比较费时</strong>，因为必须移动其他元素。</p>
+<p>访问元素时deque内部结构会多一个间接过程，所以元素的访问和迭代嚣的动作会稍稍慢一些。</p>
+<p>特别注意，除头尾两端外，在任何地点安插或删除元素都将导致指向deque元素的任何pointer、reference和iterator失效。</p>
+<p>deque的内存重分配优于vector，deque不必在内存重新分配时复制所有元素。</p>
+<ul>
+<li><code>.front()</code>：返回第一元素的<strong>引用</strong> (不检查是否存在第一元素)</li>
+<li><code>.back()</code>：返回最末元素的<strong>引用</strong> (不检查是否存在最末元素)，<code>c.back() = 10</code></li>
+<li><code>.push_back(elem)</code>：尾部附加元素</li>
+<li><code>.pop_back()</code>：移除最后一个元素</li>
+<li><strong><code>.push_front(elem)</code>：头部附加元素</strong></li>
+<li><strong><code>.pop_front()</code>：移除第一个元素</strong></li>
+<li><code>.insert(pos, elem)</code>：在iterator 位置 pos 之前方插入一个 elem 拷贝，并返回新元素的位置</li>
+<li><code>.insert(pos, n, elem)</code>：在iterator 位置 pos 之前方插入 n 个 elem 拷贝，并返回第一个新元素的位置</li>
+<li><code>.emplace(pos, args...)</code>：在iterator 位置 pos 之前方插入一个以 args 为初值的元素，并返回新元素的位置</li>
+<li><code>.emplace_back(args...)</code>：附加一个以 args 为初值的元素于未尾，不返回任何东西</li>
+<li><strong><code>.emplace_front(args...)</code>：附加一个以 args 为初值的元素于起点，不返回任何东西</strong></li>
+<li><code>.resize(num)</code>：将元素数量改为 num (如果 size() 变大，多出来的新元素都需以 default 构造函数完成初始化)</li>
+<li><code>.resize(num, elem)</code>：将元素数量改为 num (如果 size() 变大，多出来的新元素都是 elem 的拷贝)</li>
+<li><code>.clear()</code>：移除所有元素，将容器清空</li>
+</ul>
+<h3 id="List"><a href="#List" class="headerlink" title="List"></a>List</h3><p><img src="/../images/ProgramBasic_STL/list_thumb.svg" alt="standard library sequence container &#39;list"></p>
+<p>双向链表，<strong>在任何位置上执行安插或删除动作都非常迅速</strong>。</p>
+<ul>
+<li><code>.front()</code>：返回第一元素的<strong>引用</strong></li>
+<li><code>.back()</code>：返回最末元素的<strong>引用</strong>，<code>c.back() = 10</code></li>
+<li><code>.push_back(elem)</code>：尾部附加元素</li>
+<li><code>.pop_back()</code>：移除最后一个元素</li>
+<li><code>.push_front(elem)</code>：头部附加元素</li>
+<li><code>.pop_front()</code>：移除第一个元素</li>
+<li><code>.insert(pos, elem)</code>：在iterator 位置 pos 之前方插入一个 elem 拷贝，并返回新元素的位置</li>
+<li><code>.insert(pos, n, elem)</code>：在iterator 位置 pos 之前方插入 n 个 elem 拷贝，并返回第一个新元素的位置</li>
+<li><code>.emplace(pos, args...)</code>：在iterator 位置 pos 之前方插入一个以 args 为初值的元素，并返回新元素的位置</li>
+<li><code>.emplace_back(args...)</code>：附加一个以 args 为初值的元素于未尾，不返回任何东西</li>
+<li><code>.emplace_front(args...)</code>：附加一个以 args 为初值的元素于起点，不返回任何东西</li>
+<li><code>.resize(num)</code>：将元素数量改为 num (如果 <code>size()</code> 变大，多出来的新元素都需以 default 构造函数完成初始化)</li>
+<li><code>.resize(num, elem)</code>：将元素数量改为 num (如果 <code>size()</code> 变大，多出来的新元素都是 elem 的拷贝)</li>
+<li><code>.remove(val)</code>：移除所有值为 val 的元素</li>
+<li><code>.remove_if(op)</code>：移除所有造成 <code>op(elem)</code> 返回 true 的元素</li>
+<li><code>.clear()</code>：移除所有元素，将容器清空</li>
+<li><code>.merge(other, comp)</code>：将两个有序 List 合并成一个</li>
+<li><code>.unique()</code>：移除所有重复的元素，重复元素保留第一个</li>
+<li><code>.sort()</code>：对 List 按照升序排序</li>
+</ul>
+<h3 id="Forward-List"><a href="#Forward-List" class="headerlink" title="Forward_List"></a>Forward_List</h3><p><img src="/../images/ProgramBasic_STL/forward_list_thumb.svg" alt="standard library sequence container &#39;forward_list"></p>
+<p>forward list原则上就是一个受限的list，不支持任何“后退移动”或“效率低下”的操作。</p>
+<p>基于这个原因，它不提供成员函数如<code>push_back()</code> 甚至<code>size()</code>。</p>
+<ul>
+<li><code>.front()</code>：返回第一元素的<strong>引用</strong></li>
+<li><code>.push_front(elem)</code>：头部附加元素</li>
+<li><code>.pop_front()</code>：移除第一个元素</li>
+<li><code>.insert_after(pos, args)</code>：在指定的 pos 后插入 args</li>
+<li><code>.emplace_after(pos, args)</code>：在指定的 pos 后插入 args</li>
+<li><code>.emplace_front(args...)</code>：附加一个以 args 为初值的元素于起点</li>
+<li><code>.remove(val)</code>：移除所有值为 val 的元素</li>
+<li><code>.remove_if(op)</code>：移除所有造成 <code>op(elem)</code> 返回 true 的元素</li>
+<li><code>.clear()</code>：移除所有元素，将容器清空</li>
+<li><code>.merge(other, comp)</code>：将两个有序 List 合并成一个</li>
+<li><code>.unique()</code>：移除所有重复的元素，重复元素保留第一个</li>
+<li><code>.sort()</code>：按照升序排序</li>
+</ul>
+<h2 id="关联式容器"><a href="#关联式容器" class="headerlink" title="关联式容器"></a>关联式容器</h2><blockquote>
+<p><a target="_blank" rel="noopener" href="https://hackingcpp.com/cpp/std/associative_containers.html">关联式容器 hackingcpp</a></p>
+</blockquote>
+<p>关联式容器依据特定的排序准则，自动为其元素排序。</p>
+<p>自动排序造成的一个重要限制: 你不能直接改变元素值，因为会打乱原本正确的顺序。</p>
+<p><strong>要改变元素值，必须先删除旧元素，再插入新元素。</strong></p>
+<p>通常关联式容器由<strong>红黑树</strong>实现，其值有序，且插入、查找、删除的时间复杂度为<code>O(log n)</code>。</p>
+<h3 id="set、multiset"><a href="#set、multiset" class="headerlink" title="set、multiset"></a>set、multiset</h3><p><img src="/../images/ProgramBasic_STL/set_thumb.svg" alt="internal structure of std::set"></p>
+<p><strong>由于 set 不允许重复值，set 的 insert&#x2F;emplace 返回值为 <code>pair&lt;iterator, bool&gt;</code>，其中 bool 是指是否插入成功。</strong></p>
+<ul>
+<li><code>.count(val)</code>：返回值为val的个数</li>
+<li><code>.find(val)</code>：返回值为val的第一个元素的迭代器，找不到返回 <code>end()</code></li>
+<li><code>.contains(val)</code>：判断是否包含某个元素（c++20）</li>
+<li><code>.lower_bound(val)</code>：返回val的第一个可安插位置，第一个 &gt;&#x3D; val 的位置</li>
+<li><code>.upper_bound(val)</code>：返回val的第一个可安插位置，第一个 &gt; val 的位置</li>
+<li><code>.equal_range(val)</code>：返回val可安插的第一个和最后一个位置</li>
+<li><code>.insert(val)</code>：插入元素，返回插入的元素的迭代器</li>
+<li><code>.insert(pos, val)</code>：插入元素，返回插入的元素的迭代器（pos是提示插入起点）</li>
+<li><code>.emplace(args...)</code>：插入元素，返回插入的元素的迭代器</li>
+<li><code>.emplace_hint(pos, args...)</code>：插入元素，返回插入的元素的迭代器（pos 是提示插入起点）</li>
+<li><code>.merge(other)</code>：将两个 set 合并成一个</li>
+<li><code>.clear()</code>：移除所有元素，将容器清空</li>
+</ul>
+<h3 id="map、multimap"><a href="#map、multimap" class="headerlink" title="map、multimap"></a>map、multimap</h3><p><img src="/../images/ProgramBasic_STL/map_thumb.svg" alt="internal structure of std::map"></p>
+<ul>
+<li><code>.count(val)</code>：返回值为val的个数</li>
+<li><code>.find(val)</code>：返回值为val的第一个元素的迭代器，找不到返回 <code>end()</code></li>
+<li><code>.contains(val)</code>：判断是否包含某个元素（c++20）</li>
+<li><code>.lower_bound(val)</code>：返回val的第一个可安插位置，第一个 <code>&gt;= val</code> 的位置</li>
+<li><code>.upper_bound(val)</code>：返回val的第一个可安插位置，第一个 <code>&gt; val</code> 的位置</li>
+<li><code>.equal_range(val)</code>：返回val可安插的第一个和最后一个位置</li>
+<li><code>.insert(val)</code>：插入元素，返回插入的元素的迭代器</li>
+<li><code>.insert(pos, val)</code>：插入元素，返回插入的元素的迭代器（pos是提示插入起点）</li>
+<li><code>.emplace(args...)</code>：插入元素，返回插入的元素的迭代器</li>
+<li><code>.emplace_hint(pos, args...)</code>：插入元素，返回插入的元素的迭代器（pos 是提示插入起点）</li>
+<li><code>.merge(other)</code>：将两个 map 合并成一个</li>
+<li><code>.clear()</code>：移除所有元素，将容器清空</li>
+</ul>
+<h2 id="无序容器"><a href="#无序容器" class="headerlink" title="无序容器"></a>无序容器</h2><p>通过 hash 实现查找</p>
+<h3 id="unorder-set、unorder-multiset"><a href="#unorder-set、unorder-multiset" class="headerlink" title="unorder_set、unorder_multiset"></a>unorder_set、unorder_multiset</h3><p><img src="/../images/ProgramBasic_STL/unordered_set_thumb.svg" alt="internal structure of std::unordered_set"></p>
+<ul>
+<li><code>.count(val)</code>：返回值为val的个数</li>
+<li><code>.find(val)</code>：返回值为val的第一个元素的迭代器，找不到返回 <code>end()</code></li>
+<li><code>.contains(val)</code>：判断是否包含某个元素（c++20）</li>
+<li><code>.insert(val)</code>：插入元素，返回插入的元素的迭代器</li>
+<li><code>.insert(pos, val)</code>：插入元素，返回插入的元素的迭代器（pos是提示插入起点）</li>
+<li><code>.emplace(args...)</code>：插入元素，返回插入的元素的迭代器</li>
+<li><code>.emplace_hint(pos, args...)</code>：插入元素，返回插入的元素的迭代器（pos 是提示插入起点）</li>
+<li><code>.merge(other)</code>：将两个 set 合并成一个</li>
+<li><code>.clear()</code>：移除所有元素，将容器清空</li>
+</ul>
+<h3 id="unorder-map、unorder-multimap"><a href="#unorder-map、unorder-multimap" class="headerlink" title="unorder_map、unorder_multimap"></a>unorder_map、unorder_multimap</h3><p><img src="/../images/ProgramBasic_STL/unordered_map_thumb.svg" alt="internal structure of std::unordered_map"></p>
+<ul>
+<li><code>.count(val)</code>：返回值为val的个数</li>
+<li><code>.find(val)</code>：返回值为val的第一个元素的迭代器，找不到返回 <code>end()</code></li>
+<li><code>.contains(val)</code>：判断是否包含某个元素（c++20）</li>
+<li><code>.insert(val)</code>：插入元素，返回插入的元素的迭代器</li>
+<li><code>.insert(pos, val)</code>：插入元素，返回插入的元素的迭代器（pos是提示插入起点）</li>
+<li><code>.emplace(args...)</code>：插入元素，返回插入的元素的迭代器</li>
+<li><code>.emplace_hint(pos, args...)</code>：插入元素，返回插入的元素的迭代器（pos 是提示插入起点）</li>
+<li><code>.merge(other)</code>：将两个 set 合并成一个</li>
+<li><code>.clear()</code>：移除所有元素，将容器清空</li>
+</ul>
+<h2 id="特殊容器"><a href="#特殊容器" class="headerlink" title="特殊容器"></a>特殊容器</h2><h3 id="Stack"><a href="#Stack" class="headerlink" title="Stack"></a>Stack</h3><blockquote>
+<p>底层一般用 <code>deque</code> 实现</p>
+<p><code>stack</code> 和 <code>queue</code> 其实是适配器，而不叫容器，因为是对容器的再封装</p>
+</blockquote>
+<ul>
+<li><code>.push()</code>： 将一个元素放入 stack 中</li>
+<li><code>.emplace()</code>： 将一个元素放入 stack 中，效率比 push 更高</li>
+<li><code>.top()</code>： 返回 stack 内的下一个元素</li>
+<li><code>.pop()</code>： 从 stack 内移除一个元素</li>
+</ul>
+<h3 id="Queue"><a href="#Queue" class="headerlink" title="Queue"></a>Queue</h3><blockquote>
+<p>底层一般用 <code>deque</code> 实现</p>
+</blockquote>
+<ul>
+<li><code>.front()</code>：返回第一个元素的<strong>引用</strong>，该元素将最先出队</li>
+<li><code>.back()</code>：返回最末元素的<strong>引用</strong>，<code>c.back() = 10</code></li>
+<li><code>.push()</code>： 将一个元素放入 queue 中</li>
+<li><code>.emplace()</code>： 将一个元素放入 queue 中，效率比 push 更高</li>
+<li><code>.pop()</code>： 从 queue 内移除一个元素</li>
+</ul>
+<h3 id="Priority-queue"><a href="#Priority-queue" class="headerlink" title="Priority_queue"></a>Priority_queue</h3><blockquote>
+<p>底层数据结构一般为 <code>vector</code> 为底层容器，堆 <code>heap</code> 为处理规则来管理底层容器实现。</p>
+<ul>
+<li>左子节点 <code>pos = now * 2 + 1</code></li>
+<li>右子节点 <code>pos = now * 2 + 2</code></li>
+<li>父节点 <code>pos = (now - 1) / 2</code></li>
+</ul>
+</blockquote>
+<p>和queue类似，但其元素有优先级，dequeue时并非取最先放入的元素，而是优先级最高的元素！</p>
+<p>如果同时存在若干个优先级最高的元素，我们无法确知究竟哪一个会入选。</p>
+<ul>
+<li><code>.push()</code>： 将一个元素放入priority queue中</li>
+<li><code>.emplace()</code>： 将一个元素放入priority queue中，效率比 push 更高</li>
+<li><code>.top()</code>： 返回priority queue内的下一个元素</li>
+<li><code>.pop()</code>： 从priority queue内移除一个元素</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Node</span> &#123;</span></span><br><span class="line">    <span class="type">int</span> priority;</span><br><span class="line">    <span class="type">int</span> value;</span><br><span class="line">    Node(<span class="type">int</span> p, <span class="type">int</span> v) : priority(p), value(v) &#123;&#125;</span><br><span class="line">    <span class="type">bool</span> operator&lt;(<span class="type">const</span> Node&amp; other) <span class="type">const</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> priority &lt; other.priority;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">cmp</span> &#123;</span></span><br><span class="line">    <span class="type">bool</span> <span class="title function_">operator</span><span class="params">()</span><span class="params">(<span class="type">const</span> Node &amp;a, <span class="type">const</span> Node &amp;b)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> a-&gt;val &gt; b-&gt;val;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">// priority_queue&lt;int, vector&lt;int&gt;, less&lt;int&gt;&gt; pq; // method 1, 正常类型</span></span><br><span class="line">    <span class="comment">// method 2, 自定义类型，不能使用 lambda 或者函数，必须是类型里面重载运算符</span></span><br><span class="line">    <span class="comment">// priority_queue&lt;Node, vector&lt;Node&gt;, cmp&gt; pq;</span></span><br><span class="line">    <span class="built_in">priority_queue</span>&lt;Node&gt; pq;    <span class="comment">// method 3, 重载了 operator&lt;</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">1</span>; i &lt; <span class="number">4</span>; i++)</span><br><span class="line">        pq.push(Node(i, i));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (!pq.empty()) &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; pq.top().value &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">        pq.pop();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Bitset"><a href="#Bitset" class="headerlink" title="Bitset"></a>Bitset</h3><p>Bitset造出了一个内含bit或Boolean值上且<strong>大小固定的array</strong>。</p>
+<ul>
+<li><code>bitset&lt;size&gt;(value)</code>：以 value 初始化大小为size 的 bitset</li>
+<li><code>bitset&lt;numeric_limits&lt;unsigned long&gt;::digits&gt;(value)</code></li>
+<li><code>.any()</code>：检查是否有 bit 被设置为1</li>
+<li><code>.all()</code>：检查是否所有 bit 都为1</li>
+<li><code>.none()</code>：检查是否所有 bit 都为0</li>
+<li><code>.set(pos)</code>：设置 pos 位置的 bit 为1</li>
+<li><code>.reset()</code>：设置所有 bit 为0</li>
+<li><code>.reset(pos)</code>：设置 pos 位置的 bit 为0</li>
+<li><code>.flip()</code>：翻转所有 bit</li>
+<li><code>.flip(pos)</code>：翻转 pos 位置的 bit</li>
+<li><code>.to_string()</code>：输出为01字符串</li>
+<li><code>.to_ullong()</code>：输出为 unsigned long long 类型</li>
+</ul>
+<h2 id="相关资料"><a href="#相关资料" class="headerlink" title="相关资料"></a>相关资料</h2><blockquote>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://hackingcpp.com/">hackingcpp</a>：提供了<code>cpp</code>标准库中的容器、算法甚至包括内存管理、调试方法等，值得一看，此文档中的图片就来源于该网站。</li>
+<li><a target="_blank" rel="noopener" href="https://hackingcpp.com/cpp/std/algorithms.html">标准库算法可视化</a></li>
+<li><a target="_blank" rel="noopener" href="https://hackingcpp.com/cpp/tools/gdb_intro.html">gdb调试</a></li>
+<li><a target="_blank" rel="noopener" href="http://www.cplusplus.com/reference/clibrary/">C++ Reference 查找库函数文档</a></li>
+<li><a target="_blank" rel="noopener" href="https://gx.jd.com/gx/gx_bookDetail.action?bookId=30656283">京东图书：C++标准库</a></li>
+</ul>
+</blockquote>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://yo-gurts.github.io">(ง'̀-'́)ง</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://yo-gurts.github.io/2022/04/23/ProgramBasic_STL/">https://yo-gurts.github.io/2022/04/23/ProgramBasic_STL/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://yo-gurts.github.io" target="_blank">(╯°□°）╯︵ ┻━┻ </a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/C/">C++</a><a class="post-meta__tags" href="/tags/STL/">STL</a></div><div class="post_share"><div class="social-share" data-image="https://s2.loli.net/2022/11/17/UeWP8jCq6dJZSGD.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2022/04/23/DS_%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E6%91%98%E8%A6%81/" title="数据结构摘要"><img class="cover" src="https://s2.loli.net/2022/11/17/BeiQmkw4Ya1gvPx.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">数据结构摘要</div></div></a></div><div class="next-post pull-right"><a href="/2022/04/24/Linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B-%E9%9D%99%E6%80%81%E5%BA%93%E5%8A%A8%E6%80%81%E5%BA%93/" title="Linux系统编程-静态库动态库"><img class="cover" src="https://s2.loli.net/2022/11/17/NGf2mpwasOYzVIA.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Linux系统编程-静态库动态库</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2022/09/19/Cpp%E4%B8%89%E6%96%B9%E5%BA%93/" title="C++三方库"><img class="cover" src="https://s2.loli.net/2022/11/17/nuDZ3dsB6z4bfVJ.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-09-19</div><div class="title">C++三方库</div></div></a></div><div><a href="/2022/06/24/Redis%E7%AC%94%E8%AE%B0/" title="Redis笔记"><img class="cover" src="https://s2.loli.net/2022/11/17/BeiQmkw4Ya1gvPx.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-06-24</div><div class="title">Redis笔记</div></div></a></div><div><a href="/2022/12/18/%E5%8D%81%E5%A4%A7%E7%BB%8F%E5%85%B8%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95%EF%BC%88%E5%8A%A8%E5%9B%BE%E6%BC%94%E7%A4%BA%EF%BC%89/" title="十大经典排序算法（动图演示）"><img class="cover" src="https://s2.loli.net/2022/11/17/BeiQmkw4Ya1gvPx.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-12-18</div><div class="title">十大经典排序算法（动图演示）</div></div></a></div></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://s2.loli.net/2024/09/17/3NdhvxIcPRVpufD.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">(ง'̀-'́)ง</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">35</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">46</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/yo-gurts"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/yo-gurts" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:yusong1117.u@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BA%8F%E5%88%97%E5%BC%8F%E5%AE%B9%E5%99%A8"><span class="toc-number">1.</span> <span class="toc-text">序列式容器</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Array"><span class="toc-number">1.1.</span> <span class="toc-text">Array</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Vector"><span class="toc-number">1.2.</span> <span class="toc-text">Vector</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Deque"><span class="toc-number">1.3.</span> <span class="toc-text">Deque</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#List"><span class="toc-number">1.4.</span> <span class="toc-text">List</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Forward-List"><span class="toc-number">1.5.</span> <span class="toc-text">Forward_List</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B3%E8%81%94%E5%BC%8F%E5%AE%B9%E5%99%A8"><span class="toc-number">2.</span> <span class="toc-text">关联式容器</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#set%E3%80%81multiset"><span class="toc-number">2.1.</span> <span class="toc-text">set、multiset</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#map%E3%80%81multimap"><span class="toc-number">2.2.</span> <span class="toc-text">map、multimap</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%97%A0%E5%BA%8F%E5%AE%B9%E5%99%A8"><span class="toc-number">3.</span> <span class="toc-text">无序容器</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#unorder-set%E3%80%81unorder-multiset"><span class="toc-number">3.1.</span> <span class="toc-text">unorder_set、unorder_multiset</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#unorder-map%E3%80%81unorder-multimap"><span class="toc-number">3.2.</span> <span class="toc-text">unorder_map、unorder_multimap</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%89%B9%E6%AE%8A%E5%AE%B9%E5%99%A8"><span class="toc-number">4.</span> <span class="toc-text">特殊容器</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Stack"><span class="toc-number">4.1.</span> <span class="toc-text">Stack</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Queue"><span class="toc-number">4.2.</span> <span class="toc-text">Queue</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Priority-queue"><span class="toc-number">4.3.</span> <span class="toc-text">Priority_queue</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Bitset"><span class="toc-number">4.4.</span> <span class="toc-text">Bitset</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%B8%E5%85%B3%E8%B5%84%E6%96%99"><span class="toc-number">5.</span> <span class="toc-text">相关资料</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2024/09/11/Cvitek-reboot/" title="Cvitek-busybox init/reboot/poweroff"><img src="https://s2.loli.net/2022/11/17/Zm4kDRxypb5ez3q.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Cvitek-busybox init/reboot/poweroff"/></a><div class="content"><a class="title" href="/2024/09/11/Cvitek-reboot/" title="Cvitek-busybox init/reboot/poweroff">Cvitek-busybox init/reboot/poweroff</a><time datetime="2024-09-11T09:57:02.000Z" title="发表于 2024-09-11 17:57:02">2024-09-11</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/08/11/Scripts-git_tools/" title="Scripts-管理多个 git 仓库"><img src="https://s2.loli.net/2022/11/17/9ZBEesyr14aJhPM.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Scripts-管理多个 git 仓库"/></a><div class="content"><a class="title" href="/2024/08/11/Scripts-git_tools/" title="Scripts-管理多个 git 仓库">Scripts-管理多个 git 仓库</a><time datetime="2024-08-11T03:37:00.000Z" title="发表于 2024-08-11 11:37:00">2024-08-11</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/06/04/Cvitek-usbcamera%E9%9C%80%E6%B1%82/" title="Alios USB camera 常见需求处理"><img src="https://s2.loli.net/2022/11/17/BeiQmkw4Ya1gvPx.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Alios USB camera 常见需求处理"/></a><div class="content"><a class="title" href="/2024/06/04/Cvitek-usbcamera%E9%9C%80%E6%B1%82/" title="Alios USB camera 常见需求处理">Alios USB camera 常见需求处理</a><time datetime="2024-06-04T03:19:42.000Z" title="发表于 2024-06-04 11:19:42">2024-06-04</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/05/15/USB-UVC_extension/" title="UVC 扩展单元"><img src="https://s2.loli.net/2022/11/17/hF7KodYmE6iPWqg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="UVC 扩展单元"/></a><div class="content"><a class="title" href="/2024/05/15/USB-UVC_extension/" title="UVC 扩展单元">UVC 扩展单元</a><time datetime="2024-05-15T14:26:44.000Z" title="发表于 2024-05-15 22:26:44">2024-05-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/04/14/gdb/" title="gdb"><img src="https://s2.loli.net/2022/11/17/nuDZ3dsB6z4bfVJ.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="gdb"/></a><div class="content"><a class="title" href="/2024/04/14/gdb/" title="gdb">gdb</a><time datetime="2024-04-13T16:33:49.000Z" title="发表于 2024-04-14 00:33:49">2024-04-14</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2024 By (ง'̀-'́)ง</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.13.0"></script><script src="/js/main.js?v=4.13.0"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.1
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, '']
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typesetPromise()
+}</script><script>(() => {
+  const initGitalk = () => {
+    const gitalk = new Gitalk(Object.assign({
+      clientID: 'b740056c42e9eadf273e',
+      clientSecret: 'e5f185fa9a6e27927f7a2672469435c68a288c95',
+      repo: 'Yo-gurts.github.io',
+      owner: 'yo-gurts',
+      admin: ['yo-gurts'],
+      id: 'cefc5d82dd704987716d5080f075890f',
+      updateCountCallback: commentCount
+    },null))
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async() => {
+    if (typeof Gitalk === 'function') initGitalk()
+    else {
+      await getCSS('https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.min.css')
+      await getScript('https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.min.js')
+      initGitalk()
+    }
+  }
+  
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/canvas-fluttering-ribbon.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=4.13.0"></script></div></div></body></html>

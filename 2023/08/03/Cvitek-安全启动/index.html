@@ -1,0 +1,766 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Cvitek-安全启动 | (╯°□°）╯︵ ┻━┻ </title><meta name="author" content="(ง'̀-'́)ง"><meta name="copyright" content="(ง'̀-'́)ง"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Cvitek-安全启动 注：仅考虑 cv181x  安全启动的意义：  防止用户烧录未经授权的固件。（签名） 防止通过固件拷贝，来抄袭产品。（签名+加密）  原理介绍加密算法介绍  盘点五种最常见加密算法！ 密码学基本概念   算法整体上可以分为**不可逆加密，以及可逆加密，可逆加密又可以分为对称加"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://yo-gurts.github.io/2023/08/03/Cvitek-%E5%AE%89%E5%85%A8%E5%90%AF%E5%8A%A8/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.13.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":600},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Cvitek-安全启动',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-05-12 00:13:02'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+          const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+          const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+          const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+          if (t === undefined) {
+            if (isLightMode) activateLightMode()
+            else if (isDarkMode) activateDarkMode()
+            else if (isNotSpecified || hasNoSupport) {
+              const now = new Date()
+              const hour = now.getHours()
+              const isNight = hour <= 6 || hour >= 18
+              isNight ? activateDarkMode() : activateLightMode()
+            }
+            window.matchMedia('(prefers-color-scheme: dark)').addListener(e => {
+              if (saveToLocal.get('theme') === undefined) {
+                e.matches ? activateDarkMode() : activateLightMode()
+              }
+            })
+          } else if (t === 'light') activateLightMode()
+          else activateDarkMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="google-site-verification" content="MP347_Nl-SqfnOi3FZSI69WSb8J_rk_jEsa3jL4ODCI" /><meta name="generator" content="Hexo 6.1.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://s2.loli.net/2024/09/17/3NdhvxIcPRVpufD.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">35</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">46</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background: transparent"><nav id="nav"><span id="blog-info"><a href="/" title="(╯°□°）╯︵ ┻━┻ "><span class="site-name">(╯°□°）╯︵ ┻━┻ </span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Cvitek-安全启动</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-08-03T09:55:02.000Z" title="发表于 2023-08-03 17:55:02">2023-08-03</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2024-05-11T16:13:02.000Z" title="更新于 2024-05-12 00:13:02">2024-05-12</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Cvitek/">Cvitek</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">10.8k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>40分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Cvitek-安全启动"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/2023/08/03/Cvitek-%E5%AE%89%E5%85%A8%E5%90%AF%E5%8A%A8/#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h2 id="Cvitek-安全启动"><a href="#Cvitek-安全启动" class="headerlink" title="Cvitek-安全启动"></a>Cvitek-安全启动</h2><blockquote>
+<p>注：仅考虑 <code>cv181x</code></p>
+</blockquote>
+<p>安全启动的意义：</p>
+<ul>
+<li>防止用户烧录未经授权的固件。（签名）</li>
+<li>防止通过固件拷贝，来抄袭产品。（签名+加密）</li>
+</ul>
+<h2 id="原理介绍"><a href="#原理介绍" class="headerlink" title="原理介绍"></a>原理介绍</h2><h3 id="加密算法介绍"><a href="#加密算法介绍" class="headerlink" title="加密算法介绍"></a>加密算法介绍</h3><blockquote>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/XBYJFZ2jRF2slrlym3svQw">盘点五种最常见加密算法！</a></li>
+<li><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/Hu1VBMSHh82n6bujWxr9nw">密码学基本概念</a></li>
+</ul>
+</blockquote>
+<p>算法整体上可以分为**<del>不可逆加密</del><strong>，以及</strong>可逆加密<strong>，可逆加密又可以分为</strong>对称加密<strong>和</strong>非对称加密**。</p>
+<blockquote>
+<p>不可逆这部分称为 <strong>消息摘要</strong> 更好，<strong>摘要算法</strong>就是我们常说的散列函数、哈希函数（Hash Function），它能够把任意长度的数据“压缩”成固定长度、而且独一无二的“摘要”字符串，就好像是给这段数据生成了一个数字“指纹”。</p>
+</blockquote>
+<p><img src="/../images/Cvitek-%E5%AE%89%E5%85%A8%E5%90%AF%E5%8A%A8/640.png" alt="图片"></p>
+<h4 id="消息摘要"><a href="#消息摘要" class="headerlink" title="消息摘要"></a>消息摘要</h4><p>散列算法，就是一种不可逆算法，无法从散列结果中反推出明文。<strong>可以用来检验数据是否被更改</strong>。</p>
+<p>散列算法中，明文通过散列算法生成散列值，<strong>散列值是长度固定的数据，和明文长度无关</strong>。</p>
+<p><img src="/../images/Cvitek-%E5%AE%89%E5%85%A8%E5%90%AF%E5%8A%A8/640-1694590307639-3.png" alt="图片"></p>
+<p>散列算法的具体实现有很多种，常见的包括 <code>MD5</code>、<code>SHA1</code>、<code>SHA-224</code>、<code>SHA-256</code> 等等。</p>
+<p>散列算法常用于<strong>数字签名</strong>、消息认证、密码存储等场景。</p>
+<blockquote>
+<p>本文中，对 <code>kernel</code>、<code>rootfs</code> 的签名就是基于 <code>sha256</code> 实现（不过还用到了下面的 <code>RSA</code>）。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th>介绍：都是用于将任意长度的数据映射为固定长度的散列值，只是映射长度和实现算法不同</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>MD5</code></td>
+<td><code>MD5</code>（Message-Digest Algorithm 5），<code>MD5</code> 算法的输出长度为 <code>128</code> 位，通常用 <code>32</code> 个 <code>16</code> 进制数表示。</td>
+</tr>
+<tr>
+<td><code>SHA1</code></td>
+<td><code>SHA-1</code> 系列存在缺陷，已经不再被推荐使用</td>
+</tr>
+<tr>
+<td><code>SHA2</code></td>
+<td><code>SHA-2</code> 算法包括<code>SHA-224</code>、<code>SHA-256</code>、<code>SHA-384</code>和<code>SHA-512</code>四种散列函数，<br />分别将任意长度的数据映射为 <code>224</code> 位、<code>256</code> 位、<code>384</code> 位和 <code>512</code> 位的散列值。</td>
+</tr>
+</tbody></table>
+<h4 id="对称加密-–-AES-算法"><a href="#对称加密-–-AES-算法" class="headerlink" title="对称加密 – AES 算法"></a>对称加密 – AES 算法</h4><p>对称加密算法，使用同一个密钥进行加密和解密。</p>
+<p><img src="/../images/Cvitek-%E5%AE%89%E5%85%A8%E5%90%AF%E5%8A%A8/640-1694591480328-6.png" alt="图片"></p>
+<p>加密和解密过程使用的是相同的密钥，因此密钥的安全性至关重要。如果密钥泄露，攻击者可以轻易地破解加密数据。</p>
+<p>常见的对称加密算法包括 <code>DES</code>、<code>3DES</code>、<code>AES</code> 等。其中，**<code>AES</code> 算法是目前使用最广泛的对称加密算法之一，具有比较高的安全性和加密效率<strong>。</strong><code>AES</code> 算法使用的密钥长度为 <code>128</code> 位、<code>192</code> 位或 <code>256</code> 位**（这里的位是 <code>bit</code>）</p>
+<blockquote>
+<p>我们使用的 <code>AES</code> 秘钥是 128 位。</p>
+</blockquote>
+<h4 id="非对称加密-–-RSA-算法"><a href="#非对称加密-–-RSA-算法" class="headerlink" title="非对称加密 – RSA 算法"></a>非对称加密 – RSA 算法</h4><p>非对称加密算法需要两个密钥，这两个密钥互不相同，但是相互匹配，一个称为<strong>公钥</strong>，另一个称为<strong>私钥</strong>。</p>
+<p><strong>使用其中的一个加密，则使用另一个进行解密</strong>。例如使用公钥加密，则需要使用私钥解密。</p>
+<p><img src="/../images/Cvitek-%E5%AE%89%E5%85%A8%E5%90%AF%E5%8A%A8/640-1694591564320-9.png" alt="图片"></p>
+<p><code>RSA</code> 算法的<strong>优点是安全性高</strong>，公钥可以公开，私钥必须保密，保证了数据的安全性；可用于数字签名、密钥协商等多种应用场景。</p>
+<p><strong>缺点是加密、解密速度较慢</strong>，密钥长度越长，加密、解密时间越长；密钥长度过短容易被暴力破解，密钥长度过长则会增加计算量和存储空间的开销。</p>
+<p><code>RSA</code> 的秘钥（包括公钥和私钥）由两部分组成：模数和指数</p>
+<ul>
+<li><p><strong>公钥</strong>：包括模数 <code>N</code> 和<strong>公钥指数</strong> <code>E</code>。公钥用于<strong>验证数字签名</strong>。</p>
+</li>
+<li><p><strong>私钥</strong>：包括模数 <code>N</code> 和<strong>私钥指数</strong> <code>D</code>。私钥用于<strong>生成数字签名</strong>。</p>
+<blockquote>
+<p>具体来说，数字签名过程通常涉及以下步骤：</p>
+<ol>
+<li><strong>使用哈希函数对要签名的数据进行哈希处理，生成消息摘要。</strong></li>
+<li><strong>使用私钥对消息摘要进行加密，生成数字签名。</strong></li>
+<li>将原始数据、数字签名和公钥发送给接收方。</li>
+</ol>
+<p>验证数字签名的过程如下：</p>
+<ol>
+<li><strong>使用公钥对数字签名进行解密，得到消息摘要。</strong></li>
+<li><strong>使用相同的哈希函数对原始数据进行哈希处理，生成另一个消息摘要。</strong></li>
+<li>比较这两个消息摘要，如果相同，则表示签名有效，否则表示签名无效。</li>
+</ol>
+<p>因此，公钥通常用于验证签名的有效性，而不是用于生成数字签名。</p>
+</blockquote>
+</li>
+</ul>
+<p>在一个标准的 <code>RSA</code> 密钥对中，公钥的 <code>E</code>和 <code>N</code> 通常也包含在私钥中，<strong>模数 <code>N</code> 是 <code>RSA</code> 密钥对的关键部分，它在公钥和私钥中都是相同的</strong>。<code>E</code> 和 <code>D</code> 是指数，它们通常不同，因为它们在不同的数学运算中使用。</p>
+<ul>
+<li><code>E</code> 通常被设置为常数值 65537（0x10001），因为这个值在二进制中有很多 1，使得加密操作更加高效。</li>
+<li><code>N</code> 是一个大整数，它是两个大质数的乘积，<strong>它决定了 <code>RSA</code> 密钥的长度和强度</strong>。</li>
+</ul>
+<p>在 RSA 算法中，公钥和私钥都包含模数 <code>N</code>，而 <code>N</code> 是两个大质数 <code>p</code> 和 <code>q</code> 的乘积。公钥还包含一个指数 <code>e</code>，而私钥包含另一个指数 <code>d</code>。这两个指数 <code>e</code> 和 <code>d</code> 的选择要满足一个特定的条件，也就是满足 <code>e*d ≡ 1 (mod φ(N))</code> 的关系。在这里，<code>φ(N)</code> 是 Euler’s totient 函数，它对于 <code>N=p*q</code>，值为<code>φ(N)=(p-1)(q-1)</code>。</p>
+<p>也就是说，虽然两对密钥（公钥和私钥）有不同的指数 <code>e</code> 和 d，但 <code>e</code> 和 <code>d</code> 是满足相应数学关系的。使得用公钥进行加密的密文用私钥能解密，用私钥进行加密的密文用公钥能解密。在这里，”模 N” 是指在所有的加密和解密操作都在模 N 的意义下进行。实则，”互逆”是在指 <code>e</code> 和 <code>d</code> 相对于 <code>φ(N)</code> 模逆的关系。</p>
+<blockquote>
+<p><code>e*d ≡ 1(mod φ(N))</code> 是一个同余方程，描述的是 <code>e</code> 和 <code>d</code> 在模 <code>φ(N)</code> 下的乘积同余于 1。</p>
+<p>在数学中，”同余”是一种等价关系，a 和 b “模 m 同余”，如果它们除以 m 得到的余数相同。在此处的上下文中，这意味着当你将 e*d 除以 φ(N)，得到的余数是 1。<br>这个关系确保了公钥（N，e）和私钥（N，d）彼此互逆。即，如果你使用公钥加密消息 m，得到 <code>c=m^e (mod N)</code>，那么你可以用私钥解密消息 c，得到 <code>m=c^d (mod N)</code>，反之亦然。<br>这样设计的原因在于，如果第三方只知道公钥（N，e），他们无法计算出相应的私钥 d，除非他们能因数分解 N，这在实际中是非常困难的，使得这一加密系统具有很高的安全性。</p>
+<p>N 只是公钥和私钥共有的模数而已，它是两个大质数的乘积。要推导出私钥，除了需要知道 N 值外，还需要知道这两个质数，然而，当 N 是一个足够大的数时，要分解 N，找到这两个质数，基本上是不可能的（对于一个 N 值，有且只有一对质数的乘积等于 N）。</p>
+<p>2048 位的 RSA 密钥中的 N 值，是由两个 1024 位的质数相乘得到的，所以它的长度大约在 616 到 617 位之间。在十进制下，它的值大约在 2 的 2048 次方到 2 的 2049 次方之间，即大约在 10 的 617 次方到 10 的 618 次方之间，这是一个非常非常大的数。</p>
+</blockquote>
+<h4 id="RSA-示例"><a href="#RSA-示例" class="headerlink" title="RSA 示例"></a>RSA 示例</h4><p>使用 OpenSSL 命令行工具，你可以执行 RSA 数字签名和验证操作。下面是一个示例，演示如何生成 RSA 密钥对，使用私钥对文件进行数字签名，然后使用公钥验证签名。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 生成私钥</span></span><br><span class="line">openssl genrsa -out private.pem 2048</span><br><span class="line"><span class="comment"># 从私钥中提取公钥</span></span><br><span class="line">openssl rsa -<span class="keyword">in</span> private.pem -pubout -out public.pem</span><br><span class="line"></span><br><span class="line"><span class="built_in">echo</span> 123456789 &gt; test.txt</span><br><span class="line"><span class="comment"># 使用私钥对文件进行签名</span></span><br><span class="line">openssl dgst -sha256 -sign private.pem -out signature.bin test.txt</span><br><span class="line"><span class="comment"># 使用公钥验证签名</span></span><br><span class="line">openssl dgst -sha256 -verify public.pem -signature signature.bin test.txt</span><br><span class="line"><span class="comment">## 输出 Verified OK</span></span><br></pre></td></tr></table></figure>
+
+<p>在这个示例中：</p>
+<ul>
+<li><code>private.pem</code>是生成的私钥文件</li>
+<li><code>public.pem</code>是从私钥中提取的公钥文件</li>
+<li><code>test.txt</code>是要签名和验证的文件</li>
+<li><code>signature.bin</code>是使用私钥对文件生成的签名文件</li>
+</ul>
+<p>下面是一个 python 示例，签名的流程和 <code>fipsign.py</code> 中类似。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> Crypto.PublicKey <span class="keyword">import</span> RSA</span><br><span class="line"><span class="keyword">from</span> Crypto.Signature <span class="keyword">import</span> pkcs1_15</span><br><span class="line"><span class="keyword">from</span> Crypto.Hash <span class="keyword">import</span> SHA256</span><br><span class="line"><span class="keyword">from</span> Crypto <span class="keyword">import</span> Random</span><br><span class="line"></span><br><span class="line"><span class="comment"># 生成 RSA 密钥对</span></span><br><span class="line">random_generator = Random.new().read</span><br><span class="line">key = RSA.generate(<span class="number">2048</span>, random_generator)</span><br><span class="line">public_key = key.publickey()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 原始数据</span></span><br><span class="line">message = <span class="string">b&quot;This is a test message.&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 计算哈希值</span></span><br><span class="line">h = SHA256.new(message)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 使用私钥对原始数据的哈希值进行签名</span></span><br><span class="line">signature = pkcs1_15.new(key).sign(h)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 使用公钥验证签名</span></span><br><span class="line">verifier = pkcs1_15.new(public_key)</span><br><span class="line"><span class="keyword">try</span>:</span><br><span class="line">    verifier.verify(h, signature)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;The signature is valid.&quot;</span>)</span><br><span class="line"><span class="keyword">except</span> (ValueError, TypeError):</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;The signature is not valid.&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 注意：在真实应用中，你不应该直接在代码中硬编码密钥，而应该使用安全的方式来存储和访问它们。</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>问题：为什么要先hash，再对hash 进行签名？</strong></p>
+<p>在数字签名中，通常先对消息进行哈希（hashing），然后再对哈希值进行签名，而不是直接对原始消息进行签名。这样做有几个重要的原因：</p>
+<ol>
+<li><p><strong>性能</strong>：哈希函数比签名算法快得多。哈希函数可以将任意长度的数据压缩成一个固定长度的哈希值，而签名算法则需要对整个消息（或哈希值）进行复杂的数学运算。由于哈希函数的快速性，即使对于非常大的消息，也可以快速生成哈希值，然后再对哈希值进行签名，从而大大<strong>提高了签名的效率</strong>。</p>
+</li>
+<li><p><strong>安全性</strong>：哈希函数被设计为具有“雪崩效应”（avalanche effect），这意味着即使原始消息中只有一个微小的变化，也会导致哈希值发生显著的变化。这种性质使得哈希值对篡改非常敏感。如果直接对原始消息进行签名，那么任何对消息的微小篡改都可能需要重新进行整个签名过程，这既耗时又容易暴露给攻击者更多的信息。通过对哈希值进行签名，可以确保即使原始消息被篡改，签名也会立即失效，从而<strong>提高了安全性</strong>。</p>
+</li>
+<li><p><strong>可验证性</strong>：哈希函数是单向的，这意味着从哈希值不能恢复出原始消息（或者说恢复原始消息是非常困难的）。但是，给定相同的消息，任何人都可以计算出相同的哈希值。因此，当接收者收到一个签名和相应的消息时，他们可以自己计算消息的哈希值，并使用签名者的公钥来验证签名是否有效。这种方式允许任何人验证签名的真实性，而不需要与签名者进行通信或交换任何额外的信息。</p>
+</li>
+<li><p><strong>签名长度</strong>：<strong>直接对长消息进行签名可能会导致生成的签名非常长</strong>，从而增加了存储和传输的负担。通过对哈希值进行签名，可以确保签名长度始终固定且相对较短，这有利于节省空间和带宽。</p>
+</li>
+</ol>
+<p>综上所述，先对消息进行哈希，再对哈希值进行签名是一种常见的做法，它结合了哈希函数和签名算法的优点，提供了高效、安全和可验证的数字签名方案。</p>
+<h3 id="启动流程简介"><a href="#启动流程简介" class="headerlink" title="启动流程简介"></a>启动流程简介</h3><p><img src="/../images/Cvitek-%E5%AE%89%E5%85%A8%E5%90%AF%E5%8A%A8/image-20230913160851943.png" alt="image-20230913160851943"></p>
+<p>我们使用的是第三个，<strong>一个完整的启动流程</strong>为：由板端固定的 <code>ROM</code> 中的代码（<code>ZSBL</code>）初始化环境后，调用 <code>FSBL</code>，然后 <code>FSBL</code> 调用 <code>OpenSBI</code>，进而调用 <code>U-Boot</code>，由 <code>U-Boot</code> 来启动内核。<strong>烧录流程</strong>（<code>update</code>）只是没有 <code>U-Boot</code> 来启动内核这一步骤。</p>
+<blockquote>
+<p>到 <code>uboot</code> 之后，就主要是由 <code>CONFIG_BOOTCOMMAND</code> 来控制后续操作，可以看到先尝试显示 <code>LOGO</code>，然后检测是否需要升级，<code>cvi_update</code> 它会检查是否有 <code>SD</code> 卡中有没有 <code>fip.bin</code> 或 <code>USB</code> 升级。这里使用的是 <code>||</code> ，就意味着前面执行成功，就不会执行后续的。升级之后，不会自动进入内核就是这个原因。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// u-boot-2021.10/include/configs/cv181x-asic.h:302</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> CONFIG_BOOTCOMMAND    SHOWLOGOCMD <span class="string">&quot;cvi_update || run norboot || run nandboot || run emmcboot&quot;</span></span></span><br></pre></td></tr></table></figure>
+</blockquote>
+<p>整个启动流程我们用到的硬件存储设备有：<code>eFuse</code>、<code>flash(nor/emmc/nand)</code>、<code>SD</code>、<code>ddr</code> 这 4 个。</p>
+<h4 id="编译流程"><a href="#编译流程" class="headerlink" title="编译流程"></a>编译流程</h4><p>这里只关注会生成哪些文件，以及每个文件对应的模块。</p>
+<table>
+<thead>
+<tr>
+<th>模块</th>
+<th>生成文件</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>fsbl</td>
+<td>bl2.bin，编译 fsbl 之后会创建 fip.bin （该文件打包了 bl2.bin fw_dynamic.bin u-boot-raw.bin）</td>
+</tr>
+<tr>
+<td>opensbi</td>
+<td>fw_dynamic.bin</td>
+</tr>
+<tr>
+<td>uboot</td>
+<td>u-boot-raw.bin</td>
+</tr>
+<tr>
+<td>kernel</td>
+<td>boot.spinor</td>
+</tr>
+<tr>
+<td>ramdisk</td>
+<td>rootfs.spinor</td>
+</tr>
+</tbody></table>
+<h4 id="烧录流程"><a href="#烧录流程" class="headerlink" title="烧录流程"></a>烧录流程</h4><p>先说升级（烧录流程），它的作用就是将 <code>opensbi</code>、<code>uboot</code>、<code>kernel</code> 等二进制文件烧录到 <code>flash</code> 上，每个文件在 <code>flash</code> 上的写入地址都是通过文件 <code>partition.xml</code> 指定，如：</p>
+<blockquote>
+<p>不是指定写入地址，而是指定文件的大小，他们在 <code>flash</code> 上紧挨着排列，比如第 <code>0-1024</code>存储着 <code>fip.bin</code>，<code>1024-4096</code> 存储着 <code>boot.spinor</code>。即使 <code>fip.bin</code> 的实际大小没有 1024，<code>boot.spinor</code> 仍然是从第 1024 开始。<strong>要注意 <code>flash</code> 的大小限制，不要超出了 <code>flash</code> 的大小</strong>。</p>
+</blockquote>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">physical_partition</span> <span class="attr">type</span>=<span class="string">&quot;spinor&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">partition</span> <span class="attr">label</span>=<span class="string">&quot;fip&quot;</span> <span class="attr">size_in_kb</span>=<span class="string">&quot;1024&quot;</span> <span class="attr">readonly</span>=<span class="string">&quot;false&quot;</span> <span class="attr">file</span>=<span class="string">&quot;fip.bin&quot;</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">partition</span> <span class="attr">label</span>=<span class="string">&quot;BOOT&quot;</span> <span class="attr">size_in_kb</span>=<span class="string">&quot;3072&quot;</span> <span class="attr">readonly</span>=<span class="string">&quot;false&quot;</span> <span class="attr">file</span>=<span class="string">&quot;boot.spinor&quot;</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">partition</span> <span class="attr">label</span>=<span class="string">&quot;APPCFG&quot;</span> <span class="attr">size_in_kb</span>=<span class="string">&quot;64&quot;</span> <span class="attr">readonly</span>=<span class="string">&quot;false&quot;</span> <span class="attr">file</span>=<span class="string">&quot;app_cfg.bin&quot;</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">partition</span> <span class="attr">label</span>=<span class="string">&quot;APPCFGDEF&quot;</span> <span class="attr">size_in_kb</span>=<span class="string">&quot;64&quot;</span> <span class="attr">readonly</span>=<span class="string">&quot;false&quot;</span> <span class="attr">file</span>=<span class="string">&quot;app_cfg_def.bin&quot;</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">partition</span> <span class="attr">label</span>=<span class="string">&quot;sig&quot;</span> <span class="attr">size_in_kb</span>=<span class="string">&quot;64&quot;</span> <span class="attr">file</span>=<span class="string">&quot;sig.bin&quot;</span> /&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">partition</span> <span class="attr">label</span>=<span class="string">&quot;ENV&quot;</span> <span class="attr">size_in_kb</span>=<span class="string">&quot;64&quot;</span> <span class="attr">file</span>=<span class="string">&quot;&quot;</span> /&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">partition</span> <span class="attr">label</span>=<span class="string">&quot;ENV_BAK&quot;</span> <span class="attr">size_in_kb</span>=<span class="string">&quot;64&quot;</span> <span class="attr">file</span>=<span class="string">&quot;&quot;</span> /&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">partition</span> <span class="attr">label</span>=<span class="string">&quot;ROOTFS&quot;</span> <span class="attr">size_in_kb</span>=<span class="string">&quot;8192&quot;</span> <span class="attr">readonly</span>=<span class="string">&quot;false&quot;</span> <span class="attr">file</span>=<span class="string">&quot;rootfs.spinor&quot;</span> /&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">partition</span> <span class="attr">label</span>=<span class="string">&quot;MISC&quot;</span> <span class="attr">size_in_kb</span>=<span class="string">&quot;512&quot;</span> <span class="attr">file</span>=<span class="string">&quot;logo.jpg&quot;</span> /&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">partition</span> <span class="attr">label</span>=<span class="string">&quot;DATA&quot;</span>  <span class="attr">readonly</span>=<span class="string">&quot;false&quot;</span> <span class="attr">file</span>=<span class="string">&quot;&quot;</span> <span class="attr">mountpoint</span>=<span class="string">&quot;/mnt/data&quot;</span> <span class="attr">type</span>=<span class="string">&quot;jffs2&quot;</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">physical_partition</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>写 <code>partition</code> 时还要注意对齐问题，这个与 <code>flash</code> 有关，比如在 <code>1812h_nand</code> 使用的 <code>flash</code> 是 <code>W25N02KVxxIR/U</code>，查看其数据手册可以看到，最小的块应该是 <code>128KB</code>，如果仍然将 <code>sig.bin</code> 的大小设置为 <code>size_in_kb=&quot;64&quot;</code> ，烧录的时候就会报错！</p>
+<p>另外，也要注意 <code>parititon</code> 中的大小要和 <code>cv181x-asic.h</code> 中设置的 <code>CONFIG_NANDBOOTCOMMAND</code> 中一致。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Flexible Architecture with 128KB blocks</span><br><span class="line">– Uniform 128K-Byte Block Erase</span><br><span class="line">– Flexible page data load methods</span><br></pre></td></tr></table></figure>
+</blockquote>
+<p>由于 <code>fw_dynamic.bin u-boot-raw.bin</code> 放入了 <code>fip.bin</code> 文件中，因此，我们进行 <code>update</code> 的时候只需要准备 3 个文件：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">fip.bin</span><br><span class="line">boot.spinor</span><br><span class="line">rootfs.spinor</span><br></pre></td></tr></table></figure>
+
+<p>虽然 <code>upgrade.zip</code> 解压后，能看到 <code>partition.xml</code> ，不过这玩意可以不要，因为编译过程中，已经从该文件生成了分区的 <code>.h</code> 头文件嵌入到的代码中，实际烧录时并不会用到。</p>
+<p>另外，由于 <code>partition</code> 的分区划分，不同区域固定起始地址并且不会重叠，因此升级过程中，我们也可以只烧录一部分，比如与上一次烧录相比，只有 <code>u-boot</code> 发生了变化，那么我们的 <code>SD</code> 卡中只需要准备 <code>fip.bin</code> 就行。如果 <code>kernel</code> 发生了变化，就需要 <code>fip.bin</code> 和 <code>boot.spinor</code>，避免重复烧录 <code>rootfs.spinor</code> 可以加快一点点效率。</p>
+<p><img src="/../images/Cvitek-%E5%AE%89%E5%85%A8%E5%90%AF%E5%8A%A8/sd%E5%8D%A1%E5%8D%87%E7%BA%A7.png" alt="sd 卡升级"></p>
+<p>升级流程为：</p>
+<ol>
+<li><code>rom</code> 中 <code>bl1</code> 代码将 <code>bld.bin</code>（<code>BL2</code> 代码）搬移到 <code>SRAM</code> 中；</li>
+<li>执行 <code>BL2</code> 代码，初始化 <code>ddr</code>，将 <code>bldp.bin</code> 和 <code>u-boot.bin</code> 搬移到 <code>ddr</code> 中；</li>
+<li>执行 <code>bldp.bin</code>（<code>BL31</code> 代码）；</li>
+<li>执行 <code>uboot（BL33）</code>代码，将 <code>boot.xxx</code>、<code>rootfs.xxx</code>、<code>fip.bin</code> 拷贝到 <code>spinor(nand/emmc)</code>（中间需要经过 <code>ddr</code>，上图中没有展示该过程）；</li>
+<li>继续执行 <code>uboot</code> 代码，将 <code>boot.xxx</code> 从 <code>spinor(nand/emmc)</code> 读入 <code>ddr</code>，开始启动 <code>kernel</code>；</li>
+</ol>
+<p><strong>4、5 两步由 <code>uboot</code> 下 <code>cvi_update</code> 和 <code> run norboot/nandboot/emmcboot</code> 指令完成</strong>，具体来说，<code>cvi_update</code> 主要完成的事情有：</p>
+<ol>
+<li>从升级的源头上拷贝 <code>boot.xxx、rootfs.xxx、fip.bin</code> 到 <code>ddr</code>；（这里源头可以是 <code>uart</code>、<code>sd</code> 卡、<code>usb</code> 甚至是 <code>ethernet</code>）</li>
+<li>将以上文件写入存储介质（<code>spinor、spinand、emmc</code>）；后续就可以直接从 <code>flash</code> 启动。</li>
+</ol>
+<h4 id="启动流程"><a href="#启动流程" class="headerlink" title="启动流程"></a>启动流程</h4><p>启动流程的前三级 <code>fsbl, opensbi, uboot</code> 和烧录流程是一致的，只有到 <code>uboot</code> 这里执行的内容不同。</p>
+<p>再说启动流程，在 <code>uboot</code> 启动内核时，<code>nor flash</code> 与 <code>emmc/nand</code> 有点区别，因为 <code>nor</code> 可以直接运行代码，而 <code>emmc/nand</code> 需要先将 <code>kernel</code> 从 <code>flash</code> 中加载到 <code>ddr</code>，然后再运行。不过，下面我们使用安全启动时，由于需要校验 <code>kernel</code> 的签名，所以即使是 <code>nor</code> 也需要将 <code>kernel</code> 加载到 <code>ddr</code>。</p>
+<h3 id="签名加密流程介绍"><a href="#签名加密流程介绍" class="headerlink" title="签名加密流程介绍"></a>签名加密流程介绍</h3><p>从上面的烧录流程可以看到，前期到 <code>uboot</code> 运行阶段都与 <code>fip.bin</code> 有关，因此首先我们要保证 <code>fip.bin</code> 的安全性，要保证它不被篡改。不过这里并没有采用直接对 <code>fip.bin</code> 这整个文件进行加密，而是对 <code>fip.bin</code> 中每个小模块逐个加密、签名。一个 <code>fip.bin</code> 文件的构成如下图所示：</p>
+<p><img src="/../images/Cvitek-%E5%AE%89%E5%85%A8%E5%90%AF%E5%8A%A8/image1.jpg" alt="_images/image1.jpg"></p>
+<p>主要也就是前面说的 <code>fsbl, opensbi, u-boot</code>，不过还额外增加了各级的签名（可选的）。生成 <code>fip.bin</code> 的脚本是<code>fsbl/plat/cv181x/ fiptool.py </code>，对 <code>fip.bin</code> 进行签名和加密的脚本也在该目录下。</p>
+<blockquote>
+<p>具体的 <code>fip</code> 构成可以看 <code>fsbl/plat/cv181x/fiptool.py:143</code> <code>FIP</code> 这个类的定义，<code>FIP</code> 就是按这里定义的顺序，由五个部分组成：<code>param1, body1, param2, body2, ldr_2nd_hdr</code>。下面是生成 <code>fip</code> 的编译日志：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">fsbl/plat/cv181x/fiptool.py -v genfip \</span><br><span class="line">        <span class="string">&#x27;/data/song.yu/cvi_mmf_sdk-intl/fsbl/build/cv1811h_wevb_0007a_spinor/fip.bin&#x27;</span> \</span><br><span class="line">        --MONITOR_RUNADDR=<span class="string">&quot;<span class="variable">$&#123;MONITOR_RUNADDR&#125;</span>&quot;</span> \</span><br><span class="line">        --BLCP_2ND_RUNADDR=<span class="string">&quot;<span class="variable">$&#123;BLCP_2ND_RUNADDR&#125;</span>&quot;</span> \</span><br><span class="line">        --CHIP_CONF=<span class="string">&#x27;/data/song.yu/cvi_mmf_sdk-intl/fsbl/build/cv1811h_wevb_0007a_spinor/chip_conf.bin&#x27;</span> \</span><br><span class="line">        --NOR_INFO=<span class="string">&#x27;FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF&#x27;</span> \</span><br><span class="line">        --NAND_INFO=<span class="string">&#x27;00000000&#x27;</span>\</span><br><span class="line">        --BL2=<span class="string">&#x27;/data/song.yu/cvi_mmf_sdk-intl/fsbl/build/cv1811h_wevb_0007a_spinor/bl2.bin&#x27;</span> \</span><br><span class="line">        --BLCP_IMG_RUNADDR=0x05200200 \</span><br><span class="line">        --BLCP_PARAM_LOADADDR=0 \</span><br><span class="line">        --BLCP=<span class="built_in">test</span>/empty.bin \</span><br><span class="line">        --DDR_PARAM=<span class="string">&#x27;test/cv181x/ddr_param.bin&#x27;</span> \</span><br><span class="line">        --BLCP_2ND=<span class="string">&#x27;/data/song.yu/cvi_mmf_sdk-intl/freertos/cvitek/install/bin/cvirtos.bin&#x27;</span> \</span><br><span class="line">        --MONITOR=<span class="string">&#x27;../opensbi/build/platform/generic/firmware/fw_dynamic.bin&#x27;</span> \</span><br><span class="line">        --LOADER_2ND=<span class="string">&#x27;/data/song.yu/cvi_mmf_sdk-intl/u-boot-2021.10/build/cv1811h_wevb_0007a_spinor/u-boot-raw.bin&#x27;</span> \</span><br><span class="line">        --compress=<span class="string">&#x27;lzma&#x27;</span></span><br></pre></td></tr></table></figure>
+</blockquote>
+<h4 id="准备秘钥"><a href="#准备秘钥" class="headerlink" title="准备秘钥"></a>准备秘钥</h4><p>首先我们需要准备好秘钥，从秘钥的后缀可以看出其类型，<code>.key</code> 为 <code>AES</code> 加密使用的，<code>.pem</code> 为 <code>RSA</code> 算法使用的。</p>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>作用</th>
+<th>使用位置</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>rsa_hash0.pem</td>
+<td>用于给 <code>bl_priv.pem</code> 签名的 <code>RSA</code> 私钥，公钥（的 <code>hash</code> 值）被烧到 <code>HASH0_PUBLIC</code></td>
+<td><code>rom code</code></td>
+</tr>
+<tr>
+<td>bl_priv.pem</td>
+<td>用于给 <code>fsbl/opensbi/u-boot</code> 生成签名的 <code>RSA</code> 私钥</td>
+<td><code>fsbl</code></td>
+</tr>
+<tr>
+<td>loader_ek.key</td>
+<td>用于给 <code>bl_ek.key</code> 加、解密的 <code>AES</code> 秘钥，也会被烧写到 <code>eFuse</code></td>
+<td><code>rom code</code></td>
+</tr>
+<tr>
+<td>bl_ek.key</td>
+<td>用于给 <code>fsbl/opensbi/u-boot</code> 加、解密的 <code>AES</code> 秘钥</td>
+<td><code>fsbl</code></td>
+</tr>
+</tbody></table>
+<p><code>RSA</code> 密钥使用 <code>2048 bits</code> 和第 4 费马数，<strong>用于签名</strong>：</p>
+<blockquote>
+<p><strong>虽然这里说“签名”，<del>但和前面所说的“消息摘要”并不是一个概念，需要注意</del>！🙄🙄是一个概念，但签名会用到私钥，而不仅仅是直接使用 sha256 算法之类的。</strong>私钥签名，公钥验证。</p>
+<p><code>PKCS#1 v1.5</code> 是一种公钥密码学标准，用于数字签名和验证消息的完整性。它通常与 <code>RSA</code> 密钥对一起使用。</p>
+<ol>
+<li><strong>数字签名</strong>：签名过程会使用<strong>私钥</strong>生成一个与消息相关联的<strong>数字签名</strong>，以便在以后验证消息的完整性和真实性。</li>
+<li><strong>数字签名验证</strong>：验证过程会使用与签名相关的<strong>公钥</strong>来验证消息的完整性，以确保消息没有被篡改，并且确实是由私钥持有者签名的。</li>
+</ol>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">host$ openssl genrsa -out rsa_hash0.pem -F4 2048</span><br><span class="line">host$ openssl genrsa -out bl_priv.pem -F4 2048</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>为什么这里两个 <code>rsa</code> 秘钥都是私钥❓公钥在哪呢❓</p>
+<p>答：<code>RSA</code> 算法的私钥中实际上包含了公钥的一部分信息，具体来说，包括了<strong>模数</strong>和<strong>公钥指数</strong>，通过这两个参数就可以推出公钥😮。不过公钥是无法推出私钥的，这是 <code>rsa</code> 算法的安全保障。</p>
+</blockquote>
+<p><code>AES</code> 的秘钥<strong>使用长度 16 的随机数</strong>（<code>AES-128</code>），<strong>用于加密</strong>：（只签名不加密就用不到这个）</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">host$ <span class="built_in">head</span> -c 16 /dev/random &gt; loader_ek.key</span><br><span class="line">host$ <span class="built_in">head</span> -c 16 /dev/random &gt; bl_ek.key</span><br></pre></td></tr></table></figure>
+
+<h4 id="fip-组成结构"><a href="#fip-组成结构" class="headerlink" title="fip 组成结构"></a>fip 组成结构</h4><p>这里得看一下 <code>fip.bin</code> 的构成，在 <code>fsbl/plat/cv181x/fiptool.py:143</code> 中定义，下面有省略：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">FIP</span>:</span><br><span class="line">    <span class="comment"># FIP 就是按这里定义的顺序：param1, body1, param2, body2, ldr_2nd_hdr</span></span><br><span class="line">    param1 = OrderedDict(</span><br><span class="line">        [</span><br><span class="line">            Entry.make(<span class="string">&quot;MAGIC1&quot;</span>, <span class="number">8</span>, <span class="built_in">int</span>, <span class="string">b&quot;CVBL01\n\0&quot;</span>),</span><br><span class="line">            Entry.make(<span class="string">&quot;MAGIC2&quot;</span>, <span class="number">4</span>, <span class="built_in">int</span>),</span><br><span class="line">            Entry.make(<span class="string">&quot;BL2_IMG_CKSUM&quot;</span>, <span class="number">4</span>, <span class="built_in">int</span>),</span><br><span class="line">            Entry.make(<span class="string">&quot;BL2_IMG_SIZE&quot;</span>, <span class="number">4</span>, <span class="built_in">int</span>),</span><br><span class="line">            Entry.make(<span class="string">&quot;BLD_IMG_SIZE&quot;</span>, <span class="number">4</span>, <span class="built_in">int</span>),</span><br><span class="line">            Entry.make(<span class="string">&quot;BL_EK&quot;</span>, <span class="number">32</span>, <span class="built_in">bytes</span>),             <span class="comment"># 存储 bl_ek ？</span></span><br><span class="line">            Entry.make(<span class="string">&quot;ROOT_PK&quot;</span>, <span class="number">512</span>, <span class="built_in">bytes</span>),          <span class="comment"># 存储 rsa_hash0.pem ? 512 字节只是最大长度吧</span></span><br><span class="line">            Entry.make(<span class="string">&quot;BL_PK&quot;</span>, <span class="number">512</span>, <span class="built_in">bytes</span>),            <span class="comment"># 存储 bl_priv.pem ?</span></span><br><span class="line">            Entry.make(<span class="string">&quot;BL_PK_SIG&quot;</span>, <span class="number">512</span>, <span class="built_in">bytes</span>),        <span class="comment"># 存储 bl_priv.pem 的签名</span></span><br><span class="line">            Entry.make(<span class="string">&quot;CHIP_CONF_SIG&quot;</span>, <span class="number">512</span>, <span class="built_in">bytes</span>),</span><br><span class="line">            Entry.make(<span class="string">&quot;BL2_IMG_SIG&quot;</span>, <span class="number">512</span>, <span class="built_in">bytes</span>),      <span class="comment"># 存储 bl2(fsbl) 镜像的签名</span></span><br><span class="line">            Entry.make(<span class="string">&quot;BLCP_IMG_SIG&quot;</span>, <span class="number">512</span>, <span class="built_in">bytes</span>),     <span class="comment"># 存储 blcp 镜像的签名</span></span><br><span class="line">        ]</span><br><span class="line">    )</span><br><span class="line"></span><br><span class="line">    body1 = OrderedDict(</span><br><span class="line">        [</span><br><span class="line">            Entry.make(<span class="string">&quot;BLCP&quot;</span>, <span class="literal">None</span>, <span class="built_in">bytes</span>),            <span class="comment"># 填充 blcp</span></span><br><span class="line">            Entry.make(<span class="string">&quot;BL2&quot;</span>, <span class="literal">None</span>, <span class="built_in">bytes</span>),             <span class="comment"># 填充 bl2</span></span><br><span class="line">        ]</span><br><span class="line">    )</span><br></pre></td></tr></table></figure>
+
+<p>可以看到，在 <code>param1</code> 中存储着 <code>BL2</code> （也就是 <code>fsbl</code> 镜像）的签名。从 <code>fsbl/plat/cv181x/fipsign.py:sign</code> 中可以看到具体的赋值过程：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 签名的主函数</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">sign</span>(<span class="params">self</span>):</span><br><span class="line">    logging.info(<span class="string">&quot;sign fip.bin&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 处理 fip 的 param1 部分</span></span><br><span class="line">    self.param1[<span class="string">&quot;FIP_FLAGS&quot;</span>].content = self.FIP_FLAGS_SCS_MASK | self.param1[<span class="string">&quot;FIP_FLAGS&quot;</span>].toint()</span><br><span class="line">    self.sign_bl_pk()</span><br><span class="line">    cc = self.param1[<span class="string">&quot;CHIP_CONF&quot;</span>].content</span><br><span class="line">    cc_size = unpack(<span class="string">&quot;&lt;I&quot;</span>, self.param1[<span class="string">&quot;CHIP_CONF_SIZE&quot;</span>].content)[<span class="number">0</span>]</span><br><span class="line">    logging.debug(<span class="string">&quot;CHIP_CONF_SIZE=%#x&quot;</span>, cc_size)</span><br><span class="line">    cc = cc[:cc_size]</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 主要关注这里 3 个 sign_by_bl_priv</span></span><br><span class="line">    self.param1[<span class="string">&quot;CHIP_CONF_SIG&quot;</span>].content = self.sign_by_bl_priv(cc)</span><br><span class="line">    self.param1[<span class="string">&quot;BL2_IMG_SIG&quot;</span>].content = self.sign_by_bl_priv(self.body1[<span class="string">&quot;BL2&quot;</span>].content)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> self.body1[<span class="string">&quot;BLCP&quot;</span>].content:</span><br><span class="line">        logging.debug(<span class="string">&quot;sign blcp&quot;</span>)</span><br><span class="line">        self.param1[<span class="string">&quot;BLCP_IMG_SIG&quot;</span>].content = self.sign_by_bl_priv(self.body1[<span class="string">&quot;BLCP&quot;</span>].content)</span><br><span class="line"></span><br><span class="line">    self.sign_fip2()</span><br></pre></td></tr></table></figure>
+
+<p>主要关注这里 3 个 <code>sign_by_bl_priv</code>，将 <code>BL2</code> 镜像通过 <code>bl_priv.pem</code> 私钥进行签名，然后将签名结果放在 <code>param1[&quot;BL2_IMG_SIG&quot;]</code>。板端通过写在 <code>efuse</code> 的公钥，对 <code>BL2</code> 又计算一次签名，和 <code>fip</code> 中的签名对比，如果一致则说明该 <code>fip</code> 确实是私钥持有者提供的。</p>
+<p>上面只是对 <code>bl2</code> 进行了签名，<code>FIP</code> 的后半部分还有 <code>opensbi</code>， <code>uboot</code>（同样有省略）：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">param2 = OrderedDict(</span><br><span class="line">    [</span><br><span class="line">        Entry.make(<span class="string">&quot;MAGIC1&quot;</span>, <span class="number">8</span>, <span class="built_in">int</span>, <span class="string">b&quot;CVLD02\n\0&quot;</span>),</span><br><span class="line">        Entry.make(<span class="string">&quot;MONITOR_CKSUM&quot;</span>, <span class="number">4</span>, <span class="built_in">int</span>),                <span class="comment"># ATF-BL31 or OpenSBI</span></span><br><span class="line">        Entry.make(<span class="string">&quot;MONITOR_LOADADDR&quot;</span>, <span class="number">4</span>, <span class="built_in">int</span>),</span><br><span class="line">        Entry.make(<span class="string">&quot;LOADER_2ND_RESERVED0&quot;</span>, <span class="number">4</span>, <span class="built_in">int</span>),         <span class="comment"># uboot</span></span><br><span class="line">        Entry.make(<span class="string">&quot;LOADER_2ND_LOADADDR&quot;</span>, <span class="number">4</span>, <span class="built_in">int</span>),          <span class="comment"># Reserved</span></span><br><span class="line">        Entry.make(<span class="string">&quot;RESERVED_LAST&quot;</span>, <span class="number">4096</span> - <span class="number">16</span> * <span class="number">5</span>, <span class="built_in">bytes</span>),</span><br><span class="line">    ]</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">body2 = OrderedDict(</span><br><span class="line">    [</span><br><span class="line">        Entry.make(<span class="string">&quot;MONITOR&quot;</span>, <span class="literal">None</span>, <span class="built_in">bytes</span>),     <span class="comment"># 填充 opensbi 镜像</span></span><br><span class="line">        Entry.make(<span class="string">&quot;LOADER_2ND&quot;</span>, <span class="literal">None</span>, <span class="built_in">bytes</span>),  <span class="comment"># 填充 uboot 镜像</span></span><br><span class="line">    ]</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">ldr_2nd_hdr = OrderedDict(</span><br><span class="line">    [</span><br><span class="line">        Entry.make(<span class="string">&quot;MAGIC&quot;</span>, <span class="number">4</span>, <span class="built_in">int</span>),</span><br><span class="line">        Entry.make(<span class="string">&quot;CKSUM&quot;</span>, <span class="number">4</span>, <span class="built_in">int</span>),</span><br><span class="line">        Entry.make(<span class="string">&quot;SIZE&quot;</span>, <span class="number">4</span>, <span class="built_in">int</span>),</span><br><span class="line">    ]</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>与 <code>param1</code> 不同，这里 <code>param2</code> 中并没有成员专门记录 <code>uboot</code> 的签名，而是直接放在了镜像的末尾，而且也没有对 <code>opensbi</code> 进行签名。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">e = self.body2[<span class="string">&quot;LOADER_2ND&quot;</span>] <span class="comment"># e 就是 uboot 的镜像</span></span><br><span class="line"><span class="comment"># 在末尾预留签名的空间，再填充 \0 按 IMAGE_ALIGN 对齐</span></span><br><span class="line">e.content = self.pad(e.content + <span class="string">b&quot;\xCE&quot;</span> * sig_size, IMAGE_ALIGN)</span><br><span class="line"><span class="comment"># SIZE is after CKSUM, update it before signing</span></span><br><span class="line">self._update_ldr_2nd_hdr()</span><br><span class="line"></span><br><span class="line">image = <span class="built_in">bytearray</span>(e.content)</span><br><span class="line"><span class="comment"># 计算签名，不包含最后预留给存储”签名“的内容。</span></span><br><span class="line">sig = self.sign_by_bl_priv(image[self.ldr_2nd_hdr[<span class="string">&quot;CKSUM&quot;</span>].end : -sig_size])</span><br><span class="line"><span class="keyword">assert</span> sig_size == <span class="built_in">len</span>(sig)</span><br><span class="line">image[-sig_size:] = sig</span><br><span class="line"></span><br><span class="line">e.content = image</span><br></pre></td></tr></table></figure>
+
+<h4 id="efuse-介绍"><a href="#efuse-介绍" class="headerlink" title="efuse 介绍"></a>efuse 介绍</h4><p><code>eFuse</code> 也就是<strong>可编程电子熔丝</strong>，简单来说，它存储的数据只能写 <code>1</code> 不能写 <code>0</code>，最初全为 0，一旦写入就无法更改。具有以下主要特点：</p>
+<ol>
+<li><strong>不可逆性</strong>：一旦配置，<code>eFuse</code> 通常无法被擦除或重置。这意味着一旦信息被写入 <code>eFuse</code>，它将永久存储在其中，不能再次修改或清除。这种不可逆性增强了存储在 <code>eFuse</code> 中的信息的安全性。（不可擦除）</li>
+<li><strong>电气可编程</strong>：<code>eFuse</code> 可以通过电气编程方式进行配置，而不需要使用额外的设备或工具。这种可编程性使得它在制造过程中或设备的生命周期中可以根据需要进行配置。（可写入）</li>
+<li><strong>高可靠性</strong>：<code>eFuse</code> 通常具有高度的可靠性和稳定性，可以在广泛的温度范围和环境条件下正常工作。这使得它适用于各种应用，包括极端环境下的用途。</li>
+<li><strong>物理安全</strong>：<code>eFuse</code> <strong>通常集成在芯片内部</strong>，难以物理上访问或破坏。这增强了存储在其中的敏感信息的物理安全性，防止了硬件级别的攻击。</li>
+</ol>
+<p><code>eFuse</code> 的上述特点，很适合用来存储板端的秘钥。</p>
+<h4 id="fip-签名流程"><a href="#fip-签名流程" class="headerlink" title="fip 签名流程"></a>fip 签名流程</h4><blockquote>
+<p>直接使用 <code>fipsign.py</code> 这个脚本，<code>fip.bin</code> 为原始镜像，<code>fip_sign.bin</code> 为签名后的镜像。注意这里仅使用了 <code>RSA</code> 秘钥。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ ./fipsign.py sign \</span><br><span class="line">      --root-priv=rsa_hash0.pem \</span><br><span class="line">      --bl-priv=bl_priv.pem \</span><br><span class="line">      fip.bin fip_sign.bin</span><br></pre></td></tr></table></figure>
+
+</blockquote>
+<p><img src="/../images/Cvitek-%E5%AE%89%E5%85%A8%E5%90%AF%E5%8A%A8/%E5%AE%89%E5%85%A8%E5%90%AF%E5%8A%A8.drawio.png" alt="安全启动.drawio"></p>
+<blockquote>
+<p>图中 <code>PK</code> 表示公钥的 <code>N</code> 值，<code>_SIG/sign</code> 表示数字签名。</p>
+</blockquote>
+<ol>
+<li><p>修改 <code>FIP_FLAGS</code> 表明这个 <code>fip.bin</code> 中有签名，需要验证。</p>
+</li>
+<li><p>从私钥 <code>rsa_hash0.pem</code> 中提取 <code>N</code> 值并写到 <code>fip.bin</code> 中，该 <code>N</code> 值和 <code>rom</code> 中固化的 <code>E=0x10001</code> 可组成公钥，用于签名验证。</p>
+</li>
+<li><p><code>N</code> 值的 <code>sha256</code> 散列值会被写入到 <code>efuse</code> 的 <code>LOCK_HASH0_PUBLIC </code>，验证时先计算 <code>fip.bin</code> 中的 <code>N</code> 值的散列值，与 <code>efuse</code> 中存储的散列值比较，来确认 <code>N</code> 值（或者说公钥）是否与最初的一致。</p>
+</li>
+<li><p>提取 <code>bl_priv.pem</code> 的 <code>N</code> 值写入到 <code>fip.bin</code> 中。</p>
+</li>
+<li><p>计算 <code>bl_priv.pem</code> 的 <code>N</code> 值的数字签名，并写入到 <code>fip.bin</code> 中。该签名是通过 <code>rsa_hash0.pem</code> 这个私钥计算 ，可用 <code>rsa_hash0.pem</code> 的公钥验证。</p>
+<blockquote>
+<p>实际是 <code>bl_priv.pem</code> 的 <code>N</code> 值的 SHA256 散列值的数字签名，这里简单点说方便理解。</p>
+</blockquote>
+</li>
+<li><p>计算 <code>bl2.bin(fsbl)</code> 的数字签名，该签名通过 <code>bl_priv.pem</code> 这个私钥计算，用 <code>BL_PK</code> 验证。</p>
+</li>
+<li><p>计算 <code>fw_dynamic.bin(opensbi)</code> 的数字签名，该签名通过 <code>bl_priv.pem</code> 这个私钥计算，用 <code>BL_PK</code> 验证。</p>
+</li>
+<li><p>计算 <code>u-boot-raw.bin(uboot)</code> 的数字签名，该签名通过 <code>bl_priv.pem</code> 这个私钥计算，用 <code>BL_PK</code> 验证。</p>
+</li>
+</ol>
+<h4 id="fip-签名-加密流程"><a href="#fip-签名-加密流程" class="headerlink" title="fip 签名+加密流程"></a>fip 签名+加密流程</h4><blockquote>
+<p>直接使用 <code>fipsign.py</code> 这个脚本，<code>fip.bin</code> 为原始镜像，<code>fip_enc.bin</code> 为签名+加密后的镜像。这里使用了 <code>RSA</code> 和 <code>AES</code> 秘钥。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ ./fipsign.py sign-enc \</span><br><span class="line">         --root-priv=rsa_hash0.pem \</span><br><span class="line">         --bl-priv=bl_priv.pem \</span><br><span class="line">         --ldr-ek=loader_ek.key \</span><br><span class="line">         --bl-ek=bl_ek.key \</span><br><span class="line">         fip.bin fip_enc.bin</span><br></pre></td></tr></table></figure>
+</blockquote>
+<p><code>fip</code> 的签名并加密也就是在上面签名的基础上，再对各个 <code>bin</code> 文件进行加密。加密主要依赖两个 <code>AES</code> 秘钥，<code>loader_ek</code> 和 <code>bl_ek</code>。前者会被写入 <code>efuse</code>，并用于对 <code>bl_ek</code> 的加、解密。<code>bl_ek</code> 加密后放入 <code>fip.bin</code> 中，<code>bl_ek</code> 用于对各个 <code>bin</code> 文件进行加密。验证时先通过 <code>efuse</code> 中的明文的 <code>loader_ek</code> 秘钥对 fip.bin 中加密后的 <code>bl_ek</code> 进行解密得到 <code>bl_ek</code>。然后用它对各个 <code>bin</code> 文件进行解密。</p>
+<p>验证的流程相反，先解密后再验证签名。</p>
+<p><img src="/../images/Cvitek-%E5%AE%89%E5%85%A8%E5%90%AF%E5%8A%A8/%E5%AE%89%E5%85%A8%E5%90%AF%E5%8A%A8-sign-enc-fip.drawio.png" alt="安全启动-sign-enc-fip.drawio"></p>
+<ol>
+<li>将 <code>loader_ek.key</code> 明文写入 <code>efuse</code>。</li>
+<li>用 <code>loader_ek.key</code> 加密 <code>bl_ek.key</code> 后写入 <code>fip.bin</code>。</li>
+<li>用 <code>bl_ek.key</code> 对 <code>bl2.bin</code> 进行加密。</li>
+<li>用 <code>bl_ek.key</code> 对 <code>fw_dynamic.bin</code> 进行加密。</li>
+<li>用 <code>bl_ek.key</code> 对 <code>u-boot-raw.bin</code> 进行加密。</li>
+</ol>
+<p>具体签名的实现涉及到 <code>fsbl/plat/cv181x/</code> 目录下的 <code>fipsign.py</code> 和 <code>fiptool.py</code>。前面 [fip 组成结构](#fip 组成结构) 也提到了部分实现。</p>
+<blockquote>
+<p><code>param2/ldr_2nd_hdr</code> 中记录的信息也会随着签名、加密更新，这里并不关注这些细节。</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">encrypt_fip</span><br><span class="line">  ├─►read_fip</span><br><span class="line">  ├─►sign</span><br><span class="line">  │   ├─►sign_bl_pk</span><br><span class="line">  │   ├─►sign_by_bl_priv(BL2</span><br><span class="line">  │   ├─►sign_by_bl_priv(MONITOR</span><br><span class="line">  │   └─►sign_by_bl_priv(LOADER_2ND_LOADADDR</span><br><span class="line">  └─►encrypt</span><br><span class="line">      ├─►_aes_encrypt(LOADER_EK, BL_EK)  # (秘钥，待加密内容)</span><br><span class="line">      ├─►_aes_encrypt(BL_EK, BL2)</span><br><span class="line">      ├─►_aes_encrypt(BL_EK, MONITOR)</span><br><span class="line">      └─►_aes_encrypt(BL_EK, LOADER_2ND_LOADADDR)</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h4 id="fip-校验流程"><a href="#fip-校验流程" class="headerlink" title="fip 校验流程"></a>fip 校验流程</h4><p><code>fip.bin</code>  的校验由两部分组成，一部分代码是位于 <code>ROM</code> 中（没有权限查看，只能合理猜测 <code>fsbl</code> 中缺少的就是在 <code>rom</code> 中完成的）：不用猜测，测试就行，<code>ROOT_PK</code>，<code>BL_PK</code>，<code>BL2</code>的签名校验都是在 <code>rom code</code> 中完成。<del>从 <code>efuse</code> 读取 AES 秘钥 <code>LOADER_EK</code></del>。校验不通过则不进行烧录，直接从 <code>flash</code> 加载 <code>fsbl</code>，日志信息如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">C.SCS/3/3.URPL.SDI/25000000/6000000.BS/SD.PS.SD/0x0/0x1000/0x1000/0.VRK4. E:verify root (-14)</span><br><span class="line"> W:DL cancelled. Load flash. (1).</span><br><span class="line">BS/NOR.PS.VRK4.VBK.DK4.VCC.PE.BS.DB2.VB2.BE.J.</span><br><span class="line">FSBL Jb2829:ga05fb6172-dirty:2023-09-19T10:28:45+08:00</span><br><span class="line"></span><br><span class="line">C.SCS/3/3.URPL.SDI/25000000/6000000.BS/SD.PS.SD/0x0/0x1000/0x1000/0.VRK4. E:verify bl_pk (-14)</span><br><span class="line">C.SCS/3/3.URPL.SDI/25000000/6000000.BS/SD.PS.SD/0x0/0x1000/0x1000/0.VRK4. E:verify BL2 (-14)</span><br></pre></td></tr></table></figure>
+
+<p>而 <code>FSBL</code> 中的解密、验签的流程如下：加载时，才去解密 + 校验。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">bl2_main</span><br><span class="line">   │</span><br><span class="line">   └─►load_rest</span><br><span class="line">         │</span><br><span class="line">         ├──►load_blcp_2nd ───┐</span><br><span class="line">         │                    │</span><br><span class="line">         ├──►load_monitor ────┼──►dec_verify_image</span><br><span class="line">         │                    │       │</span><br><span class="line">         └──►load_loader_2nd ─┘       ├──►security_is_tee_encrypted</span><br><span class="line">                                      │         │</span><br><span class="line">                                      │         └───►cryptodma_aes_decrypt</span><br><span class="line">                                      └──►verify_rsa</span><br></pre></td></tr></table></figure>
+
+<h3 id="kernel-x2F-rootfs-的签名"><a href="#kernel-x2F-rootfs-的签名" class="headerlink" title="kernel &#x2F; rootfs 的签名"></a>kernel &#x2F; rootfs 的签名</h3><p>除 <code>fip.bin</code> 外，还有 <code>kernel</code> 的产物 <code>boot.xxx</code> 和文件系统的产物 <code>rootfs.xxx</code>。</p>
+<h4 id="准备秘钥-1"><a href="#准备秘钥-1" class="headerlink" title="准备秘钥"></a>准备秘钥</h4><blockquote>
+<p>1️⃣这里的秘钥的名称与上面不一样，因为是不同时期针对不同板子写的，不过逻辑是一样的，后面再考虑统一名称。<br>2️⃣这里没有进行加密，所以不需要生成 <code>AES</code> 秘钥。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>NTKC_PRIV.pem</td>
+<td>用于给 <code>REE_OS_PK</code> 签名的私钥。公钥（的 <code>hash</code> 值）被烧到 <code>HASH0_PUBLIC</code></td>
+</tr>
+<tr>
+<td>REEOS_PRIV.pem</td>
+<td>用于给 <code>boot, rootfs</code> 签名的私钥</td>
+</tr>
+<tr>
+<td>boot.crl</td>
+<td>黑名单，<code>REEOS_PK.pem</code> 不能是 <code>boot.crl</code> 中的值</td>
+</tr>
+</tbody></table>
+<p>和上面一样，使用 <code>openssl</code> 生成 <code>2048</code> 位的秘钥：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">host$ openssl genrsa -out NTKC_PRIV.pem -F4 2048</span><br><span class="line">host$ openssl genrsa -out REEOS_PRIV.pem -F4 2048</span><br></pre></td></tr></table></figure>
+
+<h4 id="签名流程"><a href="#签名流程" class="headerlink" title="签名流程"></a>签名流程</h4><p>与前面直接将签名信息直接写入到 <code>fip.bin</code> 不同，对 <code>kernel</code> 和 <code>rootfs</code> 的签名专门生成了一个 <code>sig.bin</code> 文件来存储。其结构如下图所示，分为三部分，公钥、签名、文件大小信息。</p>
+<blockquote>
+<p>1️⃣在这里的设计中，文件系统 <code>rootfs</code> 有两份，一份就是正常大小的 <code>upgrade</code>，另一份为删减了一些非必要文件的 <code>minerfs</code>。不过在后续的流程中，我并没有对 <code>rootfs</code> 进行裁剪，也就是说 <code>upgrade == minerfs == rootfs.spinor</code> ，先走通流程，后续再考虑是否精简。<br>2️⃣只进行了签名操作，没有进行加密！<br>3️⃣文件大小信息是板端重新对 <code>kernel/rootfs</code> 计算签名的时候用到的。</p>
+</blockquote>
+<p><img src="/../images/Cvitek-%E5%AE%89%E5%85%A8%E5%90%AF%E5%8A%A8/%E5%AE%89%E5%85%A8%E5%90%AF%E5%8A%A8-sign-boot-rootfs.drawio.png" alt="安全启动-sign-boot-rootfs.drawio"></p>
+<ol>
+<li>由 <code>NTKC_PRIV.pem</code> 私钥得到公钥。 <code>NTKC_PRIV.pem</code> 的公钥需要记录在 <code>efuse</code> 里面，而 <code>efuse</code> 空间有限，签名 <code>rsa_hash0.pem</code> 已经用了，所以这两个必须相等 <code>NTKC_PRIV.pem == rsa_hash0.pem</code> 。</li>
+<li>由 <code>REEOS_PRIV.pem</code> 私钥得到公钥。该私钥感觉也可以与前面的 <code>bl_priv.pem</code> 相同。</li>
+<li>用 <code>NTKC_PRIV.pem</code> 计算 <code>REEOS_PK.pem</code> 的数字签名</li>
+<li>用 <code>NTKC_PRIV.pem</code> 计算数字签名。<code>boot.crl</code> 是作为黑名单使用的，即 <code>REEOS_PK.pem</code> 不能是 <code>boot.crl</code> 中的值（这里面的值是已经泄漏的秘钥）。</li>
+<li>用 <code>REEOS_PRIV.pem</code> 计算数字签名。</li>
+<li>用 <code>REEOS_PRIV.pem</code> 计算数字签名。这里不区分 <code>minerfs/upgrade</code> ，都记录为 <code>rootfs</code> 的签名。</li>
+</ol>
+<p>对 <code>kernel</code> 和 <code>rootfs</code> 的签名的实现是在 <code>make_sig_img.sh</code> 这个脚本中：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">set</span> -e -o pipefail</span><br><span class="line"></span><br><span class="line">SIG_TMP_PATH=<span class="string">&quot;<span class="variable">$&#123;BUILD_PATH&#125;</span>/tools/common/sign_tools/sig_files&quot;</span></span><br><span class="line">NTKC_PRIV_PATH=<span class="string">&quot;<span class="variable">$&#123;BUILD_PATH&#125;</span>/tools/common/sign_tools/NTKC_PRIV.pem&quot;</span></span><br><span class="line">REEOS_PRIV_PATH=<span class="string">&quot;<span class="variable">$&#123;BUILD_PATH&#125;</span>/tools/common/sign_tools/REEOS_PRIV.pem&quot;</span></span><br><span class="line">BOOT_CRL_PATH=<span class="string">&quot;<span class="variable">$&#123;BUILD_PATH&#125;</span>/tools/common/sign_tools/boot.crl&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># sig.bin 中不同部分的分割符</span></span><br><span class="line">SIG_IMG_SEP=$(<span class="built_in">printf</span> <span class="string">&#x27;\xe8\x6c\xdc\x26\x7b\xcb\xf6\x4b\x8d\xd8\xa2\x2c\x86\xa6\x58\x73\xf9\x42\xbc\x3a\x70\x58\x02\x43\xbe\x79\x56\x66\x23\x2a\x0a\x7e&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="function"><span class="title">int_to_bytes</span></span>()</span><br><span class="line">&#123;</span><br><span class="line">    python3 -c <span class="string">&#x27;import sys; sys.stdout.buffer.write(int(sys.argv[1]).to_bytes(4, &quot;little&quot;))&#x27;</span> <span class="variable">$1</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># create sig.bin</span></span><br><span class="line"><span class="keyword">function</span> make_sig_img()</span><br><span class="line">(</span><br><span class="line">    <span class="comment"># 这里顺序要和 u-boot 中 cvi_verify.c 中对应</span></span><br><span class="line">    <span class="built_in">echo</span> <span class="string">&quot;<span class="variable">$&#123;FUNCNAME[0]&#125;</span>()&quot;</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">cat</span> <span class="variable">$SIG_TMP_PATH</span>/NTKC_PK.pem</span><br><span class="line">        <span class="built_in">printf</span> <span class="string">&#x27;%s&#x27;</span> <span class="string">&quot;<span class="variable">$SIG_IMG_SEP</span>&quot;</span></span><br><span class="line">        <span class="built_in">cat</span> <span class="variable">$SIG_TMP_PATH</span>/REEOS_PK.pem</span><br><span class="line">        <span class="built_in">printf</span> <span class="string">&#x27;%s&#x27;</span> <span class="string">&quot;<span class="variable">$SIG_IMG_SEP</span>&quot;</span></span><br><span class="line">        <span class="built_in">cat</span> <span class="string">&quot;<span class="variable">$&#123;BOOT_CRL_PATH&#125;</span>&quot;</span></span><br><span class="line">        <span class="built_in">printf</span> <span class="string">&#x27;%s&#x27;</span> <span class="string">&quot;<span class="variable">$SIG_IMG_SEP</span>&quot;</span></span><br><span class="line">        <span class="built_in">cat</span> <span class="variable">$SIG_TMP_PATH</span>/REEOS_PK.pem.sig</span><br><span class="line">        <span class="built_in">printf</span> <span class="string">&#x27;%s&#x27;</span> <span class="string">&quot;<span class="variable">$SIG_IMG_SEP</span>&quot;</span></span><br><span class="line">        <span class="built_in">cat</span> <span class="variable">$SIG_TMP_PATH</span>/boot.crl.sig</span><br><span class="line">        <span class="built_in">printf</span> <span class="string">&#x27;%s&#x27;</span> <span class="string">&quot;<span class="variable">$SIG_IMG_SEP</span>&quot;</span></span><br><span class="line">        <span class="built_in">cat</span> <span class="variable">$SIG_TMP_PATH</span>/boot.<span class="variable">$STORAGE_TYPE</span>.sig</span><br><span class="line">        <span class="built_in">printf</span> <span class="string">&#x27;%s&#x27;</span> <span class="string">&quot;<span class="variable">$SIG_IMG_SEP</span>&quot;</span></span><br><span class="line">        <span class="built_in">cat</span> <span class="variable">$SIG_TMP_PATH</span>/minerfs.sig</span><br><span class="line">        <span class="built_in">printf</span> <span class="string">&#x27;%s&#x27;</span> <span class="string">&quot;<span class="variable">$SIG_IMG_SEP</span>&quot;</span></span><br><span class="line">        <span class="built_in">cat</span> <span class="variable">$SIG_TMP_PATH</span>/upgrade.sig</span><br><span class="line">        <span class="built_in">printf</span> <span class="string">&#x27;%s&#x27;</span> <span class="string">&quot;<span class="variable">$SIG_IMG_SEP</span>&quot;</span></span><br><span class="line">        int_to_bytes <span class="string">&quot;<span class="subst">$(stat -c &#x27;%s&#x27; $OUTPUT_DIR/rawimages/boot.$STORAGE_TYPE)</span>&quot;</span></span><br><span class="line">        int_to_bytes <span class="string">&quot;<span class="subst">$(stat -c &#x27;%s&#x27; $OUTPUT_DIR/rawimages/rootfs.$STORAGE_TYPE)</span>&quot;</span></span><br><span class="line">        int_to_bytes <span class="string">&quot;<span class="subst">$(stat -c &#x27;%s&#x27; $OUTPUT_DIR/rawimages/rootfs.$STORAGE_TYPE)</span>&quot;</span></span><br><span class="line">        <span class="built_in">printf</span> <span class="string">&#x27;%s&#x27;</span> <span class="string">&quot;<span class="variable">$SIG_IMG_SEP</span>&quot;</span></span><br><span class="line">    &#125; &gt; <span class="string">&quot;<span class="variable">$OUTPUT_DIR</span>/rawimages/sig.bin&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 在文件 sig.bin 前面加上一段前缀字符串，表示是 cvitek 的镜像</span></span><br><span class="line">    python3 <span class="string">&quot;<span class="variable">$BUILD_PATH</span>/tools/common/image_tool/raw2cimg.py&quot;</span> <span class="string">&quot;<span class="variable">$OUTPUT_DIR</span>/rawimages/sig.bin&quot;</span> <span class="string">&quot;<span class="variable">$OUTPUT_DIR</span>&quot;</span> <span class="string">&quot;<span class="variable">$FLASH_PARTITION_XML</span>&quot;</span></span><br><span class="line">    <span class="built_in">echo</span> <span class="string">&quot;Save to <span class="variable">$OUTPUT_DIR</span>/sig.bin&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 对镜像用私钥进行加密、签名</span></span><br><span class="line"><span class="keyword">function</span> sign_image()</span><br><span class="line">(</span><br><span class="line">    <span class="built_in">echo</span> <span class="string">&quot;<span class="variable">$&#123;FUNCNAME[0]&#125;</span>()&quot;</span></span><br><span class="line">    <span class="comment"># 由私钥得到公钥</span></span><br><span class="line">    openssl rsa -<span class="keyword">in</span> <span class="variable">$&#123;NTKC_PRIV_PATH&#125;</span> -pubout -out <span class="string">&quot;<span class="variable">$SIG_TMP_PATH</span>/NTKC_PK.pem&quot;</span></span><br><span class="line">    openssl rsa -<span class="keyword">in</span> <span class="variable">$&#123;NTKC_PRIV_PATH&#125;</span> -pubout -outform DER | <span class="built_in">sha256sum</span> &gt; <span class="string">&quot;<span class="variable">$SIG_TMP_PATH</span>/NTKC_PK.der.sha256&quot;</span></span><br><span class="line">    openssl rsa -<span class="keyword">in</span> <span class="string">&quot;<span class="variable">$&#123;REEOS_PRIV_PATH&#125;</span>&quot;</span> -pubout -out <span class="string">&quot;<span class="variable">$SIG_TMP_PATH</span>/REEOS_PK.pem&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 生成数字签名</span></span><br><span class="line">    openssl dgst -sha256 -sign <span class="variable">$&#123;NTKC_PRIV_PATH&#125;</span> -out <span class="string">&quot;<span class="variable">$SIG_TMP_PATH</span>/REEOS_PK.pem.sig&quot;</span> <span class="string">&quot;<span class="variable">$SIG_TMP_PATH</span>/REEOS_PK.pem&quot;</span></span><br><span class="line">    openssl dgst -sha256 -sign <span class="variable">$&#123;NTKC_PRIV_PATH&#125;</span> -out <span class="string">&quot;<span class="variable">$SIG_TMP_PATH</span>/boot.crl.sig&quot;</span> <span class="variable">$&#123;BOOT_CRL_PATH&#125;</span></span><br><span class="line"></span><br><span class="line">    openssl dgst -sha256 -sign <span class="string">&quot;<span class="variable">$&#123;REEOS_PRIV_PATH&#125;</span>&quot;</span> -out <span class="string">&quot;<span class="variable">$SIG_TMP_PATH</span>/boot.<span class="variable">$STORAGE_TYPE</span>.sig&quot;</span> <span class="string">&quot;<span class="variable">$OUTPUT_DIR</span>/rawimages/boot.<span class="variable">$STORAGE_TYPE</span>&quot;</span></span><br><span class="line">    <span class="comment"># 这里没有区分 upgrade/minerfs，暂时不确定是否需要区分，所以保留两个</span></span><br><span class="line">    openssl dgst -sha256 -sign <span class="string">&quot;<span class="variable">$&#123;REEOS_PRIV_PATH&#125;</span>&quot;</span> -out <span class="string">&quot;<span class="variable">$SIG_TMP_PATH</span>/minerfs.sig&quot;</span> <span class="string">&quot;<span class="variable">$OUTPUT_DIR</span>/rawimages/rootfs.<span class="variable">$STORAGE_TYPE</span>&quot;</span></span><br><span class="line">    openssl dgst -sha256 -sign <span class="string">&quot;<span class="variable">$&#123;REEOS_PRIV_PATH&#125;</span>&quot;</span> -out <span class="string">&quot;<span class="variable">$SIG_TMP_PATH</span>/upgrade.sig&quot;</span> <span class="string">&quot;<span class="variable">$OUTPUT_DIR</span>/rawimages/rootfs.<span class="variable">$STORAGE_TYPE</span>&quot;</span></span><br><span class="line">    <span class="built_in">echo</span> <span class="string">&quot;sign_image done!&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="built_in">mkdir</span> -p <span class="string">&quot;<span class="variable">$SIG_TMP_PATH</span>&quot;</span></span><br><span class="line">(</span><br><span class="line">    <span class="built_in">cd</span> <span class="string">&quot;<span class="variable">$SIG_TMP_PATH</span>&quot;</span></span><br><span class="line">    <span class="built_in">echo</span> <span class="string">&quot;Clear <span class="variable">$SIG_TMP_PATH</span>&quot;</span></span><br><span class="line">    <span class="built_in">rm</span> -f ./*</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;start sign&quot;</span></span><br><span class="line">sign_image</span><br><span class="line">make_sig_img</span><br></pre></td></tr></table></figure>
+
+<h4 id="校验流程"><a href="#校验流程" class="headerlink" title="校验流程"></a>校验流程</h4><ol>
+<li>计算 <code>sig.bin</code> 中 <code>NTKC_PK.pem</code> 的散列值，与 <code>efuse</code> 中存储的散列值对比，如果相同则说明 <code>NTKC_PK.pem</code> 可信。</li>
+<li>利用 <code>NTKC_PK.pem</code> 计算 <code>REEOS_PK.pem</code> 的数字签名，和 <code>REEOS_PK.pem.sig</code> 对比，相同则说明 <code>REEOS_PK.pem</code> 可信。</li>
+<li>利用 <code>REEOS_PK.pem</code> 为 <code>boot / rootfs</code> 计算数字签名，并与对应的 <code>.sig</code> 对比，相同则说明对应的文件没有被篡改，可信。</li>
+<li>校验完毕，可以正常启动 <code>kernel</code> 了。</li>
+</ol>
+<h2 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h2><h3 id="1️⃣使用注意"><a href="#1️⃣使用注意" class="headerlink" title="1️⃣使用注意"></a>1️⃣使用注意</h3><ol>
+<li><strong>配置参数</strong>，<code>fip.bin</code> 的加密通过设置配置选项 <code>CONFIG_FSBL_SECURE_BOOT_SUPPORT=y</code> 启用，而 <code>kernel</code> 和 <code>rootfs</code> 则是通过环境变量 <code>UBOOT_VBOOT=1</code> 来启用。分开配置是必要的，因为第一次需要未加密的 <code>fip.bin</code> 来实现烧写 <code>efuse</code>，在 <code>efuse</code> 还未烧写的情况下，加密了的 <code>fip.bin</code> 无法加载。</li>
+<li><strong>修改</strong> <code>partition.xml</code>，其实就是增加一项 <code>sig.bin</code>，需要注意其大小对齐，具体大小要看对应 <code>flash</code> 数据手册，不过一般为 <code>64k/128k</code>。</li>
+<li><strong>修改</strong> <code>cv18xx-asic.h</code>，在 <code>uboot</code>启动 <code>kernel</code> 之前，需要先对 <code>kernel</code> 和 <code>rootfs</code> 进行签名校验，而这一过程需要先将对应的内容从 <code>flash</code> 读取到内存中，目前只测试了 <code>spinor/spinand</code>，<code>emmc</code> 还未测试。<strong>另外注意</strong>：读取时各个分区占据的内存不要重叠，分区的大小最好与 <code>partition.xml</code> 中一致。</li>
+</ol>
+<h3 id="2️⃣raw2cimg-py"><a href="#2️⃣raw2cimg-py" class="headerlink" title="2️⃣raw2cimg.py"></a>2️⃣raw2cimg.py</h3><p>在我们的编译流程中，编译得到的原始文件比如 <code>boot.spinand</code>， <code>rootfs.spinor</code> 等是放在 <code>$OUTPUT_DIR/rawimages</code> 目录下的，不过编译流程中还会调用 <code>raw2cimg.py</code> 对这些二进制文件加上一段前缀<code>Header</code>，<code>upgrade.zip</code> 中打包的也是这些添加”<code>header</code>“后的文件。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$ hexdump sig.bin</span><br><span class="line">0000000 4943 474d 0001 0000 0040 0000 0001 0000</span><br><span class="line">0000010 0bb5 0000 6973 0067 0000 0000 0000 0000</span><br><span class="line">0000020 0000 0000 0000 0000 0000 0000 0000 0000</span><br><span class="line">*</span><br><span class="line">0000040 0001 0000 0b75 0000 0000 00b2 0000 0002</span><br><span class="line">0000050 dd1b 0ee4 0000 0000 0000 0000 0000 0000</span><br><span class="line">0000060 0000 0000 0000 0000 0000 0000 0000 0000</span><br><span class="line">*</span><br><span class="line">0000080 2d2d 2d2d 422d 4745 4e49 5020 4255 494c <span class="comment"># 这一行开始是正式内容</span></span><br><span class="line">0000090 2043 454b 2d59 2d2d 2d2d 4d0a 4949 4942</span><br></pre></td></tr></table></figure>
+
+<p><del>问题在于💢：前面 <code>sig.bin</code> 中使用的是 <code>rawimages</code> 下的文件生成的签名，而烧写到 <code>flash</code> 的是增加了一段前缀后的文件，两个文件有差异，那么在进行 <code>kernel</code> 和 <code>rootfs</code> 签名校验的时候，应该无法通过才对❗💢💢但它确实能通过校验，并且使用 <code>rawimages</code> 下的文件反而无法通过🤦‍♂️也没有找到哪里有对前缀进行裁剪之类的代码🤦‍♂️🤦‍♂️🤦‍♂️</del>。</p>
+<p><strong>是在烧录的过程中就进行了裁剪</strong>。在 <code>cvi_update</code> 过程中，会检查各个文件是否存在 <code>Header</code>，如果不存在或者不一致，会无法烧录到 <code>flash</code>。此外，在实际烧录时也会裁剪掉 <code>header</code>。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">do_cvi_update</span><br><span class="line">    │</span><br><span class="line">    └►_storage_update</span><br><span class="line">         │</span><br><span class="line">         └─►_checkHeader</span><br><span class="line">              │</span><br><span class="line">              ├──►uint32_t pos = HEADER_SIZE;</span><br><span class="line">              └──►snprintf(cmd, 255, &quot;fatload %s %p %s 0x%x 0x%x;&quot;, strStorage,</span><br><span class="line">                  			 (void *)UPDATE_ADDR, file, load_size, pos);</span><br></pre></td></tr></table></figure>
+
+<p>使用未添加 <code>Header</code> 的 <code>sig.bin</code>，<code>boot.spinor</code>，<code>rootfs.spinor</code> 烧录的时候，会提示下面的错误：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">File:sig.bin Magic number is wrong, skip it</span><br><span class="line">File:rootfs.spinor Magic number is wrong, skip it</span><br></pre></td></tr></table></figure>
+
+<h3 id="3️⃣烧录-efuse"><a href="#3️⃣烧录-efuse" class="headerlink" title="3️⃣烧录 efuse"></a>3️⃣烧录 efuse</h3><p>目前是将烧录 <code>efuse</code> 的流程是绑定在对 <code>kernel</code> 签名的。只要启用了 <code>UBOOT_VBOOT=1</code>，启动过程中就会检查是否设置了安全启动（通过读取 <code>efuse</code> 的数据判断），如果没有设置就会烧写 <code>efuse</code>，包括 <code>HASH0_PUBLIC</code> 和 <code>loader_ek</code>。</p>
+<p>如果每次编译的 <code>boot.xxx</code> 都带有这些信息，容易导致秘钥泄漏。前者没有问题，因为烧写到 <code>efuse</code> 的是公钥，即使知道公钥也推不出私钥。不过后者是 <code>AES</code> 明文的秘钥，存在隐患。<del>所以，在非必要的时候应该注释掉相关内容</del>。已增加配置环境变量 <code>UBOOT_WRITE_EFUSE=1</code> 来控制。</p>
+<h3 id="⭐更新"><a href="#⭐更新" class="headerlink" title="⭐更新"></a>⭐更新</h3><p>由于客户要求，只签名，不对 <code>fip.bin</code> 进行加密，希望能以宏进行控制，因此需要对部分代码进行更新。</p>
+<ol>
+<li>使用环境变量 <code>ONLY_SIGN_FIP=1</code> 来表示仅对 <code>fip.bin</code> 进行签名，未设置或设置为0表示签名+加密。</li>
+<li>代码主要更新：<ol>
+<li>编译流程中 <code>fip_v2.mk</code> 调用 <code>fipsign.py</code> 之前检查环境变量。</li>
+<li>编译流程中 <code>build/Makefile</code> 将 <code>loader_ek</code> 复制到 <code>uboot</code> 目录下的过程，需要先检查环境变量。</li>
+<li><code>efuse.c</code> 中烧写 <code>efuse</code> 时，检查环境变量，不烧写 <code>loader_ek</code>。</li>
+<li>在 <code>uboot/*/cvitek.mk</code> 中还要增加 <code>-DONLY_SIGN_FIP</code>，这样才能影响到 <code>efuse.c</code> 中的代码。</li>
+</ol>
+</li>
+</ol>
+<h3 id="4️⃣使用方法"><a href="#4️⃣使用方法" class="headerlink" title="4️⃣使用方法"></a>4️⃣使用方法</h3><ol>
+<li><p>准备以下几个秘钥文件，如何生成秘钥可以看前面的介绍。</p>
+<table>
+<thead>
+<tr>
+<th>fip.bin</th>
+<th>kernel&#x2F;rootfs</th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>rsa_hash0.pem</td>
+<td>NTKC_PRIV.pem</td>
+<td>用于给 <code>bl_priv.pem</code> 签名的 <code>RSA</code> 私钥，公钥（的 <code>hash</code> 值）被烧到 <code>HASH0_PUBLIC</code></td>
+</tr>
+<tr>
+<td>bl_priv.pem</td>
+<td></td>
+<td>用于给 <code>fsbl/opensbi/u-boot</code> 生成签名的 <code>RSA</code> 私钥</td>
+</tr>
+<tr>
+<td>loader_ek.key</td>
+<td></td>
+<td>用于给 <code>bl_ek.key</code> 加、解密的 <code>AES</code> 秘钥，也会被烧写到 <code>eFuse</code></td>
+</tr>
+<tr>
+<td>bl_ek.key</td>
+<td></td>
+<td>用于给 <code>fsbl/opensbi/u-boot</code> 加、解密的 <code>AES</code> 秘钥</td>
+</tr>
+<tr>
+<td></td>
+<td>REEOS_PRIV.pem</td>
+<td>用于给 <code>boot, rootfs</code> 签名的私钥</td>
+</tr>
+<tr>
+<td></td>
+<td>boot.crl</td>
+<td>黑名单，<code>REEOS_PK.pem</code> 不能是 <code>boot.crl</code> 中的值，<strong>不能为空文件</strong></td>
+</tr>
+</tbody></table>
+</li>
+<li><p>在一个空白的板子上，此时板子的 <code>efuse</code> 还没有写过，首先需要烧写 <code>efuse</code>，此时不能加密 <code>fip.bin</code>。</p>
+<p> <code>export UBOOT_VBOOT=1 UBOOT_WRITE_EFUSE=1; source build/xxx</code></p>
+</li>
+<li><p><strong>完成烧录后，拔卡，重新上电</strong>，才会进行 <code>efuse</code> 的烧写。</p>
+</li>
+<li><p>烧写完毕，后续编译的镜像就必须对 <code>fip.bin</code> 进行加密了，否则无法烧录。<br> 完成烧录后，也不要再使用 <code>UBOOT_WRITE_EFUSE=1</code>，否则 <code>boot.xxx</code> 中会带有 <code>loader_ek.key</code> 的明文，容易导致秘钥泄漏。</p>
+<p> <code>export UBOOT_VBOOT=1; source build/xxx</code>，再通过 <code>menuconfig</code> 启用 <code>CONFIG_FSBL_SECURE_BOOT_SUPPORT</code>(这个可以写在对应板卡目录下的 xxx_defconfig 文件中 )</p>
+</li>
+</ol>
+<h2 id="常见问题"><a href="#常见问题" class="headerlink" title="常见问题"></a>常见问题</h2><ol>
+<li><p>秘钥都是写在 efuse 中的，那别人岂不是可以直接读 efuse 获取到秘钥？这样不很容易破解吗？</p>
+<blockquote>
+<p>efuse 中存了两个秘钥：</p>
+<ol>
+<li>HASH0_PUBLIC 区存放的 RSA 算法的公钥的 sha256 哈希值。</li>
+<li>LOADER_EK 区存放的 AES 的秘钥。</li>
+</ol>
+<p>正常情况下是可读写的，不过烧写下面两个字段，就可以禁用对应区域的读写。<a target="_blank" rel="noopener" href="https://doc.sophgo.com/cvitek-develop-docs/master/docs_latest_release/CV180x_CV181x/zh/01.software/BSP/eFuse_User_Guide/build/html/2_eFuse_User_Guide/eFuse_Overview.html">see doc</a></p>
+<table>
+<thead>
+<tr>
+<th>LOCK_LOADER_EK</th>
+<th>锁定安全启动AES加密密钥区域，让此区域无法读写</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>LOCK_DEVICE_EK</td>
+<td>锁定DEVICE_EK，让此区域无法读写</td>
+</tr>
+</tbody></table>
+<p><strong>那如果不能读写？启动过程又是怎么验签和解密的呢？</strong></p>
+<p>这两个秘钥的内容是在 rom code 中读取的，rom code 有特权吧。efuse 区分安全介面和非安全介面，锁读写只是非安全界面的读写，安全界面至少能读。</p>
+</blockquote>
+</li>
+<li><p><del>fip 的签名校验都是在 fsbl 中完成</del>，如果能获得 fsbl 的源码，修改后能跳过签名校验过程吗？</p>
+<blockquote>
+<p>看 [fip 校验流程](#fip 校验流程) ，在 rom code 中会首先对 fip 进行校验，也就是说，即使你能修改 fsbl 的流程，但没有 RSA 秘钥，无法对 fip 进行签名，那么在 rom code 阶段就被卡住了。</p>
+<p>如果秘钥都泄漏了，那改不改 fsbl 的流程都一样了。</p>
+</blockquote>
+</li>
+<li><p>公钥不小心泄漏了，能被人利用吗？前面介绍的公钥是直接存放在 fip.bin 中的，fip.bin 本身又不大，知道公钥的位数，总能穷举出来吧。</p>
+<blockquote>
+<p>除了穷举，还可以随便创建一个公钥私钥，用私钥签名 <code>fip.bin</code> 然后查看公钥对应 <code>fip.bin</code> 中的偏移量。不就可以知道任意一个 <code>fip.bin</code> 中的公钥了吗？</p>
+<p>假设已经知道了公钥，rom code 里面如果仅仅对公钥本身进行了校验，那也就是说我可以使用自己编译的一个 fip.bin，替换里面的公钥，就可以进入 fsbl 阶段了。那我岂不是可以修改 fsbl，跳过签名、解密的过程？这不就破解了？？？uboot就可以烧录任何固件了…. ？？？</p>
+<p>👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇👇</p>
+<p>公钥确实容易获取，查看 <code>fiptool.py</code> 可以看到 <code>ROOT_PK</code> 在 <code>fip.bin</code> 中的偏移量为 <code>0X400</code>。不过这并没有安全风险。因为目前是一级一级校验的。</p>
+<ul>
+<li><code>rom code</code> 中会校验 <code>BL2(FSBL)</code> 的签名，保证了 <code>FSBL</code> 无法被篡改。或者说篡改后的 <code>FSBL</code> 无法通过 <code>ROM</code> 的校验。<em>对应下图中的 2,4,5,6 步</em>。</li>
+<li><code>FSBL</code> 中校验 <code>UBOOT</code>，也就保证了 <code>uboot</code> 无法被篡改。<em>对应下图中的 7,8 步</em>。</li>
+<li><code>uboot</code> 校验 <code>kernel/rootfs</code>，保证了它们无法被篡改。</li>
+</ul>
+<p><img src="/../images/Cvitek-%E5%AE%89%E5%85%A8%E5%90%AF%E5%8A%A8/%E5%AE%89%E5%85%A8%E5%90%AF%E5%8A%A8-sign-enc-fip.drawio.png" alt="安全启动-sign-enc-fip.drawio"></p>
+<p>回到上面的问题，<code>rom</code> 中并不是只校验了 <code>ROOT_PK</code>，而是校验了 <code>bl2</code> 的签名。即使 <code>root pk</code> 泄露了，也不会影响 <code>bl2</code> 的签名校验（这需要 root 和 bl 的私钥）。不存在安全风险。</p>
+<p>另一方面，目前 <code>kernel</code> 和 <code>rootfs</code> 的校验做的不太好，理论上 <code>uboot</code> 阶段去校验 <code>kernel</code> 和 <code>rootfs</code> 的签名时，应该使用新的秘钥，而不是 <code>root pk</code>。也就是 <code>NTKC_PRIV.pem</code> 的公钥也可以记录在 <code>fip.bin</code> 中，<code>fsbl</code> 中对 <code>uboot</code> 验签的时候，用 <code>bl_pk</code> 对 <code>sig.bin</code> 进行验签，也就是将 <code>sig.bin</code> 中的 <code>NTKC_PK.pem</code> 换为 <code>bl_pk</code>，这样就是一层一层的依赖关系。而不是现在 <code>uboot</code> 直接用 <code>root</code> 的公钥。。不过也还好，影响不大。</p>
+<p><img src="/../images/Cvitek-%E5%AE%89%E5%85%A8%E5%90%AF%E5%8A%A8/%E5%AE%89%E5%85%A8%E5%90%AF%E5%8A%A8-sign-boot-rootfs.drawio.png" alt="安全启动-sign-boot-rootfs.drawio"></p>
+</blockquote>
+</li>
+<li><p><strong>安全启动的意义</strong></p>
+<blockquote>
+<ul>
+<li><p>防止用户烧录未经授权的固件。（签名）</p>
+<blockquote>
+<p>启用安全启动之后，只能烧录签名后的固件。</p>
+</blockquote>
+</li>
+<li><p>防止通过固件拷贝，来抄袭产品。（签名+加密）</p>
+<blockquote>
+<p>A 卖芯片，提供 SDK。</p>
+<p>B 买芯片，画板子，用 A 提供的 芯片 + SDK 做产品卖。</p>
+<p>C 抄 B 的板子，并直接拷 B <code>flash</code> 中的固件，再买 A 的同款芯片。理论上用很低的成本就完成了对 B 产品的完全复制。</p>
+<p>如何避免呢？</p>
+<ol>
+<li>安全启动（仅签名），C 的视角来看，固件有了，问题在于芯片上的 <code>efuse</code> 烧写。不过仅签名的话，只会用到 <code>root_pk</code>，而这是可以从固件 <code>fip.bin</code> 中获得的。因此 <code>C</code> 还是可以抄袭。</li>
+<li>安全启动（签名 + 加密），C 的视角来看，固件有了，还差 <code>LOADER_EK</code>，而这无法读取。因此，无法抄袭。</li>
+</ol>
+</blockquote>
+</li>
+</ul>
+</blockquote>
+</li>
+<li><p>从上面可以看到，还有一个关键在于 <code>efuse</code> 中的 <code>AES</code> 秘钥，绝不能被窃取。如何实现呢？安全介面和非安全介面</p>
+<blockquote>
+</blockquote>
+</li>
+</ol>
+<h2 id="相关资料"><a href="#相关资料" class="headerlink" title="相关资料"></a>相关资料</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://doc.sophgo.com/cvitek-develop-docs/master/docs_latest_release/CV180x_CV181x/zh/01.software/BSP/Secure_Boot_User_Guide/build/html/3_Secure_Image_Generation.html">安全启动使用指南</a></li>
+<li><a target="_blank" rel="noopener" href="https://doc.sophgo.com/cvitek-develop-docs/master/docs_latest_release/CV180x_CV181x/zh/01.software/BSP/eFuse_User_Guide/build/html/index.html">eFuse 使用指南</a></li>
+<li><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1693368">图解|什么是 RSA 算法</a></li>
+<li><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/XBYJFZ2jRF2slrlym3svQw">盘点五种最常见加密算法！</a></li>
+<li><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/Hu1VBMSHh82n6bujWxr9nw">密码学基本概念</a></li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://yo-gurts.github.io">(ง'̀-'́)ง</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://yo-gurts.github.io/2023/08/03/Cvitek-%E5%AE%89%E5%85%A8%E5%90%AF%E5%8A%A8/">https://yo-gurts.github.io/2023/08/03/Cvitek-%E5%AE%89%E5%85%A8%E5%90%AF%E5%8A%A8/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://yo-gurts.github.io" target="_blank">(╯°□°）╯︵ ┻━┻ </a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Cvitek/">Cvitek</a><a class="post-meta__tags" href="/tags/%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/">启动流程</a><a class="post-meta__tags" href="/tags/sha256/">sha256</a><a class="post-meta__tags" href="/tags/rsa/">rsa</a><a class="post-meta__tags" href="/tags/aes/">aes</a><a class="post-meta__tags" href="/tags/uboot/">uboot</a><a class="post-meta__tags" href="/tags/openssl/">openssl</a></div><div class="post_share"><div class="social-share" data-image="https://s2.loli.net/2022/11/17/Zm4kDRxypb5ez3q.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2022/12/18/%E5%8D%81%E5%A4%A7%E7%BB%8F%E5%85%B8%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95%EF%BC%88%E5%8A%A8%E5%9B%BE%E6%BC%94%E7%A4%BA%EF%BC%89/" title="十大经典排序算法（动图演示）"><img class="cover" src="https://s2.loli.net/2022/11/17/BeiQmkw4Ya1gvPx.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">十大经典排序算法（动图演示）</div></div></a></div><div class="next-post pull-right"><a href="/2023/08/08/Linux%E5%86%85%E6%A0%B8-%E8%AE%BE%E5%A4%87%E6%A0%91/" title="设备树语法介绍"><img class="cover" src="https://s2.loli.net/2022/11/17/jypq1GDmIVfl8WM.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">设备树语法介绍</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2023/11/16/Cvitek-buildroot/" title="buildroot 打包 rootfs"><img class="cover" src="https://s2.loli.net/2022/11/17/Zm4kDRxypb5ez3q.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-11-16</div><div class="title">buildroot 打包 rootfs</div></div></a></div><div><a href="/2024/09/11/Cvitek-reboot/" title="Cvitek-busybox init&#x2F;reboot&#x2F;poweroff"><img class="cover" src="https://s2.loli.net/2022/11/17/Zm4kDRxypb5ez3q.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-09-11</div><div class="title">Cvitek-busybox init&#x2F;reboot&#x2F;poweroff</div></div></a></div></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://s2.loli.net/2024/09/17/3NdhvxIcPRVpufD.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">(ง'̀-'́)ง</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">35</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">46</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/yo-gurts"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/yo-gurts" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:yusong1117.u@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Cvitek-%E5%AE%89%E5%85%A8%E5%90%AF%E5%8A%A8"><span class="toc-number">1.</span> <span class="toc-text">Cvitek-安全启动</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8E%9F%E7%90%86%E4%BB%8B%E7%BB%8D"><span class="toc-number">2.</span> <span class="toc-text">原理介绍</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95%E4%BB%8B%E7%BB%8D"><span class="toc-number">2.1.</span> <span class="toc-text">加密算法介绍</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E6%91%98%E8%A6%81"><span class="toc-number">2.1.1.</span> <span class="toc-text">消息摘要</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86-%E2%80%93-AES-%E7%AE%97%E6%B3%95"><span class="toc-number">2.1.2.</span> <span class="toc-text">对称加密 – AES 算法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%9D%9E%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86-%E2%80%93-RSA-%E7%AE%97%E6%B3%95"><span class="toc-number">2.1.3.</span> <span class="toc-text">非对称加密 – RSA 算法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#RSA-%E7%A4%BA%E4%BE%8B"><span class="toc-number">2.1.4.</span> <span class="toc-text">RSA 示例</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B%E7%AE%80%E4%BB%8B"><span class="toc-number">2.2.</span> <span class="toc-text">启动流程简介</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BC%96%E8%AF%91%E6%B5%81%E7%A8%8B"><span class="toc-number">2.2.1.</span> <span class="toc-text">编译流程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%83%A7%E5%BD%95%E6%B5%81%E7%A8%8B"><span class="toc-number">2.2.2.</span> <span class="toc-text">烧录流程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B"><span class="toc-number">2.2.3.</span> <span class="toc-text">启动流程</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AD%BE%E5%90%8D%E5%8A%A0%E5%AF%86%E6%B5%81%E7%A8%8B%E4%BB%8B%E7%BB%8D"><span class="toc-number">2.3.</span> <span class="toc-text">签名加密流程介绍</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%87%86%E5%A4%87%E7%A7%98%E9%92%A5"><span class="toc-number">2.3.1.</span> <span class="toc-text">准备秘钥</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#fip-%E7%BB%84%E6%88%90%E7%BB%93%E6%9E%84"><span class="toc-number">2.3.2.</span> <span class="toc-text">fip 组成结构</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#efuse-%E4%BB%8B%E7%BB%8D"><span class="toc-number">2.3.3.</span> <span class="toc-text">efuse 介绍</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#fip-%E7%AD%BE%E5%90%8D%E6%B5%81%E7%A8%8B"><span class="toc-number">2.3.4.</span> <span class="toc-text">fip 签名流程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#fip-%E7%AD%BE%E5%90%8D-%E5%8A%A0%E5%AF%86%E6%B5%81%E7%A8%8B"><span class="toc-number">2.3.5.</span> <span class="toc-text">fip 签名+加密流程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#fip-%E6%A0%A1%E9%AA%8C%E6%B5%81%E7%A8%8B"><span class="toc-number">2.3.6.</span> <span class="toc-text">fip 校验流程</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#kernel-x2F-rootfs-%E7%9A%84%E7%AD%BE%E5%90%8D"><span class="toc-number">2.4.</span> <span class="toc-text">kernel &#x2F; rootfs 的签名</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%87%86%E5%A4%87%E7%A7%98%E9%92%A5-1"><span class="toc-number">2.4.1.</span> <span class="toc-text">准备秘钥</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AD%BE%E5%90%8D%E6%B5%81%E7%A8%8B"><span class="toc-number">2.4.2.</span> <span class="toc-text">签名流程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A0%A1%E9%AA%8C%E6%B5%81%E7%A8%8B"><span class="toc-number">2.4.3.</span> <span class="toc-text">校验流程</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="toc-number">3.</span> <span class="toc-text">注意事项</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%EF%B8%8F%E2%83%A3%E4%BD%BF%E7%94%A8%E6%B3%A8%E6%84%8F"><span class="toc-number">3.1.</span> <span class="toc-text">1️⃣使用注意</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2%EF%B8%8F%E2%83%A3raw2cimg-py"><span class="toc-number">3.2.</span> <span class="toc-text">2️⃣raw2cimg.py</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3%EF%B8%8F%E2%83%A3%E7%83%A7%E5%BD%95-efuse"><span class="toc-number">3.3.</span> <span class="toc-text">3️⃣烧录 efuse</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%AD%90%E6%9B%B4%E6%96%B0"><span class="toc-number">3.4.</span> <span class="toc-text">⭐更新</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4%EF%B8%8F%E2%83%A3%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95"><span class="toc-number">3.5.</span> <span class="toc-text">4️⃣使用方法</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98"><span class="toc-number">4.</span> <span class="toc-text">常见问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%B8%E5%85%B3%E8%B5%84%E6%96%99"><span class="toc-number">5.</span> <span class="toc-text">相关资料</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2024/09/11/Cvitek-reboot/" title="Cvitek-busybox init/reboot/poweroff"><img src="https://s2.loli.net/2022/11/17/Zm4kDRxypb5ez3q.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Cvitek-busybox init/reboot/poweroff"/></a><div class="content"><a class="title" href="/2024/09/11/Cvitek-reboot/" title="Cvitek-busybox init/reboot/poweroff">Cvitek-busybox init/reboot/poweroff</a><time datetime="2024-09-11T09:57:02.000Z" title="发表于 2024-09-11 17:57:02">2024-09-11</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/08/11/Scripts-git_tools/" title="Scripts-管理多个 git 仓库"><img src="https://s2.loli.net/2022/11/17/9ZBEesyr14aJhPM.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Scripts-管理多个 git 仓库"/></a><div class="content"><a class="title" href="/2024/08/11/Scripts-git_tools/" title="Scripts-管理多个 git 仓库">Scripts-管理多个 git 仓库</a><time datetime="2024-08-11T03:37:00.000Z" title="发表于 2024-08-11 11:37:00">2024-08-11</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/06/04/Cvitek-usbcamera%E9%9C%80%E6%B1%82/" title="Alios USB camera 常见需求处理"><img src="https://s2.loli.net/2022/11/17/BeiQmkw4Ya1gvPx.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Alios USB camera 常见需求处理"/></a><div class="content"><a class="title" href="/2024/06/04/Cvitek-usbcamera%E9%9C%80%E6%B1%82/" title="Alios USB camera 常见需求处理">Alios USB camera 常见需求处理</a><time datetime="2024-06-04T03:19:42.000Z" title="发表于 2024-06-04 11:19:42">2024-06-04</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/05/15/USB-UVC_extension/" title="UVC 扩展单元"><img src="https://s2.loli.net/2022/11/17/hF7KodYmE6iPWqg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="UVC 扩展单元"/></a><div class="content"><a class="title" href="/2024/05/15/USB-UVC_extension/" title="UVC 扩展单元">UVC 扩展单元</a><time datetime="2024-05-15T14:26:44.000Z" title="发表于 2024-05-15 22:26:44">2024-05-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/04/14/gdb/" title="gdb"><img src="https://s2.loli.net/2022/11/17/nuDZ3dsB6z4bfVJ.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="gdb"/></a><div class="content"><a class="title" href="/2024/04/14/gdb/" title="gdb">gdb</a><time datetime="2024-04-13T16:33:49.000Z" title="发表于 2024-04-14 00:33:49">2024-04-14</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2024 By (ง'̀-'́)ง</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.13.0"></script><script src="/js/main.js?v=4.13.0"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.1
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, '']
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typesetPromise()
+}</script><script>(() => {
+  const initGitalk = () => {
+    const gitalk = new Gitalk(Object.assign({
+      clientID: 'b740056c42e9eadf273e',
+      clientSecret: 'e5f185fa9a6e27927f7a2672469435c68a288c95',
+      repo: 'Yo-gurts.github.io',
+      owner: 'yo-gurts',
+      admin: ['yo-gurts'],
+      id: 'd8447b244423c2e33358c74d67f1bdf8',
+      updateCountCallback: commentCount
+    },null))
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async() => {
+    if (typeof Gitalk === 'function') initGitalk()
+    else {
+      await getCSS('https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.min.css')
+      await getScript('https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.min.js')
+      initGitalk()
+    }
+  }
+  
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/canvas-fluttering-ribbon.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=4.13.0"></script></div></div></body></html>
