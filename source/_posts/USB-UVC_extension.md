@@ -155,7 +155,7 @@ UINT8 iExtension;
     | D4     | 1=Asynchronous Control                                 | Capability |
     | D5     | 1=Disabled due to incompatibility with Commit state.   | State      |
     | D7..D6 | 保留，置为0                                            | —          |
-  
+
   如果[编码单元](https://www.usbzh.com/article/detail-82.html)控制的实现使得设备可以启动该控件的最小和/或最大设置属性的更改，那么该设备应该能够发送控制更改中断来通知主机新的 `GET_MIN` 和/或 `GET_MAX` 设置，因此必须设置 `D3`（自动更新控制）。
 
 ---
@@ -166,7 +166,7 @@ UINT8 iExtension;
 
 - `GET_RES(resolution)`: 获取调整的精度。比如 10，这样的话，调用 `SET_CUR` 时，就只能设置 10 的整数倍。
 
-    这三个值存在关联的，标准中似乎有要求 `min/res`，`max/res`，`cur/res` 都是整数，不能是小数。**如果属性是字符串的话，那这里 `RES` 就得设置为 `1`**。
+    这三个值存在关联的，标准中似乎有要求 `min/res`，`max/res`，`cur/res` 都是整数，不能是小数。**如果属性是字符串的话，那这里 `RES` 就得设置为**`1`。
 
 ---
 
@@ -175,4 +175,3 @@ UINT8 iExtension;
 - `GET_CUR`: 获取当前的亮度值。
 
 ## 参考资料
-

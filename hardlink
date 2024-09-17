@@ -9,6 +9,7 @@ file_list=(
 	"Cpp三方库"
 	"Cvitek-buildroot"
 	"Cvitek-reboot"
+	"Cvitek-usbcamera需求"
 	"Cvitek-安全启动"
 	"DS_数据结构摘要"
 	"gdb"
