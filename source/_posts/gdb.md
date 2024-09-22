@@ -1,8 +1,8 @@
 ---
 title: gdb
 top_img: transparent
-date: 2024-04-14 00:33:49
-updated: 2024-04-14 00:33:49
+date: 2023-04-14 00:33:49
+updated: 2023-04-14 00:33:49
 tags:
   - gdb
 categories: Tools

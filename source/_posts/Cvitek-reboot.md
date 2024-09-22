@@ -149,7 +149,7 @@ int init_main(int argc UNUSED_PARAM, char **argv)
 	}
 ```
 
-Unit进程的进程号必须是1.
+init进程的进程号必须是1.
 
 ```c
 #if !DEBUG_INIT
@@ -226,7 +226,7 @@ EDITOR=/bin/vi
 > Valid actions include: **sysinit, respawn, askfirst, wait, once, restart, ctrlaltdel, and shutdown**.\n"
 >
 > **Run only-once actions:**
-> - sysinit: 'sysinit' is the first item run on boot. init waits until all ysinit actions are completed before continuing.
+> - sysinit: 'sysinit' is the first item run on boot. init waits until all sysinit actions are completed before continuing.
 > - wait: then all 'wait' actions are run. wait' actions, like 'sysinit' actions, cause init to wait until the specified task completes.
 > - once: 'once' actions are asynchronous, therefore, init does not wait for them to complete.
 > - restart: 'restart' is the action taken to restart the init process. By default this should simply run /sbin/init, but can be a script which runs pivot_root or it can do all sorts of other interesting things.
@@ -301,6 +301,34 @@ console::respawn:/sbin/getty -L  console 115200 vt100 -n -l /usr/local/bin/autol
 	check_delayed_sigs(&G.zero_ts);
 	/* Next run anything to be run only once */
 	run_actions(ONCE);
+```
+
+可以看到 `SYSINIT | WAIT | CTRLALTDEL | SHUTDOWN` 4 种类型的任务都是阻塞的，等一个命令执行完才会继续执行下一个。
+
+```c
+/* Run all commands of a particular type */
+static void run_actions(int action_type)
+{
+	struct init_action *a;
+
+	for (a = G.init_action_list; a; a = a->next) {
+		if (!(a->action_type & action_type))
+			continue;
+
+		if (a->action_type & (SYSINIT | WAIT | ONCE | CTRLALTDEL | SHUTDOWN)) {
+			pid_t pid = run(a);
+			if (a->action_type & (SYSINIT | WAIT | CTRLALTDEL | SHUTDOWN))
+				waitfor(pid);
+		}
+		if (a->action_type & (RESPAWN | ASKFIRST)) {
+			/* Only run stuff with pid == 0. If pid != 0,
+			 * it is already running
+			 */
+			if (a->pid == 0)
+				a->pid = run(a);
+		}
+	}
+}
 ```
 
 由于 init 进程主要是通过信号来处理消息，init 进程本身并不会退出，而是阻塞休眠。
