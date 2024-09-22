@@ -2,6 +2,24 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://yo-gurts.github.io/2024/09/22/Linux-configfs/</loc>
+    
+    <lastmod>2024-09-22</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://yo-gurts.github.io/2024/09/17/Linux-USBmtp/</loc>
+    
+    <lastmod>2024-09-17</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://yo-gurts.github.io/2024/08/11/Scripts-git_tools/</loc>
     
     <lastmod>2024-09-16</lastmod>
@@ -14,6 +32,15 @@
     <loc>https://yo-gurts.github.io/2024/09/11/Cvitek-reboot/</loc>
     
     <lastmod>2024-09-11</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://yo-gurts.github.io/2024/09/01/Linux-USB%E9%A9%B1%E5%8A%A8%E6%A1%86%E6%9E%B6/</loc>
+    
+    <lastmod>2024-09-01</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -83,15 +110,6 @@
   </url>
   
   <url>
-    <loc>https://yo-gurts.github.io/2024/04/14/gdb/</loc>
-    
-    <lastmod>2024-04-13</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>https://yo-gurts.github.io/2023/11/16/Cvitek-buildroot/</loc>
     
     <lastmod>2023-12-09</lastmod>
@@ -122,6 +140,15 @@
     <loc>https://yo-gurts.github.io/2023/08/08/Linux%E5%86%85%E6%A0%B8-%E8%AE%BE%E5%A4%87%E6%A0%91/</loc>
     
     <lastmod>2023-08-08</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://yo-gurts.github.io/2023/04/14/gdb/</loc>
+    
+    <lastmod>2023-04-13</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -346,7 +373,7 @@
 
   <url>
     <loc>https://yo-gurts.github.io/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
@@ -354,322 +381,329 @@
   
   <url>
     <loc>https://yo-gurts.github.io/tags/Linux/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/tags/Buildroot/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/tags/Rootfs/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/tags/Cvitek/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/tags/C/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/tags/Redis/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/tags/reboot/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/tags/poweroff/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/tags/Alios/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/tags/USB/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/tags/%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/tags/sha256/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/tags/rsa/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/tags/aes/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/tags/uboot/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/tags/openssl/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/tags/Kernel/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/tags/DTS/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/tags/Uboot/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/tags/%E8%AE%BE%E5%A4%87%E6%A0%91/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/tags/%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/tags/%E5%90%8C%E6%AD%A5/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/tags/%E9%94%81/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/tags/%E6%96%87%E4%BB%B6/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/tags/%E7%BA%BF%E7%A8%8B/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/tags/%E8%BF%9B%E7%A8%8B/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/tags/Makefile/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/tags/socket/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/tags/select/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/tags/poll/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/tags/epoll/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/tags/%E7%BA%BF%E7%A8%8B%E6%B1%A0/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/tags/c/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/tags/OpenVSwitch/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/tags/DPDK/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/tags/Docker/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/tags/STL/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/tags/git/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/tags/UVC/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/tags/Tensorflow/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/tags/Clang/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/tags/Tools/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/tags/gdb/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/tags/%E6%8E%92%E5%BA%8F/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/tags/%E7%AE%97%E6%B3%95/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://yo-gurts.github.io/tags/configfs/</loc>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
@@ -678,91 +712,91 @@
   
   <url>
     <loc>https://yo-gurts.github.io/categories/Linux/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/categories/C/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/categories/Alios/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/categories/Cvitek/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/categories/c/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/categories/OpenVSwitch/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/categories/Redis/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/categories/Scripts/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/categories/USB/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/categories/Tensorflow/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/categories/Tools/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://yo-gurts.github.io/categories/%E7%AE%97%E6%B3%95/</loc>
-    <lastmod>2024-09-17</lastmod>
+    <lastmod>2024-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>

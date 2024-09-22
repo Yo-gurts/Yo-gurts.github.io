@@ -1,0 +1,330 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Linux USB mtp | (╯°□°）╯︵ ┻━┻ </title><meta name="author" content="(ง'̀-'́)ง"><meta name="copyright" content="(ง'̀-'́)ง"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="USB mtp 介绍https:&amp;#x2F;&amp;#x2F;en.wikipedia.org&amp;#x2F;wiki&amp;#x2F;Media_Transfer_Protocol  from wiki:MTP是一种高水平的文件传输协议，与通用串行总线大容量存储等通用存储协议相反。这意味着MTP客户端（计算机）看不到构成文件系统的数据结构的字节块数组，"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://yo-gurts.github.io/2024/09/17/Linux-USBmtp/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.13.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":600},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Linux USB mtp',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-09-17 20:02:18'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+          const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+          const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+          const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+          if (t === undefined) {
+            if (isLightMode) activateLightMode()
+            else if (isDarkMode) activateDarkMode()
+            else if (isNotSpecified || hasNoSupport) {
+              const now = new Date()
+              const hour = now.getHours()
+              const isNight = hour <= 6 || hour >= 18
+              isNight ? activateDarkMode() : activateLightMode()
+            }
+            window.matchMedia('(prefers-color-scheme: dark)').addListener(e => {
+              if (saveToLocal.get('theme') === undefined) {
+                e.matches ? activateDarkMode() : activateLightMode()
+              }
+            })
+          } else if (t === 'light') activateLightMode()
+          else activateDarkMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="google-site-verification" content="MP347_Nl-SqfnOi3FZSI69WSb8J_rk_jEsa3jL4ODCI" /><meta name="generator" content="Hexo 6.1.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://s2.loli.net/2024/09/17/3NdhvxIcPRVpufD.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">38</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">47</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background: transparent"><nav id="nav"><span id="blog-info"><a href="/" title="(╯°□°）╯︵ ┻━┻ "><span class="site-name">(╯°□°）╯︵ ┻━┻ </span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Linux USB mtp</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2024-09-17T12:02:15.000Z" title="发表于 2024-09-17 20:02:15">2024-09-17</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2024-09-17T12:02:18.000Z" title="更新于 2024-09-17 20:02:18">2024-09-17</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Linux/">Linux</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">1.9k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>9分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Linux USB mtp"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/2024/09/17/Linux-USBmtp/#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h2 id="USB-mtp-介绍"><a href="#USB-mtp-介绍" class="headerlink" title="USB mtp 介绍"></a>USB mtp 介绍</h2><p><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Media_Transfer_Protocol">https://en.wikipedia.org/wiki/Media_Transfer_Protocol</a></p>
+<blockquote>
+<p>from wiki:<br>MTP是一种高水平的文件传输协议，与通用串行总线大容量存储等通用存储协议相反。这意味着MTP客户端（计算机）看不到构成文件系统的数据结构的字节块数组，而是用文件和文件夹来表示MTP设备。这使得MTP设备可以参与高水平的操作（如更新其元信息索引），同时将文件系统的完整性掌握在自己手中。特别是，掉线传输（例如过早拔掉USB电缆）不会损坏设备文件系统。[6]MTP的非通用性会影响计算机操作系统如何向其他程序和用户呈现MTP设备。<br>根据其规范，MTP的</p>
+<ul>
+<li>主要目的是促进具有瞬态连接的媒体设备之间的通信。[5]</li>
+<li>第二个目的是启用对连接设备的命令和控制。[5]电池供电的移动设备可以通过MTP报告其电池电量水平。[6]</li>
+</ul>
+<p>该协议最初是为跨USB使用而实现的，但扩展为跨TCP&#x2F;IP和蓝牙使用。Windows Vista支持TCP&#x2F;IP上的MTP。带有Windows Vista平台更新的Windows 7和Windows Vista也支持蓝牙上的MTP。[7]连接到MTP设备的主机称为MTP启动器，而设备本身是MTP响应器。[8]</p>
+</blockquote>
+<p>还是 wiki 介绍得更好，其他的随便看看</p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/skywang12345/p/3474206.html">https://www.cnblogs.com/skywang12345/p/3474206.html</a></p>
+<h2 id="libmtp-库"><a href="#libmtp-库" class="headerlink" title="libmtp 库"></a>libmtp 库</h2><p><a target="_blank" rel="noopener" href="https://github.com/libmtp/libmtp">https://github.com/libmtp/libmtp</a></p>
+<h2 id="Initiator-and-Responder"><a href="#Initiator-and-Responder" class="headerlink" title="Initiator and Responder"></a>Initiator and Responder</h2><p>libmtp implements an MTP initiator, which means it initiate<br>MTP sessions with devices. The devices responding are known<br>as MTP responders. libmtp runs on something with a USB host<br>controller interface, using libusb to access the host<br>controller.</p>
+<p>If you’re more interested in the MTP responders, gadgets like<br>MP3 players, mobile phones etc, look into:</p>
+<ul>
+<li>MeeGo:s Buteo Sync:<br><a target="_blank" rel="noopener" href="https://github.com/nemomobile/buteo-mtp">https://github.com/nemomobile/buteo-mtp</a><br><a target="_blank" rel="noopener" href="https://wiki.merproject.org/wiki/Buteo/MTP">https://wiki.merproject.org/wiki/Buteo/MTP</a></li>
+<li>Android has an MTP responder implementation:<br><a target="_blank" rel="noopener" href="https://android.googlesource.com/platform/frameworks/base/+/master/media/jni/">https://android.googlesource.com/platform/frameworks/base/+/master/media/jni/</a></li>
+<li>Ubuntu&#x2F;Ricardo Salveti has mtp-server and libmtp-server going:<br><a target="_blank" rel="noopener" href="https://code.launchpad.net/~phablet-team/mtp/trunk">https://code.launchpad.net/~phablet-team/mtp/trunk</a><br><a target="_blank" rel="noopener" href="https://bazaar.launchpad.net/~phablet-team/mtp/trunk/files">https://bazaar.launchpad.net/~phablet-team/mtp/trunk/files</a></li>
+</ul>
+<p>明显，libmtp 是主机端用的库，</p>
+<h2 id="umtprd"><a href="#umtprd" class="headerlink" title="umtprd"></a>umtprd</h2><p>buildroot 编译 umtprd 工具，类似于 adbd 的作用。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># mtp tools</span><br><span class="line">BR2_PACKAGE_UMTPRD=y</span><br></pre></td></tr></table></figure>
+
+<h3 id="configfs-配置-mtp-流程"><a href="#configfs-配置-mtp-流程" class="headerlink" title="configfs 配置 mtp 流程"></a>configfs 配置 mtp 流程</h3><h4 id="0-切换为-device-模式"><a href="#0-切换为-device-模式" class="headerlink" title="0. 切换为 device 模式"></a>0. 切换为 device 模式</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> device &gt;/proc/cviusb/otg_role</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>参考 <a target="_blank" rel="noopener" href="https://wowothink.com/6a85234b/">https://wowothink.com/6a85234b/</a></p>
+</blockquote>
+<h4 id="1-挂载-configfs"><a href="#1-挂载-configfs" class="headerlink" title="1. 挂载 configfs"></a>1. 挂载 configfs</h4><p>注册了一个名为usb_gadget的configfs子系统。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mkdir</span> -p /tmp/usb</span><br><span class="line">mount none /tmp/usb -t configfs</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&gt;[root@sg200x]~# tree /tmp/usb/</span><br><span class="line">&gt;/tmp/usb/</span><br><span class="line">&gt;└── usb_gadget</span><br><span class="line"></span><br><span class="line">&gt;1 directory, 0 files</span><br></pre></td></tr></table></figure>
+</blockquote>
+<h4 id="2-创建复合设备"><a href="#2-创建复合设备" class="headerlink" title="2. 创建复合设备"></a>2. 创建复合设备</h4><p><code>mkdir usb_gadget/cvitek</code> 创建名为 cvitek 的usb复合设备。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mkdir -p /tmp/usb/usb_gadget/cvitek</span><br></pre></td></tr></table></figure>
+
+<p>在 cvitek 目录下会创建很多属性，</p>
+<blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">[root@sg200x]/tmp/usb/usb_gadget# tree .</span><br><span class="line">.</span><br><span class="line">└── cvitek</span><br><span class="line">    ├── UDC</span><br><span class="line">    ├── bDeviceClass</span><br><span class="line">    ├── bDeviceProtocol</span><br><span class="line">    ├── bDeviceSubClass</span><br><span class="line">    ├── bMaxPacketSize0</span><br><span class="line">    ├── bcdDevice</span><br><span class="line">    ├── bcdUSB</span><br><span class="line">    ├── configs</span><br><span class="line">    ├── functions</span><br><span class="line">    ├── idProduct</span><br><span class="line">    ├── idVendor</span><br><span class="line">    ├── max_speed</span><br><span class="line">    ├── os_desc</span><br><span class="line">    │   ├── b_vendor_code</span><br><span class="line">    │   ├── qw_sign</span><br><span class="line">    │   └── use</span><br><span class="line">    └── strings</span><br><span class="line"></span><br><span class="line">5 directories, 13 files</span><br></pre></td></tr></table></figure>
+</blockquote>
+<h4 id="2-1-配置PID和VID"><a href="#2-1-配置PID和VID" class="headerlink" title="2.1 配置PID和VID"></a>2.1 配置PID和VID</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> 0x3346 &gt;/tmp/usb/usb_gadget/cvitek/idVendor</span><br><span class="line"><span class="built_in">echo</span> 0x1003 &gt;/tmp/usb/usb_gadget/cvitek/idProduct</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-2-创建并配置-strings-子目录"><a href="#2-2-创建并配置-strings-子目录" class="headerlink" title="2.2 创建并配置 strings 子目录"></a>2.2 创建并配置 strings 子目录</h4><p>配置 strings 首先必须设置<code>language</code>，这里设置为<code>0x0409</code>表示使用的是<code>en-us</code>语言。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"># Set the product information string</span><br><span class="line">mkdir /tmp/usb/usb_gadget/cvitek/strings/0x409</span><br><span class="line">echo &quot;Cvitek&quot; &gt;/tmp/usb/usb_gadget/cvitek/strings/0x409/manufacturer</span><br><span class="line">echo &quot;USB Com Port&quot; &gt;/tmp/usb/usb_gadget/cvitek/strings/0x409/product</span><br><span class="line">echo &quot;0123456789&quot; &gt;/tmp/usb/usb_gadget/cvitek/strings/0x409/serialnumber</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">&gt;[root@sg200x]/tmp/usb/usb_gadget# tree .</span><br><span class="line">&gt;.</span><br><span class="line">&gt;└── cvitek</span><br><span class="line">   ├── UDC</span><br><span class="line">   ├── bDeviceClass</span><br><span class="line">   ├── bDeviceProtocol</span><br><span class="line">   ├── bDeviceSubClass</span><br><span class="line">   ├── bMaxPacketSize0</span><br><span class="line">   ├── bcdDevice</span><br><span class="line">   ├── bcdUSB</span><br><span class="line">   ├── configs</span><br><span class="line">   ├── functions</span><br><span class="line">   ├── idProduct</span><br><span class="line">   ├── idVendor</span><br><span class="line">   ├── max_speed</span><br><span class="line">   ├── os_desc</span><br><span class="line">   │   ├── b_vendor_code</span><br><span class="line">   │   ├── qw_sign</span><br><span class="line">   │   └── use</span><br><span class="line">   └── strings</span><br><span class="line">       └── 0x409</span><br><span class="line">           ├── manufacturer</span><br><span class="line">           ├── product</span><br><span class="line">           └── serialnumber</span><br><span class="line"></span><br><span class="line">&gt;6 directories, 16 files</span><br></pre></td></tr></table></figure>
+</blockquote>
+<h4 id="2-3-创建configuration和字符串"><a href="#2-3-创建configuration和字符串" class="headerlink" title="2.3 创建configuration和字符串"></a>2.3 创建configuration和字符串</h4><p>创建配置 <code>c.1</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mkdir</span> /tmp/usb/usb_gadget/cvitek/configs/c.1</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">[root@sg200x]/tmp/usb/usb_gadget# tree .</span><br><span class="line">.</span><br><span class="line">└── cvitek</span><br><span class="line">    ├── UDC</span><br><span class="line">    ├── bDeviceClass</span><br><span class="line">    ├── bDeviceProtocol</span><br><span class="line">    ├── bDeviceSubClass</span><br><span class="line">    ├── bMaxPacketSize0</span><br><span class="line">    ├── bcdDevice</span><br><span class="line">    ├── bcdUSB</span><br><span class="line">    ├── configs</span><br><span class="line">    │   └── c.1</span><br><span class="line">    │       ├── MaxPower</span><br><span class="line">    │       ├── bmAttributes</span><br><span class="line">    │       └── strings</span><br><span class="line">    ├── functions</span><br><span class="line">    ├── idProduct</span><br><span class="line">    ├── idVendor</span><br><span class="line">    ├── max_speed</span><br><span class="line">    ├── os_desc</span><br><span class="line">    │   ├── b_vendor_code</span><br><span class="line">    │   ├── qw_sign</span><br><span class="line">    │   └── use</span><br><span class="line">    └── strings</span><br><span class="line">        └── 0x409</span><br><span class="line">            ├── manufacturer</span><br><span class="line">            ├── product</span><br><span class="line">            └── serialnumber</span><br><span class="line"></span><br><span class="line">8 directories, 18 files</span><br></pre></td></tr></table></figure>
+</blockquote>
+<p>设置配置名。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mkdir</span> /tmp/usb/usb_gadget/cvitek/configs/c.1/strings/0x409</span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;config1&quot;</span> &gt;/tmp/usb/usb_gadget/cvitek/configs/c.1/strings/0x409/configuration</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">[root@sg200x]/tmp/usb/usb_gadget# tree .</span><br><span class="line">.</span><br><span class="line">└── cvitek</span><br><span class="line">    ├── UDC</span><br><span class="line">    ├── bDeviceClass</span><br><span class="line">    ├── bDeviceProtocol</span><br><span class="line">    ├── bDeviceSubClass</span><br><span class="line">    ├── bMaxPacketSize0</span><br><span class="line">    ├── bcdDevice</span><br><span class="line">    ├── bcdUSB</span><br><span class="line">    ├── configs</span><br><span class="line">    │   └── c.1</span><br><span class="line">    │       ├── MaxPower</span><br><span class="line">    │       ├── bmAttributes</span><br><span class="line">    │       └── strings</span><br><span class="line">    │           └── 0x409</span><br><span class="line">    │               └── configuration</span><br><span class="line">    ├── functions</span><br><span class="line">    ├── idProduct</span><br><span class="line">    ├── idVendor</span><br><span class="line">    ├── max_speed</span><br><span class="line">    ├── os_desc</span><br><span class="line">    │   ├── b_vendor_code</span><br><span class="line">    │   ├── qw_sign</span><br><span class="line">    │   └── use</span><br><span class="line">    └── strings</span><br><span class="line">        └── 0x409</span><br><span class="line">            ├── manufacturer</span><br><span class="line">            ├── product</span><br><span class="line">            └── serialnumber</span><br><span class="line"></span><br><span class="line">9 directories, 19 files</span><br></pre></td></tr></table></figure>
+</blockquote>
+<p>Set the MaxPower of USB descriptor</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo 120 &gt;/tmp/usb/usb_gadget/cvitek/configs/c.1/MaxPower</span><br></pre></td></tr></table></figure>
+
+<h4 id="3-创建functions"><a href="#3-创建functions" class="headerlink" title="3. 创建functions"></a>3. 创建functions</h4><p><strong>一个USB复合设备会有多个功能，每个功能由function来表示，所谓的function就是USB设备支持的功能</strong>。当执行<code>mkdir functions/mass_storage.0</code>的时候，会调用<code>function_make()</code>函数，调用<code>usb_get_function_instance()</code>函数传入<code>mass_storage</code>字段，将会从现有的function list中找到与之匹配的function。现有的function list是由<code>drivers/usb/gadget/function/f_xxx.c</code>中进行添加的，这就将<code>f_xxx.c</code>联系起来了。</p>
+<h4 id="3-1-创建-mtp-functions"><a href="#3-1-创建-mtp-functions" class="headerlink" title="3.1 创建 mtp functions"></a>3.1 创建 mtp functions</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mkdir</span> /tmp/usb/usb_gadget/cvitek/functions/mtp.usb0</span><br></pre></td></tr></table></figure>
+
+<p>内核还没开启相应配置的，就会报错。<code>USB_CONFIGFS_F_MTP=y</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@sg200x]/tmp/usb/usb_gadget<span class="comment"># mkdir /tmp/usb/usb_gadget/cvitek/functions/mtp</span></span><br><span class="line">.usb0</span><br><span class="line"><span class="built_in">mkdir</span>: can<span class="string">&#x27;t create directory &#x27;</span>/tmp/usb/usb_gadget/cvitek/functions/mtp.usb0<span class="string">&#x27;: No such file or directory</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">[root@sg200x]/tmp/usb/usb_gadget# tree .</span><br><span class="line">.</span><br><span class="line">└── cvitek</span><br><span class="line">    ├── UDC</span><br><span class="line">    ├── bDeviceClass</span><br><span class="line">    ├── bDeviceProtocol</span><br><span class="line">    ├── bDeviceSubClass</span><br><span class="line">    ├── bMaxPacketSize0</span><br><span class="line">    ├── bcdDevice</span><br><span class="line">    ├── bcdUSB</span><br><span class="line">    ├── configs</span><br><span class="line">    │   └── c.1</span><br><span class="line">    │       ├── MaxPower</span><br><span class="line">    │       ├── bmAttributes</span><br><span class="line">    │       └── strings</span><br><span class="line">    │           └── 0x409</span><br><span class="line">    │               └── configuration</span><br><span class="line">    ├── functions</span><br><span class="line">    │   └── mtp.usb0</span><br><span class="line">    ├── idProduct</span><br><span class="line">    ├── idVendor</span><br><span class="line">    ├── max_speed</span><br><span class="line">    ├── os_desc</span><br><span class="line">    │   ├── b_vendor_code</span><br><span class="line">    │   ├── qw_sign</span><br><span class="line">    │   └── use</span><br><span class="line">    └── strings</span><br><span class="line">        └── 0x409</span><br><span class="line">            ├── manufacturer</span><br><span class="line">            ├── product</span><br><span class="line">            └── serialnumber</span><br><span class="line"></span><br><span class="line">10 directories, 19 files</span><br></pre></td></tr></table></figure>
+</blockquote>
+<h4 id="4-将func和config关联起来"><a href="#4-将func和config关联起来" class="headerlink" title="4. 将func和config关联起来"></a>4. 将func和config关联起来</h4><p>执行<code>ln -s usb_gadget/cvitek/functions/mtp.usb0 usb_gadget/cvitek/configs/c.1</code>命令将新添加的<code>mtp</code>的<code>functions</code>添加到<code>configuration</code>对应的function list中，表示当前usb复合设备中新增了一个function。这时候调用的是<code>config_usb_cfg_link()</code>函数。至此，<code>functions</code>和<code>configuration</code>关联起来了。接下来要将<code>configuration</code>与特定的UDC设备连接起来。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">ln</span> -s /tmp/usb/usb_gadget/cvitek/functions/mtp.usb0 /tmp/usb/usb_gadget/cvitek/configs/c.1</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">[root@sg200x]/tmp/usb/usb_gadget# tree .</span><br><span class="line">.</span><br><span class="line">└── cvitek</span><br><span class="line">    ├── UDC</span><br><span class="line">    ├── bDeviceClass</span><br><span class="line">    ├── bDeviceProtocol</span><br><span class="line">    ├── bDeviceSubClass</span><br><span class="line">    ├── bMaxPacketSize0</span><br><span class="line">    ├── bcdDevice</span><br><span class="line">    ├── bcdUSB</span><br><span class="line">    ├── configs</span><br><span class="line">    │   └── c.1</span><br><span class="line">    │       ├── MaxPower</span><br><span class="line">    │       ├── bmAttributes</span><br><span class="line">    │       ├── mtp.usb0 -&gt; ../../../../usb_gadget/cvitek/functions/mtp.usb0</span><br><span class="line">    │       └── strings</span><br><span class="line">    │           └── 0x409</span><br><span class="line">    │               └── configuration</span><br><span class="line">    ├── functions</span><br><span class="line">    │   └── mtp.usb0</span><br><span class="line">    ├── idProduct</span><br><span class="line">    ├── idVendor</span><br><span class="line">    ├── max_speed</span><br><span class="line">    ├── os_desc</span><br><span class="line">    │   ├── b_vendor_code</span><br><span class="line">    │   ├── qw_sign</span><br><span class="line">    │   └── use</span><br><span class="line">    └── strings</span><br><span class="line">        └── 0x409</span><br><span class="line">            ├── manufacturer</span><br><span class="line">            ├── product</span><br><span class="line">            └── serialnumber</span><br><span class="line"></span><br><span class="line">11 directories, 19 files</span><br></pre></td></tr></table></figure>
+</blockquote>
+<hr>
+<h4 id="5-绑定到UDC，使能gadget"><a href="#5-绑定到UDC，使能gadget" class="headerlink" title="5. 绑定到UDC，使能gadget"></a>5. 绑定到UDC，使能gadget</h4><p>执行<code>echo xxx &gt; usb_gadget/g1/UDC</code>命令，就会调用<code>gadget_dev_desc_UDC_store()</code>函数，这里面调用<code>usb composite framework</code>中的<code>usb_gadget_probe_driver()</code>函数将gadget driver与USB Controller Driver绑定，这里的<code>Gadget Driver</code>就是与我们创建的usb复合设备对应的驱动，接下来就会走一系列的<code>bind</code>流程。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Start the gadget driver</span></span><br><span class="line">CVI_UDC=$(<span class="built_in">ls</span> /sys/class/udc/ | awk <span class="string">&#x27;&#123;print $1&#125;&#x27;</span>)</span><br><span class="line"><span class="built_in">echo</span> <span class="variable">$&#123;CVI_UDC&#125;</span> &gt;/tmp/usb/usb_gadget/cvitek/UDC</span><br></pre></td></tr></table></figure>
+
+<h4 id="汇总"><a href="#汇总" class="headerlink" title="汇总"></a>汇总</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"># 0. 切换为 device 模式</span><br><span class="line">echo device &gt;/proc/cviusb/otg_role</span><br><span class="line"># 1. 挂载 configfs</span><br><span class="line">mkdir -p /tmp/usb</span><br><span class="line">mount none /tmp/usb -t configfs</span><br><span class="line"># 2. 创建复合设备</span><br><span class="line">mkdir -p /tmp/usb/usb_gadget/cvitek</span><br><span class="line"># 2.1 配置PID和VID</span><br><span class="line">echo 0x3346 &gt;/tmp/usb/usb_gadget/cvitek/idVendor</span><br><span class="line">echo 0x1003 &gt;/tmp/usb/usb_gadget/cvitek/idProduct</span><br><span class="line"># 2.2 创建并配置 strings 子目录</span><br><span class="line">mkdir /tmp/usb/usb_gadget/cvitek/strings/0x409</span><br><span class="line">echo &quot;Cvitek&quot; &gt;/tmp/usb/usb_gadget/cvitek/strings/0x409/manufacturer</span><br><span class="line">echo &quot;USB Com Port&quot; &gt;/tmp/usb/usb_gadget/cvitek/strings/0x409/product</span><br><span class="line">echo &quot;0123456789&quot; &gt;/tmp/usb/usb_gadget/cvitek/strings/0x409/serialnumber</span><br><span class="line"># 2.3 创建configuration和字符串</span><br><span class="line">mkdir /tmp/usb/usb_gadget/cvitek/configs/c.1</span><br><span class="line">mkdir /tmp/usb/usb_gadget/cvitek/configs/c.1/strings/0x409</span><br><span class="line">echo &quot;config1&quot; &gt;/tmp/usb/usb_gadget/cvitek/configs/c.1/strings/0x409/configuration</span><br><span class="line"></span><br><span class="line">echo 120 &gt;/tmp/usb/usb_gadget/cvitek/configs/c.1/MaxPower</span><br><span class="line"># 3. 创建functions</span><br><span class="line">mkdir /tmp/usb/usb_gadget/cvitek/functions/mtp.usb0</span><br><span class="line"># 4. 将func和config关联起来</span><br><span class="line">ln -s /tmp/usb/usb_gadget/cvitek/functions/mtp.usb0 /tmp/usb/usb_gadget/cvitek/configs/c.1</span><br><span class="line"></span><br><span class="line">##########</span><br><span class="line">mkdir /dev/ffs-umtp</span><br><span class="line">mount -t functionfs mtp /dev/ffs-umtp</span><br><span class="line"># Start the umtprd service</span><br><span class="line">umtprd &amp;</span><br><span class="line"></span><br><span class="line"># 5. 绑定到UDC，使能gadget</span><br><span class="line">CVI_UDC=$(ls /sys/class/udc/ | awk &#x27;&#123;print $1&#125;&#x27;)</span><br><span class="line">echo $&#123;CVI_UDC&#125; &gt;/tmp/usb/usb_gadget/cvitek/UDC</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="umptrd-源码"><a href="#umptrd-源码" class="headerlink" title="umptrd 源码"></a>umptrd 源码</h3><p><a target="_blank" rel="noopener" href="https://github.com/viveris/uMTP-Responder/tree/master/conf">https://github.com/viveris/uMTP-Responder/tree/master/conf</a></p>
+<p>官方提供了一个配置脚本。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/sh</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># FunctionFS uMTPrd startup example/test script</span></span><br><span class="line"><span class="comment"># Must be launched from a writable/temporary folder.</span></span><br><span class="line"></span><br><span class="line">modprobe libcomposite</span><br><span class="line"></span><br><span class="line"><span class="built_in">mkdir</span> cfg</span><br><span class="line">mount none cfg -t configfs</span><br><span class="line"></span><br><span class="line"><span class="built_in">mkdir</span> cfg/usb_gadget/g1</span><br><span class="line"><span class="built_in">cd</span> cfg/usb_gadget/g1</span><br><span class="line"></span><br><span class="line"><span class="built_in">mkdir</span> configs/c.1</span><br><span class="line"></span><br><span class="line"><span class="built_in">mkdir</span> <span class="built_in">functions</span>/ffs.mtp</span><br><span class="line"><span class="comment"># Uncomment / Change the follow line to enable another usb gadget function</span></span><br><span class="line"><span class="comment">#mkdir functions/acm.usb0</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">mkdir</span> strings/0x409</span><br><span class="line"><span class="built_in">mkdir</span> configs/c.1/strings/0x409</span><br><span class="line"></span><br><span class="line"><span class="built_in">echo</span> 0x0100 &gt; idProduct</span><br><span class="line"><span class="built_in">echo</span> 0x1D6B &gt; idVendor</span><br><span class="line"></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;01234567&quot;</span> &gt; strings/0x409/serialnumber</span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;Viveris Technologies&quot;</span> &gt; strings/0x409/manufacturer</span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;The Viveris Product !&quot;</span> &gt; strings/0x409/product</span><br><span class="line"></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;Conf 1&quot;</span> &gt; configs/c.1/strings/0x409/configuration</span><br><span class="line"><span class="built_in">echo</span> 120 &gt; configs/c.1/MaxPower</span><br><span class="line"></span><br><span class="line"><span class="built_in">ln</span> -s <span class="built_in">functions</span>/ffs.mtp configs/c.1</span><br><span class="line"><span class="comment"># Uncomment / Change the follow line to enable another usb gadget function</span></span><br><span class="line"><span class="comment">#ln -s functions/acm.usb0 configs/c.1</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">mkdir</span> /dev/ffs-umtp</span><br><span class="line">mount -t functionfs mtp /dev/ffs-umtp</span><br><span class="line"><span class="comment"># Start the umtprd service</span></span><br><span class="line">umtprd &amp;</span><br><span class="line"></span><br><span class="line"><span class="built_in">cd</span> ../../..</span><br><span class="line"></span><br><span class="line"><span class="built_in">sleep</span> 1</span><br><span class="line"></span><br><span class="line"><span class="comment"># enable the usb functions</span></span><br><span class="line"><span class="built_in">ls</span> /sys/class/udc/ &gt; cfg/usb_gadget/g1/UDC</span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mount -t functionfs mtp /dev/ffs-umtp</span><br><span class="line">mount: mounting mtp on /dev/ffs-umtp failed: No such device</span><br></pre></td></tr></table></figure>
+
+<p><code>CONFIG_USB_FUNCTIONFS=y</code> 可解决上面的问题。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://yo-gurts.github.io">(ง'̀-'́)ง</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://yo-gurts.github.io/2024/09/17/Linux-USBmtp/">https://yo-gurts.github.io/2024/09/17/Linux-USBmtp/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://yo-gurts.github.io" target="_blank">(╯°□°）╯︵ ┻━┻ </a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Linux/">Linux</a><a class="post-meta__tags" href="/tags/USB/">USB</a></div><div class="post_share"><div class="social-share" data-image="https://s2.loli.net/2022/11/17/NGf2mpwasOYzVIA.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2024/09/11/Cvitek-reboot/" title="Cvitek-busybox init/reboot/poweroff"><img class="cover" src="https://s2.loli.net/2022/11/17/ljOdg6ZMc8H9Y5r.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Cvitek-busybox init/reboot/poweroff</div></div></a></div><div class="next-post pull-right"><a href="/2024/09/22/Linux-configfs/" title="Linux configfs"><img class="cover" src="https://s2.loli.net/2022/11/17/Zm4kDRxypb5ez3q.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Linux configfs</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2024/09/01/Linux-USB%E9%A9%B1%E5%8A%A8%E6%A1%86%E6%9E%B6/" title="Linux USB 驱动框架"><img class="cover" src="https://s2.loli.net/2022/11/17/9ZBEesyr14aJhPM.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-09-01</div><div class="title">Linux USB 驱动框架</div></div></a></div><div><a href="/2023/11/16/Cvitek-buildroot/" title="buildroot 打包 rootfs"><img class="cover" src="https://s2.loli.net/2022/11/17/Zm4kDRxypb5ez3q.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-11-16</div><div class="title">buildroot 打包 rootfs</div></div></a></div><div><a href="/2022/09/19/Cpp%E4%B8%89%E6%96%B9%E5%BA%93/" title="C++三方库"><img class="cover" src="https://s2.loli.net/2022/11/17/nuDZ3dsB6z4bfVJ.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-09-19</div><div class="title">C++三方库</div></div></a></div><div><a href="/2024/09/11/Cvitek-reboot/" title="Cvitek-busybox init&#x2F;reboot&#x2F;poweroff"><img class="cover" src="https://s2.loli.net/2022/11/17/ljOdg6ZMc8H9Y5r.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-09-11</div><div class="title">Cvitek-busybox init&#x2F;reboot&#x2F;poweroff</div></div></a></div><div><a href="/2023/08/08/Linux%E5%86%85%E6%A0%B8-%E8%AE%BE%E5%A4%87%E6%A0%91/" title="设备树语法介绍"><img class="cover" src="https://s2.loli.net/2022/11/17/jypq1GDmIVfl8WM.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-08-08</div><div class="title">设备树语法介绍</div></div></a></div><div><a href="/2023/08/29/Linux%E5%86%85%E6%A0%B8-%E4%B8%AD%E6%96%AD/" title="Linux 内核-中断"><img class="cover" src="https://s2.loli.net/2022/11/17/hF7KodYmE6iPWqg.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-08-29</div><div class="title">Linux 内核-中断</div></div></a></div></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://s2.loli.net/2024/09/17/3NdhvxIcPRVpufD.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">(ง'̀-'́)ง</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">38</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">47</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/yo-gurts"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/yo-gurts" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:yusong1117.u@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#USB-mtp-%E4%BB%8B%E7%BB%8D"><span class="toc-number">1.</span> <span class="toc-text">USB mtp 介绍</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#libmtp-%E5%BA%93"><span class="toc-number">2.</span> <span class="toc-text">libmtp 库</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Initiator-and-Responder"><span class="toc-number">3.</span> <span class="toc-text">Initiator and Responder</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#umtprd"><span class="toc-number">4.</span> <span class="toc-text">umtprd</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#configfs-%E9%85%8D%E7%BD%AE-mtp-%E6%B5%81%E7%A8%8B"><span class="toc-number">4.1.</span> <span class="toc-text">configfs 配置 mtp 流程</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#0-%E5%88%87%E6%8D%A2%E4%B8%BA-device-%E6%A8%A1%E5%BC%8F"><span class="toc-number">4.1.1.</span> <span class="toc-text">0. 切换为 device 模式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E6%8C%82%E8%BD%BD-configfs"><span class="toc-number">4.1.2.</span> <span class="toc-text">1. 挂载 configfs</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E5%88%9B%E5%BB%BA%E5%A4%8D%E5%90%88%E8%AE%BE%E5%A4%87"><span class="toc-number">4.1.3.</span> <span class="toc-text">2. 创建复合设备</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-1-%E9%85%8D%E7%BD%AEPID%E5%92%8CVID"><span class="toc-number">4.1.4.</span> <span class="toc-text">2.1 配置PID和VID</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-%E5%88%9B%E5%BB%BA%E5%B9%B6%E9%85%8D%E7%BD%AE-strings-%E5%AD%90%E7%9B%AE%E5%BD%95"><span class="toc-number">4.1.5.</span> <span class="toc-text">2.2 创建并配置 strings 子目录</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-3-%E5%88%9B%E5%BB%BAconfiguration%E5%92%8C%E5%AD%97%E7%AC%A6%E4%B8%B2"><span class="toc-number">4.1.6.</span> <span class="toc-text">2.3 创建configuration和字符串</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-%E5%88%9B%E5%BB%BAfunctions"><span class="toc-number">4.1.7.</span> <span class="toc-text">3. 创建functions</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-%E5%88%9B%E5%BB%BA-mtp-functions"><span class="toc-number">4.1.8.</span> <span class="toc-text">3.1 创建 mtp functions</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-%E5%B0%86func%E5%92%8Cconfig%E5%85%B3%E8%81%94%E8%B5%B7%E6%9D%A5"><span class="toc-number">4.1.9.</span> <span class="toc-text">4. 将func和config关联起来</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-%E7%BB%91%E5%AE%9A%E5%88%B0UDC%EF%BC%8C%E4%BD%BF%E8%83%BDgadget"><span class="toc-number">4.1.10.</span> <span class="toc-text">5. 绑定到UDC，使能gadget</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B1%87%E6%80%BB"><span class="toc-number">4.1.11.</span> <span class="toc-text">汇总</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#umptrd-%E6%BA%90%E7%A0%81"><span class="toc-number">4.2.</span> <span class="toc-text">umptrd 源码</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2024/09/22/Linux-configfs/" title="Linux configfs"><img src="https://s2.loli.net/2022/11/17/Zm4kDRxypb5ez3q.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Linux configfs"/></a><div class="content"><a class="title" href="/2024/09/22/Linux-configfs/" title="Linux configfs">Linux configfs</a><time datetime="2024-09-22T02:37:42.000Z" title="发表于 2024-09-22 10:37:42">2024-09-22</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/09/17/Linux-USBmtp/" title="Linux USB mtp"><img src="https://s2.loli.net/2022/11/17/NGf2mpwasOYzVIA.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Linux USB mtp"/></a><div class="content"><a class="title" href="/2024/09/17/Linux-USBmtp/" title="Linux USB mtp">Linux USB mtp</a><time datetime="2024-09-17T12:02:15.000Z" title="发表于 2024-09-17 20:02:15">2024-09-17</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/09/11/Cvitek-reboot/" title="Cvitek-busybox init/reboot/poweroff"><img src="https://s2.loli.net/2022/11/17/ljOdg6ZMc8H9Y5r.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Cvitek-busybox init/reboot/poweroff"/></a><div class="content"><a class="title" href="/2024/09/11/Cvitek-reboot/" title="Cvitek-busybox init/reboot/poweroff">Cvitek-busybox init/reboot/poweroff</a><time datetime="2024-09-11T09:57:02.000Z" title="发表于 2024-09-11 17:57:02">2024-09-11</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/09/01/Linux-USB%E9%A9%B1%E5%8A%A8%E6%A1%86%E6%9E%B6/" title="Linux USB 驱动框架"><img src="https://s2.loli.net/2022/11/17/9ZBEesyr14aJhPM.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Linux USB 驱动框架"/></a><div class="content"><a class="title" href="/2024/09/01/Linux-USB%E9%A9%B1%E5%8A%A8%E6%A1%86%E6%9E%B6/" title="Linux USB 驱动框架">Linux USB 驱动框架</a><time datetime="2024-09-01T02:54:14.000Z" title="发表于 2024-09-01 10:54:14">2024-09-01</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/08/11/Scripts-git_tools/" title="Scripts-管理多个 git 仓库"><img src="https://s2.loli.net/2022/11/17/9ZBEesyr14aJhPM.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Scripts-管理多个 git 仓库"/></a><div class="content"><a class="title" href="/2024/08/11/Scripts-git_tools/" title="Scripts-管理多个 git 仓库">Scripts-管理多个 git 仓库</a><time datetime="2024-08-11T03:37:00.000Z" title="发表于 2024-08-11 11:37:00">2024-08-11</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2024 By (ง'̀-'́)ง</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.13.0"></script><script src="/js/main.js?v=4.13.0"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.1
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, '']
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typesetPromise()
+}</script><script>(() => {
+  const initGitalk = () => {
+    const gitalk = new Gitalk(Object.assign({
+      clientID: 'b740056c42e9eadf273e',
+      clientSecret: 'e5f185fa9a6e27927f7a2672469435c68a288c95',
+      repo: 'Yo-gurts.github.io',
+      owner: 'yo-gurts',
+      admin: ['yo-gurts'],
+      id: '1fda5cc05796a56eb7bc376ee2b562aa',
+      updateCountCallback: commentCount
+    },null))
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async() => {
+    if (typeof Gitalk === 'function') initGitalk()
+    else {
+      await getCSS('https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.min.css')
+      await getScript('https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.min.js')
+      initGitalk()
+    }
+  }
+  
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/canvas-fluttering-ribbon.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=4.13.0"></script></div></div></body></html>
