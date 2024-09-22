@@ -630,7 +630,562 @@ these children.
 > 0 directories, 5 files
 > ```
 
+### 00-init
+
+我们现在已经完成了子系统的定义。为了方便起见，这里列出了所有的子系统。这使得初始化函数可以轻松注册它们。大多数模块只包含一个子系统，并且只会直接调用 `register_subsystem` 进行注册。
+
+> 如前面 [`struct configfs_subsystem`](#struct-configfs_subsystem) 的描述，通过调用
+> - `config_group_init(&subsys->su_group);`
+> - `mutex_init(&subsys->su_mutex);`
+> - `configfs_register_subsystem(subsys);`
+>
+> 来完成configfs 子系统的注册。
+
+```c
+/*
+ * We're now done with our subsystem definitions.
+ * For convenience in this module, here's a list of them all.  It
+ * allows the init function to easily register them.  Most modules
+ * will only have one subsystem, and will only call register_subsystem
+ * on it directly.
+ */
+static struct configfs_subsystem *example_subsys[] = {
+	&childless_subsys.subsys,
+	&simple_children_subsys,
+	&group_children_subsys,
+	NULL,
+};
+
+static int __init configfs_example_init(void)
+{
+	struct configfs_subsystem *subsys;
+	int ret, i;
+
+	for (i = 0; example_subsys[i]; i++) {
+		subsys = example_subsys[i];
+
+		config_group_init(&subsys->su_group);
+		mutex_init(&subsys->su_mutex);
+		ret = configfs_register_subsystem(subsys);
+		if (ret) {
+			pr_err("Error %d while registering subsystem %s\n",
+			       ret, subsys->su_group.cg_item.ci_namebuf);
+			goto out_unregister;
+		}
+	}
+
+	return 0;
+
+out_unregister:
+	for (i--; i >= 0; i--)
+		configfs_unregister_subsystem(example_subsys[i]);
+
+	return ret;
+}
+
+static void __exit configfs_example_exit(void)
+{
+	int i;
+
+	for (i = 0; example_subsys[i]; i++)
+		configfs_unregister_subsystem(example_subsys[i]);
+}
+
+module_init(configfs_example_init);
+module_exit(configfs_example_exit);
+MODULE_LICENSE("GPL");
+```
+
 ---
+
+### 01-childless
+
+这个第一个例子是一个没有子项的子系统。它不能创建任何 `config_items`，只包含属性。
+
+请注意，我们将 `configfs_subsystem` 封装在一个容器中。如果子系统本身没有直接的属性，这并不是必须的。可以参考下一个例子，02-simple-children，来了解这种子系统。
+
+```c
+/*
+ * 01-childless
+ *
+ * This first example is a childless subsystem.  It cannot create
+ * any config_items.  It just has attributes.
+ *
+ * Note that we are enclosing the configfs_subsystem inside a container.
+ * This is not necessary if a subsystem has no attributes directly
+ * on the subsystem.  See the next example, 02-simple-children, for
+ * such a subsystem.
+ */
+
+struct childless {
+	struct configfs_subsystem subsys;
+	int showme;
+	int storeme;
+};
+
+static inline struct childless *to_childless(struct config_item *item)
+{
+	return container_of(to_configfs_subsystem(to_config_group(item)),
+			    struct childless, subsys);
+}
+
+static ssize_t childless_showme_show(struct config_item *item, char *page)
+{
+	struct childless *childless = to_childless(item);
+	ssize_t pos;
+
+	pos = sprintf(page, "%d\n", childless->showme);
+	childless->showme++;
+
+	return pos;
+}
+
+static ssize_t childless_storeme_show(struct config_item *item, char *page)
+{
+	return sprintf(page, "%d\n", to_childless(item)->storeme);
+}
+
+static ssize_t childless_storeme_store(struct config_item *item,
+		const char *page, size_t count)
+{
+	struct childless *childless = to_childless(item);
+	int ret;
+
+	ret = kstrtoint(page, 10, &childless->storeme);
+	if (ret)
+		return ret;
+
+	return count;
+}
+
+static ssize_t childless_description_show(struct config_item *item, char *page)
+{
+	return sprintf(page,
+"[01-childless]\n"
+"\n"
+"The childless subsystem is the simplest possible subsystem in\n"
+"configfs.  It does not support the creation of child config_items.\n"
+"It only has a few attributes.  In fact, it isn't much different\n"
+"than a directory in /proc.\n");
+}
+
+/* https://elixir.bootlin.com/linux/v5.10.186/source/include/linux/configfs.h#L134
+#define CONFIGFS_ATTR(_pfx, _name)			\
+static struct configfs_attribute _pfx##attr_##_name = {	\
+	.ca_name	= __stringify(_name),		\
+	.ca_mode	= S_IRUGO | S_IWUSR,		\
+	.ca_owner	= THIS_MODULE,			\
+	.show		= _pfx##_name##_show,		\
+	.store		= _pfx##_name##_store,		\
+}
+
+#define CONFIGFS_ATTR_RO(_pfx, _name)			\
+static struct configfs_attribute _pfx##attr_##_name = {	\
+	.ca_name	= __stringify(_name),		\
+	.ca_mode	= S_IRUGO,			\
+	.ca_owner	= THIS_MODULE,			\
+	.show		= _pfx##_name##_show,		\
+}
+
+#define CONFIGFS_ATTR_WO(_pfx, _name)			\
+static struct configfs_attribute _pfx##attr_##_name = {	\
+	.ca_name	= __stringify(_name),		\
+	.ca_mode	= S_IWUSR,			\
+	.ca_owner	= THIS_MODULE,			\
+	.store		= _pfx##_name##_store,		\
+}
+*/
+
+// 当项目出现在 configfs 中时，属性文件将以 configfs_attribute->ca_name 文件名出现。
+// configfs_attribute->ca_mode 指定文件权限。
+// ✨✨✨ 注意这里宏中，指定了 .show/.store 对应的处理函数。
+CONFIGFS_ATTR_RO(childless_, showme);
+CONFIGFS_ATTR(childless_, storeme);
+CONFIGFS_ATTR_RO(childless_, description);
+/*
+[root@milkv-duo]/tmp/usb/01-childless# ls -lh
+total 0
+-r--r--r-- 1 root root 4.0K Jan  1 05:15 description
+-r--r--r-- 1 root root 4.0K Jan  1 05:15 showme
+-rw-r--r-- 1 root root 4.0K Jan  1 05:15 storeme
+*/
+
+// 当 config_item 希望某个属性作为文件出现在其 configfs 目录中时，
+// 它必须定义一个描述该属性的 configfs_attribute。然后它将该属性添加到
+// config_item_type->ct_attrs 的以 NULL 结尾的数组中。
+static struct configfs_attribute *childless_attrs[] = {
+	&childless_attr_showme,
+	&childless_attr_storeme,
+	&childless_attr_description,
+	NULL,
+};
+
+static const struct config_item_type childless_type = {
+	.ct_attrs	= childless_attrs,
+	.ct_owner	= THIS_MODULE,
+};
+
+static struct childless childless_subsys = {
+	.subsys = {
+		.su_group = {
+			.cg_item = {
+				.ci_namebuf = "01-childless",
+				// config_item_type 的最基本功能是定义可以对 config_item 执行的操作
+				.ci_type = &childless_type,
+			},
+		},
+	},
+};
+```
+
+> 倒着看代码，注意配合看前面的介绍。属性基本只有 `show/store` 两种操作，对应读写，可通过 `echo/cat` 测试。
+>
+> ```bash
+> [root@milkv-duo]/tmp/usb# ls
+> 01-childless  02-simple-children  03-group-children  usb_gadget
+> [root@milkv-duo]/tmp/usb# cd 01-childless/
+> [root@milkv-duo]/tmp/usb/01-childless# ls -lh
+> total 0
+> -r--r--r-- 1 root root 4.0K Jan  1 05:15 description
+> -r--r--r-- 1 root root 4.0K Jan  1 05:15 showme
+> -rw-r--r-- 1 root root 4.0K Jan  1 05:15 storeme
+> [root@milkv-duo]/tmp/usb/01-childless# cat showme
+> 0
+> [root@milkv-duo]/tmp/usb/01-childless# cat showme
+> 1
+> [root@milkv-duo]/tmp/usb/01-childless# cat showme
+> 2
+> [root@milkv-duo]/tmp/usb/01-childless# cat showme
+> 3
+> [root@milkv-duo]/tmp/usb/01-childless# cat showme
+> 4
+> [root@milkv-duo]/tmp/usb/01-childless# cat storeme
+> 0
+> [root@milkv-duo]/tmp/usb/01-childless# cat storeme
+> 0
+> [root@milkv-duo]/tmp/usb/01-childless# cat description
+> [01-childless]
+>
+> The childless subsystem is the simplest possible subsystem in
+> configfs.  It does not support the creation of child config_items.
+> It only has a few attributes.  In fact, it isn't much different
+> than a directory in /proc.
+> [root@milkv-duo]/tmp/usb/01-childless# echo 0 > showme
+> -sh: can't create showme: Permission denied
+> [root@milkv-duo]/tmp/usb/01-childless# cat showme
+> 5
+> [root@milkv-duo]/tmp/usb/01-childless# echo 3 > storeme
+> [root@milkv-duo]/tmp/usb/01-childless# cat storeme
+> 3
+> ```
+
+---
+
+### 02-simple-children
+
+这个例子仅包含一个简单的、带有单一属性的子项。注意，这里没有额外的属性结构，因为子项的属性一开始就是已知的。此外，子系统没有容器，因为它自身没有任何属性。
+
+```c
+/*
+ * 02-simple-children
+ *
+ * This example merely has a simple one-attribute child.  Note that
+ * there is no extra attribute structure, as the child's attribute is
+ * known from the get-go.  Also, there is no container for the
+ * subsystem, as it has no attributes of its own.
+ */
+
+struct simple_child {
+	struct config_item item;
+	int storeme;
+};
+
+static inline struct simple_child *to_simple_child(struct config_item *item)
+{
+	return container_of(item, struct simple_child, item);
+}
+
+static ssize_t simple_child_storeme_show(struct config_item *item, char *page)
+{
+	return sprintf(page, "%d\n", to_simple_child(item)->storeme);
+}
+
+static ssize_t simple_child_storeme_store(struct config_item *item,
+		const char *page, size_t count)
+{
+	struct simple_child *simple_child = to_simple_child(item);
+	int ret;
+
+	ret = kstrtoint(page, 10, &simple_child->storeme);
+	if (ret)
+		return ret;
+
+	return count;
+}
+
+CONFIGFS_ATTR(simple_child_, storeme);
+
+static struct configfs_attribute *simple_child_attrs[] = {
+	&simple_child_attr_storeme,
+	NULL,
+};
+
+static void simple_child_release(struct config_item *item)
+{
+	kfree(to_simple_child(item));
+}
+
+static struct configfs_item_operations simple_child_item_ops = {
+	.release	= simple_child_release,
+};
+
+static const struct config_item_type simple_child_type = {
+	.ct_item_ops	= &simple_child_item_ops,
+	.ct_attrs	= simple_child_attrs,
+	.ct_owner	= THIS_MODULE,
+};
+
+struct simple_children {
+	struct config_group group;
+};
+
+static inline struct simple_children *to_simple_children(struct config_item *item)
+{
+	return container_of(to_config_group(item),
+			    struct simple_children, group);
+}
+
+static struct config_item *simple_children_make_item(struct config_group *group,
+		const char *name)
+{
+	struct simple_child *simple_child;
+
+	simple_child = kzalloc(sizeof(struct simple_child), GFP_KERNEL);
+	if (!simple_child)
+		return ERR_PTR(-ENOMEM);
+
+	config_item_init_type_name(&simple_child->item, name,
+				   &simple_child_type);
+
+	return &simple_child->item;
+}
+
+static ssize_t simple_children_description_show(struct config_item *item,
+		char *page)
+{
+	return sprintf(page,
+"[02-simple-children]\n"
+"\n"
+"This subsystem allows the creation of child config_items.  These\n"
+"items have only one attribute that is readable and writeable.\n");
+}
+
+CONFIGFS_ATTR_RO(simple_children_, description);
+
+static struct configfs_attribute *simple_children_attrs[] = {
+	&simple_children_attr_description,
+	NULL,
+};
+
+static void simple_children_release(struct config_item *item)
+{
+	kfree(to_simple_children(item));
+}
+
+static struct configfs_item_operations simple_children_item_ops = {
+	.release	= simple_children_release,
+};
+
+/*
+ * Note that, since no extra work is required on ->drop_item(),
+ * no ->drop_item() is provided.
+ */
+// 如果组提供了 ct_group_ops->make_item() 方法，则通过 mkdir(2) 在组的目录中调用该方法创建子项。
+static struct configfs_group_operations simple_children_group_ops = {
+	.make_item	= simple_children_make_item,
+};
+
+static const struct config_item_type simple_children_type = {
+	.ct_item_ops	= &simple_children_item_ops,
+	.ct_group_ops	= &simple_children_group_ops,
+	.ct_attrs	= simple_children_attrs,
+	.ct_owner	= THIS_MODULE,
+};
+
+static struct configfs_subsystem simple_children_subsys = {
+	.su_group = {
+		.cg_item = {
+			.ci_namebuf = "02-simple-children",
+			.ci_type = &simple_children_type,
+		},
+	},
+};
+```
+
+> [config_group 结构包含一个 config_item。适当配置该项意味着 group 可以作为自己的项目发挥作用。不过，它可以做更多：它可以创建子项目或子组。这是通过在组的 config_item_type 上指定的组操作来实现的。](#struct-config_group)
+>
+> 这个例子，可以通过 mkdir 创建子项，子项有一个可读写的 storeme 属性。
+>
+> ```bash
+> root@milkv-duo]/tmp/usb/02-simple-children# cat description
+> [02-simple-children]
+>
+> This subsystem allows the creation of child config_items.  These
+> items have only one attribute that is readable and writeable.
+> [root@milkv-duo]/tmp/usb/02-simple-children# mkdir test01
+> [root@milkv-duo]/tmp/usb/02-simple-children# tree .
+> .
+> ├── description
+> └── test01
+>     └── storeme
+>
+> 1 directory, 2 files
+> [root@milkv-duo]/tmp/usb/02-simple-children# echo xxx > test01/storeme
+> sh: write error: Invalid argument
+> [root@milkv-duo]/tmp/usb/02-simple-children# echo 30 > test01/storeme
+> [root@milkv-duo]/tmp/usb/02-simple-children# cat test01/storeme
+> 30
+> [root@milkv-duo]/tmp/usb/02-simple-children# mkdir test02
+> [root@milkv-duo]/tmp/usb/02-simple-children# mkdir test03
+> [root@milkv-duo]/tmp/usb/02-simple-children# tree .
+> .
+> ├── description
+> ├── test01
+> │   └── storeme
+> ├── test02
+> │   └── storeme
+> └── test03
+>     └── storeme
+>
+> 3 directories, 4 files
+> [root@milkv-duo]/tmp/usb/02-simple-children# cat test02/storeme
+> 0
+> [root@milkv-duo]/tmp/usb/02-simple-children# rmdir test03
+> [root@milkv-duo]/tmp/usb/02-simple-children# ls
+> description  test01  test02
+> ```
+
+### 03-group-children
+
+```c
+/*
+ * 03-group-children
+ *
+ * This example reuses the simple_children group from above.  However,
+ * the simple_children group is not the subsystem itself, it is a
+ * child of the subsystem.  Creation of a group in the subsystem creates
+ * a new simple_children group.  That group can then have simple_child
+ * children of its own.
+ */
+
+static struct config_group *group_children_make_group(
+		struct config_group *group, const char *name)
+{
+	struct simple_children *simple_children;
+
+	simple_children = kzalloc(sizeof(struct simple_children),
+				  GFP_KERNEL);
+	if (!simple_children)
+		return ERR_PTR(-ENOMEM);
+
+	config_group_init_type_name(&simple_children->group, name,
+				    &simple_children_type);
+
+	return &simple_children->group;
+}
+
+static ssize_t group_children_description_show(struct config_item *item,
+		char *page)
+{
+	return sprintf(page,
+"[03-group-children]\n"
+"\n"
+"This subsystem allows the creation of child config_groups.  These\n"
+"groups are like the subsystem simple-children.\n");
+}
+
+CONFIGFS_ATTR_RO(group_children_, description);
+
+static struct configfs_attribute *group_children_attrs[] = {
+	&group_children_attr_description,
+	NULL,
+};
+
+/*
+ * Note that, since no extra work is required on ->drop_item(),
+ * no ->drop_item() is provided.
+ */
+static struct configfs_group_operations group_children_group_ops = {
+	.make_group	= group_children_make_group,
+};
+
+static const struct config_item_type group_children_type = {
+	.ct_group_ops	= &group_children_group_ops,
+	.ct_attrs	= group_children_attrs,
+	.ct_owner	= THIS_MODULE,
+};
+
+static struct configfs_subsystem group_children_subsys = {
+	.su_group = {
+		.cg_item = {
+			.ci_namebuf = "03-group-children",
+			.ci_type = &group_children_type,
+		},
+	},
+};
+```
+
+> [如果子系统希望子项本身也是一个组，则子系统会提供 `ct_group_ops->make_group()` 方法。](#sturct-config_group)
+>
+> 这个例子中，可以通过 mkdir 去创建 group。
+>
+> > ❓❓一个问题：如果 `ct_group_ops` 中同时指定了 `make_group` 和 `make_item` ，那么调用 `mkdir` 时是执行哪一个呢？可以从源码中找答案：[https://elixir.bootlin.com/linux/v5.10.186/source/fs/configfs](https://elixir.bootlin.com/linux/v5.10.186/source/fs/configfs)  `configfs` 的实现看起来有点简单，代码量并不大。
+> >
+> > [https://elixir.bootlin.com/linux/v5.10.186/source/fs/configfs/dir.c#L1353](https://elixir.bootlin.com/linux/v5.10.186/source/fs/configfs/dir.c#L1353) 在 configfs_mkdir() 中，`make_group` 优先调用。
+>
+> ```bash
+> [root@milkv-duo]/tmp/usb/03-group-children# cat description
+> [03-group-children]
+> 
+> This subsystem allows the creation of child config_groups.  These
+> groups are like the subsystem simple-children.
+> [root@milkv-duo]/tmp/usb/03-group-children# mkdir grp1
+> [root@milkv-duo]/tmp/usb/03-group-children# tree .
+> .
+> ├── description
+> └── grp1
+>     └── description
+> 
+> 1 directory, 2 files
+> [root@milkv-duo]/tmp/usb/03-group-children# cat grp1/description
+> [02-simple-children]
+> 
+> This subsystem allows the creation of child config_items.  These
+> items have only one attribute that is readable and writeable.
+> [root@milkv-duo]/tmp/usb/03-group-children# mkdir grp1/item1
+> [root@milkv-duo]/tmp/usb/03-group-children# mkdir grp1/item2
+> [root@milkv-duo]/tmp/usb/03-group-children# tree .
+> .
+> ├── description
+> └── grp1
+>     ├── description
+>     ├── item1
+>     │   └── storeme
+>     └── item2
+>         └── storeme
+> 
+> 3 directories, 4 files
+> [root@milkv-duo]/tmp/usb/03-group-children# rmdir grp1
+> rmdir: failed to remove 'grp1': Directory not empty
+> [root@milkv-duo]/tmp/usb/03-group-children# cd grp1/
+> [root@milkv-duo]/tmp/usb/03-group-children/grp1# rmdir item1
+> [root@milkv-duo]/tmp/usb/03-group-children/grp1# rmdir item2
+> [root@milkv-duo]/tmp/usb/03-group-children/grp1# cd ..
+> [root@milkv-duo]/tmp/usb/03-group-children# rmdir grp1
+> [root@milkv-duo]/tmp/usb/03-group-children# ls
+> description
+> [root@milkv-duo]/tmp/usb/03-group-children#
+> ```
 
 ## 层次结构导航和子系统互斥锁
 
