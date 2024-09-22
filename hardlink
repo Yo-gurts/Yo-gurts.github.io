@@ -14,6 +14,7 @@ file_list=(
 	"DS_数据结构摘要"
 	"gdb"
 	"Linux-configfs"
+	"Linux-USBconfigfs"
 	"Linux-USBmtp"
 	"Linux-USB驱动框架"
 	"Linux内核-中断"

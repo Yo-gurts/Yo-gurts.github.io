@@ -6,7 +6,7 @@ updated: 2024-09-01 10:54:14
 tags:
   - Linux
   - USB
-categories: Linux
+categories: USB
 keywords:
 description:
 ---

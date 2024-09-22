@@ -1,4 +1,3 @@
-
 ---
 title: Linux configfs
 top_img: transparent
@@ -1146,7 +1145,7 @@ static struct configfs_subsystem group_children_subsys = {
 > ```bash
 > [root@milkv-duo]/tmp/usb/03-group-children# cat description
 > [03-group-children]
-> 
+>
 > This subsystem allows the creation of child config_groups.  These
 > groups are like the subsystem simple-children.
 > [root@milkv-duo]/tmp/usb/03-group-children# mkdir grp1
@@ -1155,11 +1154,11 @@ static struct configfs_subsystem group_children_subsys = {
 > ├── description
 > └── grp1
 >     └── description
-> 
+>
 > 1 directory, 2 files
 > [root@milkv-duo]/tmp/usb/03-group-children# cat grp1/description
 > [02-simple-children]
-> 
+>
 > This subsystem allows the creation of child config_items.  These
 > items have only one attribute that is readable and writeable.
 > [root@milkv-duo]/tmp/usb/03-group-children# mkdir grp1/item1
@@ -1173,7 +1172,7 @@ static struct configfs_subsystem group_children_subsys = {
 >     │   └── storeme
 >     └── item2
 >         └── storeme
-> 
+>
 > 3 directories, 4 files
 > [root@milkv-duo]/tmp/usb/03-group-children# rmdir grp1
 > rmdir: failed to remove 'grp1': Directory not empty

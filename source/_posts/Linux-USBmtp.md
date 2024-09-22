@@ -6,7 +6,7 @@ updated: 2024-09-17 20:02:18
 tags:
   - Linux
   - USB
-categories: Linux
+categories: USB
 keywords:
 description:
 ---
@@ -26,6 +26,22 @@ https://en.wikipedia.org/wiki/Media_Transfer_Protocol
 还是 wiki 介绍得更好，其他的随便看看
 
 https://www.cnblogs.com/skywang12345/p/3474206.html
+
+> https://wowothink.com/ffcaead/
+>
+> 1、UMS：USB mass storage，USB大容量存储，也被称为UMS，USB MSC。在旧版Android手机上会将其暴露给计算机，有如下几种缺点：
+>
+> - USB mass storage是flash driver，外部hd，SD卡和其他USB存储设备使用的标准协议。驱动器使其自身完全对计算机可见，就像它是内部驱动器一样；
+> - **这种方式存在问题。无论什么设备访问存储，都需要对其进行独占访问。**将存储连接到计算机时，它与设备上运行的Android操作系统断开连接。存储在SD卡或USB存储器上的任何文件或应用程序在连接到计算机时都将不可用，此时是计算机独占；
+> - 由于必须可以从Windows设备访问文件系统，因此必须使用FAT文件系统对其进行格式化。 微软不仅拥有对FAT施加的专利，而且FAT也是一个较旧的，较慢的文件系统，没有现代许可系统。
+>
+> 2、MTP：Media Transfer Protocol，媒体传输协议，主要用于传输媒体文件，当Android使用该协议，将其连接到电脑上，会显示一个媒体设备。该协议与USB mass storage的工作方式非常不同。
+>
+> - MTP不会将Android设备的原始文件系统暴露给Windows，而是在文件级别运行；
+> - Android设备不会将其整个存储设备暴露给Windows。 相反，当将设备连接到计算机时，计算机将查询设备，并且设备会响应其提供的文件和目录列表。
+> - Android可以选择它呈现出来的文件，并隐藏系统文件，以便其他人无法查看或修改它们。 如果尝试删除或编辑无法修改的文件，设备将拒绝该请求，将会看到错误消息。
+> - **计算机不需要对存储设备进行独占访问，因此无需连接存储，断开连接或为不同类型的数据分别设置分区**。Android也可以使用它想要的ext4或任何其他文件系统，但Windows不必了解该文件系统。
+> - 在实践中，MTP的功能很像USB mass storage。 例如，MTP设备显示在Windows资源管理器中，因此您可以浏览和传输文件。
 
 ## libmtp 库
 
