@@ -15,6 +15,7 @@ file_list=(
 	"gdb"
 	"Linux-configfs"
 	"Linux-USBconfigfs"
+    "Linux-USBfunctionfs"
 	"Linux-USBmtp"
 	"Linux-USB驱动框架"
 	"Linux内核-中断"
