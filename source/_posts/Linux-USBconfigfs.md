@@ -12,7 +12,7 @@ keywords:
 description:
 ---
 
-# Linux USB gadget 通过 configfs 配置
+## Linux USB gadget 通过 configfs 配置
 
 - [ ] 先阅读 [Linux configfs](Linux-configfs.md)，再看此内容
 
