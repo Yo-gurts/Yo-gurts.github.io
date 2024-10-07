@@ -3,8 +3,9 @@ title: 数据结构摘要
 date: 2022-04-23 09:55:02
 updated: 2022-04-23 09:55:02
 tags:
+  - Algorithm
   - 数据结构
-categories: 数据结构
+categories: Algorithm
 keywords:
 description:
 top_img: transparent

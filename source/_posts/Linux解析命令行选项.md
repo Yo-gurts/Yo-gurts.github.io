@@ -6,7 +6,7 @@ updated: 2022-10-05 23:03:51
 tags:
   - c
   - Linux
-categories: c
+categories: Linux
 keywords:
 description: 解析命令行选项的库函数
 ---

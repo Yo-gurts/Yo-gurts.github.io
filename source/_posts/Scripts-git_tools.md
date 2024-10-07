@@ -6,7 +6,7 @@ date: 2024-08-11 11:37:00
 updated: 2024-09-16 22:15:39
 tags:
   - git
-categories: Scripts
+categories: Tools
 keywords:
 description: 对多个 git 仓库进行批量操作。
 ---

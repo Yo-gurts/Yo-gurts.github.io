@@ -6,12 +6,11 @@ updated: 2024-06-04 11:19:42
 tags:
   - Alios
   - USB
-categories: Alios
+  - Cvitek
+categories: Cvitek
 keywords:
 description:
 ---
-
-[TOC]
 
 ## 配置说明
 
