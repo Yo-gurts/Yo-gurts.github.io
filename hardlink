@@ -12,6 +12,7 @@ file_list=(
 	"Cvitek-SDK编译环境"
 	"Cvitek-usbcamera需求"
 	"Cvitek-安全启动"
+	"Cvitek-编译流程"
 	"DS_数据结构摘要"
 	"gdb"
 	"Linux-configfs"
