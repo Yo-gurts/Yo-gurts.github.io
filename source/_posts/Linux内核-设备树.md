@@ -348,3 +348,29 @@ https://doc.embedfire.com/linux/stm32mp1/driver/zh/latest/linux_driver/base_driv
 - [Linux 设备树解析](http://hulc.xyz/2021/11/11/linux%E8%AE%BE%E5%A4%87%E6%A0%91%E8%A7%A3%E6%9E%90/)
 - [Linux 设备树 device_node 转换成 platform_device](http://hulc.xyz/2021/11/16/linux%E8%AE%BE%E5%A4%87%E6%A0%91device-node%E8%BD%AC%E6%8D%A2%E6%88%90platform-device/)
 - https://bbs.huaweicloud.com/blogs/411120
+
+---
+
+## 💡编译、反编译
+
+要将设备树二进制文件（**DTB**，Device Tree Blob）反编译为设备树源文件（**DTS**，Device Tree Source），你可以使用 Linux 中的 `dtc`（Device Tree Compiler）工具。以下是具体的步骤：
+
+1. **安装 `dtc` 工具**（如果尚未安装）：
+   - 在基于 Debian 的系统（如 Ubuntu）中，可以通过以下命令安装：
+     ```bash
+     sudo apt-get install device-tree-compiler
+     ```
+
+2. **反编译 DTB 文件**：
+   使用 `dtc` 命令将 DTB 文件反编译为 DTS 文件。假设你的 DTB 文件名为 `example.dtb`，你可以运行以下命令：
+   ```bash
+   dtc -I dtb -O dts -o example.dts example.dtb
+   ```
+
+   - `-I dtb`：指定输入格式为 DTB。
+   - `-O dts`：指定输出格式为 DTS。
+   - `-o example.dts`：输出的 DTS 文件名。
+   - `example.dtb`：要反编译的 DTB 文件。
+
+3. **查看 DTS 文件**：
+   反编译完成后，你可以使用文本编辑器查看生成的 `.dts` 文件。
