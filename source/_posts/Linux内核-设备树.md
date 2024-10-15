@@ -2,7 +2,7 @@
 title: 设备树语法介绍
 top_img: transparent
 date: 2023-08-08 13:45:42
-updated: 2023-08-08 13:45:42
+updated: 2024-10-15 22:24:42
 tags:
   - Linux
   - Kernel
@@ -26,9 +26,12 @@ description:
     **根设备**
 
     `SPI`、 `I2C` 控制器这样看起来没有关联的设备，他们就直接挂靠在根设备下。
+
     ![image-20231230124213784](../images/Linux%E5%86%85%E6%A0%B8-%E8%AE%BE%E5%A4%87%E6%A0%91/image-20231230124213784.png)
 
 3. 为什么要有设备树？
+
+    这个和 Linux 的设备-驱动模型对应，驱动 - 设备分离，通过 `Kconfig` 定义的配置项决定是否启用驱动。设备是否启用则是由设备树来决定。
     Linux 支持的设备类型很多很多，不可能将所有设备都启用（会浪费大量的内存、CPU资源）。设备树就是用来告诉 Kernel 需要启用哪些设备。
 
 ## 语法说明
@@ -200,7 +203,7 @@ status 属性看名字就知道是和设备状态有关的， status 属性值�
 };
 ```
 
-**不过，从实际文件中来看，reg 的用法更像是 `reg=<0x00 addr 0x00 size>` 如下所示**，不过也不需要过渡纠结语法正确与否，反正设备数的作用只是传递数据给驱动，只要驱动知道应该怎么解析数据就行。比如 I2C 设备的 reg 用来表示设备地址。
+~~不过，从实际文件中来看，reg 的用法更像是 `reg=<0x00 addr 0x00 size>` 如下所示~~🤦‍♂️，比如 I2C 设备的 reg 用来表示设备地址。
 
 ```c
 	memory@80000000 {
@@ -215,6 +218,22 @@ status 属性看名字就知道是和设备状态有关的， status 属性值�
 		reg = <0x0 CVIMMAP_FREERTOS_ADDR 0x0 CVIMMAP_FREERTOS_SIZE>;
 		ion-size = <CVIMMAP_FREERTOS_RESERVED_ION_SIZE>;	//reserved ion size for freertos
 	};
+```
+
+其实这里就是上面 `#address-cells` 和 `#size-cells` 属性的作用，因为在 `cv181x_base.dtsi` 中，根节点有设置这两个属性为2，那么就需要用2个32bit来表示。
+
+```c
+/ {
+	compatible = "cvitek,cv181x";
+
+	#size-cells = <0x2>;
+	#address-cells = <0x2>;
+
+	top_misc:top_misc_ctrl@3000000 {
+		compatible = "syscon";
+		reg = <0x0 0x03000000 0x0 0x8000>;
+	};
+...
 ```
 
 ### **name 属性**
