@@ -15,6 +15,7 @@ file_list=(
 	"Cvitek-编译流程"
 	"DS_数据结构摘要"
 	"gdb"
+	"GNUToolchain"
 	"Linux-configfs"
 	"Linux-sysfs"
 	"Linux-USBconfigfs"
