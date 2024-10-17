@@ -1,0 +1,800 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Embedded Programming with the GNU Toolchain | (╯°□°）╯︵ ┻━┻ </title><meta name="author" content="(ง'̀-'́)ง"><meta name="copyright" content="(ง'̀-'́)ง"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Origin online url: https:&amp;#x2F;&amp;#x2F;www.bravegnu.org&amp;#x2F;gnu-eprog&amp;#x2F; github repo: https:&amp;#x2F;&amp;#x2F;github.com&amp;#x2F;bravegnu&amp;#x2F;gnu-eprog&amp;#x2F;blob&amp;#x2F;master&amp;#x2F;gnu-eprog.asciidoc  1. Introduc"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://yo-gurts.github.io/2024/10/17/GNUToolchain/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.13.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":600},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Embedded Programming with the GNU Toolchain',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-10-17 22:00:09'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+          const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+          const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+          const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+          if (t === undefined) {
+            if (isLightMode) activateLightMode()
+            else if (isDarkMode) activateDarkMode()
+            else if (isNotSpecified || hasNoSupport) {
+              const now = new Date()
+              const hour = now.getHours()
+              const isNight = hour <= 6 || hour >= 18
+              isNight ? activateDarkMode() : activateLightMode()
+            }
+            window.matchMedia('(prefers-color-scheme: dark)').addListener(e => {
+              if (saveToLocal.get('theme') === undefined) {
+                e.matches ? activateDarkMode() : activateLightMode()
+              }
+            })
+          } else if (t === 'light') activateLightMode()
+          else activateDarkMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="google-site-verification" content="MP347_Nl-SqfnOi3FZSI69WSb8J_rk_jEsa3jL4ODCI" /><meta name="generator" content="Hexo 6.1.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://s2.loli.net/2024/09/17/3NdhvxIcPRVpufD.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">44</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">51</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">10</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background: transparent"><nav id="nav"><span id="blog-info"><a href="/" title="(╯°□°）╯︵ ┻━┻ "><span class="site-name">(╯°□°）╯︵ ┻━┻ </span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Embedded Programming with the GNU Toolchain</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2024-10-17T14:00:06.000Z" title="发表于 2024-10-17 22:00:06">2024-10-17</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2024-10-17T14:00:09.000Z" title="更新于 2024-10-17 22:00:09">2024-10-17</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Assembler/">Assembler</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">10.7k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>50分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Embedded Programming with the GNU Toolchain"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/2024/10/17/GNUToolchain/#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><blockquote>
+<p>Origin online url: <a target="_blank" rel="noopener" href="https://www.bravegnu.org/gnu-eprog/">https://www.bravegnu.org/gnu-eprog/</a></p>
+<p>github repo: <a target="_blank" rel="noopener" href="https://github.com/bravegnu/gnu-eprog/blob/master/gnu-eprog.asciidoc">https://github.com/bravegnu/gnu-eprog/blob/master/gnu-eprog.asciidoc</a></p>
+</blockquote>
+<h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><p>GNU工具链越来越多地被用于深度嵌入式软件开发。这种类型的软件开发也被称为独立C编程和裸机C编程。独立C编程带来了新的问题，处理这些问题需要对GNU工具链有更深入的理解。GNU工具链的手册提供了关于工具链的极好信息，但从工具链的角度，而不是问题的角度。好吧，无论如何，手册应该是这样写的。结果是常见问题的答案分散在各处，GNU工具链的新用户感到困惑。</p>
+<p>本教程试图通过从问题的角度解释工具来弥合差距。希望这能让更多人能够使用 GNU 工具链进行嵌入式项目开发。</p>
+<p>在本教程中，使用Qemu模拟基于ARM的嵌入式系统。有了这个，您可以在舒适的桌面上学习GNU工具链，而无需投资硬件。本教程本身不教授ARM指令集。它应该与其他书籍和在线教程一起使用，例如：</p>
+<ul>
+<li>ARM Assembler - <a target="_blank" rel="noopener" href="http://www.heyrick.co.uk/assembler/">http://www.heyrick.co.uk/assembler/</a></li>
+<li>ARM汇编程序-<a target="_blank" rel="noopener" href="http://www.heyrick.co.uk/assembler/">http://www.heyrick.co.uk/assembler/</a></li>
+<li>ARM Assembly Language Programming - <a target="_blank" rel="noopener" href="http://www.arm.com/miscPDFs/9658.pdf">http://www.arm.com/miscPDFs/9658.pdf</a></li>
+<li>ARM汇编语言编程-<a target="_blank" rel="noopener" href="http://www.arm.com/miscPDFs/9658.pdf">http://www.arm.com/miscPDFs/9658.pdf</a></li>
+</ul>
+<p>但为了方便读者，附录中列出了常用的ARM指令。顺序看文中代码时，有 arm 指令不清楚可以跳转到附录查看。</p>
+<hr>
+<h2 id="2-Setting-up-the-ARM-Lab"><a href="#2-Setting-up-the-ARM-Lab" class="headerlink" title="2. Setting up the ARM Lab"></a>2. Setting up the ARM Lab</h2><p>本节介绍如何在你的电脑上使用 Qemu 和 GNU 工具链设置一个简单的 ARM 开发和测试环境。Qemu 是一款可以模拟多种机器（包括基于 ARM 的机器）的机器模拟器。你可以编写 ARM 汇编程序，使用 GNU 工具链进行编译，并在 Qemu 中执行和测试这些程序。</p>
+<h3 id="2-1-Qemu-ARM"><a href="#2-1-Qemu-ARM" class="headerlink" title="2.1. Qemu ARM"></a>2.1. Qemu ARM</h3><p>Qemu 将用于模拟来自 Gumstix 的基于 PXA255 的 <em>connex</em> 开发板。要运行本教程，你需要至少 0.9.1 版本的 Qemu。</p>
+<p>PXA255 处理器具有符合 ARMv5TE 指令集的 ARM 核心。PXA255 还包含多个片上外设。在本教程中，将介绍其中的一些外设。.</p>
+<h3 id="2-2-Installing-Qemu-in-Debian"><a href="#2-2-Installing-Qemu-in-Debian" class="headerlink" title="2.2. Installing Qemu in Debian"></a>2.2. Installing Qemu in Debian</h3><p>This tutorial requires qemu version 0.9.1 or above. The qemu package available in Debian Squeeze&#x2F;Wheezy, meets this requirement. Install <code>qemu</code> using <code>apt-get</code>.</p>
+<blockquote>
+<p>Ubuntu 22.04 上测试，后续使用的，应该通过 <code>apt install qemu-system-arm</code></p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo apt install qemu-system-arm</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-3-Installing-GNU-Toolchain-for-ARM"><a href="#2-3-Installing-GNU-Toolchain-for-ARM" class="headerlink" title="2.3. Installing GNU Toolchain for ARM"></a>2.3. Installing GNU Toolchain for ARM</h3><ol>
+<li><p>Folks at CodeSourcery (part of Mentor Graphics) have been kind enough to make GNU toolchains available for various architectures. Download the GNU toolchain for ARM, available from from <a target="_blank" rel="noopener" href="http://www.mentor.com/embedded-software/sourcery-tools/sourcery-codebench/editions/lite-edition/">http://www.mentor.com/embedded-software/sourcery-tools/sourcery-codebench/editions/lite-edition/</a></p>
+<blockquote>
+<p>⛔ 上诉链接早已失效，官方工具链下载地址：<a target="_blank" rel="noopener" href="https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads%E3%80%82">https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads。</a></p>
+<p>不过上面链接下载的工具链也有问题，部分工具链接异常。改用 <a target="_blank" rel="noopener" href="https://github.com/sophgo/host-tools">https://github.com/sophgo/host-tools</a> 下的工具链。</p>
+</blockquote>
+</li>
+<li><p>Extract the tar archive, to <code>~/toolchains</code>.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">mkdir</span> ~/toolchains</span><br><span class="line">$ <span class="built_in">cd</span> ~/toolchains</span><br><span class="line">$ tar -jxf ~/downloads/arm-2008q1-126-arm-linux-gnueabihf-i686-pc-linux-gnu.tar.bz2</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Add the toolchain to your <code>PATH</code>.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">export</span> PATH=/home/yogurt/Documents/sophgo/host-tools/gcc/gcc-linaro-6.3.1-2017.05-x86_64_arm-linux-gnueabihf/bin:<span class="variable">$PATH</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>You might want to add the previous line to your <code>.bashrc</code>.</p>
+</li>
+</ol>
+<hr>
+<h2 id="3-Hello-ARM"><a href="#3-Hello-ARM" class="headerlink" title="3. Hello ARM"></a>3. Hello ARM</h2><p>在本节中，你将学习如何汇编一个简单的 ARM 程序，并在由 Qemu 模拟的裸机 connex 开发板上进行测试。</p>
+<p>汇编程序的源文件由一系列语句组成，每行一条语句。每条语句的格式如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">label:    instruction         @ comment</span><br></pre></td></tr></table></figure>
+
+<p>上面三个部分都是可选的。</p>
+<ul>
+<li><p>📌 <code>label</code>: 标签是一个方便的方式，<strong>用于指代内存中指令的位置</strong>。标签可以在任何地址可以出现的地方使用，例如作为分支指令的操作数。标签名称应由字母、数字、下划线（<code>_</code>）和美元符号（<code>$</code>）组成。</p>
+<blockquote>
+<p>The label is a convenient way to refer to the location of the instruction in memory. The label can be used where ever an address can appear, for example as an operand of the branch instruction. The label name should consist of alphabets, digits, <code>_</code> and <code>$</code>.</p>
+</blockquote>
+</li>
+<li><p>📝 <code>comment</code>: 注释以 <code>@</code> 开始，<code>@</code> 后出现的字符将被忽略。</p>
+</li>
+<li><p>📜 <code>instruction</code>: 可以是 ARM 指令或汇编指令。汇编指令是给汇编器的命令，💡💡 <strong>汇编指令总是以 <code>.</code>（句点）开头</strong>。</p>
+<blockquote>
+<p>The <code>instruction</code> could be an ARM instruction or an assembler directive. Assembler directives are commands to the assembler. Assembler directives always start with a <code>.</code> (period).</p>
+</blockquote>
+</li>
+</ul>
+<blockquote>
+<p>💡💡 注意后续区分汇编指令与 ARM 指令！！！</p>
+</blockquote>
+<p>以下是一个非常简单的 ARM 汇编程序，用于将两个数字相加：</p>
+<p><strong>Listing 1. Adding Two Numbers</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">        .text</span><br><span class="line">start:                       @ Label, not really required</span><br><span class="line">        mov   r0, #5         @ Load register r0 with the value 5</span><br><span class="line">        mov   r1, #4         @ Load register r1 with the value 4</span><br><span class="line">        add   r2, r1, r0     @ Add r0 and r1 and store in r2</span><br><span class="line"></span><br><span class="line">stop:   b stop               @ Infinite loop to stop execution</span><br></pre></td></tr></table></figure>
+
+<p><code>.text</code> 是一个<strong>汇编指令</strong>，表示接下来的指令应被汇编到代码段，而不是 <code>.data</code> 段。关于段的内容将在后面的教程中详细介绍。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">The `.text` is an assembler directive, which says that the following instructions</span><br><span class="line">have to be assembled into the code section, rather than the `.data` section.</span><br><span class="line">Sections will be covered in detail, later in the tutorial.</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-1-Building-the-Binary"><a href="#3-1-Building-the-Binary" class="headerlink" title="3.1. Building the Binary"></a>3.1. Building the Binary</h3><p>将下面的程序保存到一个名为 <code>add.s</code> 的文件中。要汇编该文件，可以使用 GNU 工具链的汇编器 <code>as</code>，命令如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ arm-linux-gnueabihf-as -o add.o add.s</span><br></pre></td></tr></table></figure>
+
+<p><code>-o</code>选项指定输出 文件名。</p>
+<blockquote>
+<p>交叉工具链总是以目标架构的前缀命名，以避免与主机工具链的名称冲突。为了可读性，文本中将不带前缀地提及这些工具。</p>
+</blockquote>
+<p>要生成可执行文件，可以使用 GNU 工具链中的链接器 <code>ld</code>，如下所示的命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ arm-linux-gnueabihf-ld -Ttext=0x0 -o add.elf add.o</span><br><span class="line">arm-linux-gnueabihf-ld: warning: cannot find entry symbol _start; defaulting to 0000000000000000</span><br></pre></td></tr></table></figure>
+
+<p>这里同样地，<code>-o</code> 选项用于指定输出文件名。<code>-Ttext=0x0</code> 指定了标签 <code>text</code> 应被分配的地址，使得指令从地址 <code>0x0</code> 开始。要查看各个标签的地址分配，可以使用 <code>nm</code> 命令，如下所示：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Here again, the `-o` option specifies the output filename.</span></span><br><span class="line"><span class="comment"># The `-Ttext=0x0`, specifies that addresses should be assigned to the labels,</span></span><br><span class="line"><span class="comment"># such that the instructions were starting from address `0x0`.</span></span><br><span class="line"><span class="comment"># To view the address assignment for various labels, the `nm` command can be used as shown below.</span></span><br><span class="line"></span><br><span class="line">$ arm-linux-gnueabihf-nm add.elf</span><br><span class="line">00010010 T __bss_end__</span><br><span class="line">00010010 T _bss_end__</span><br><span class="line">00010010 T __bss_start</span><br><span class="line">00010010 T __bss_start__</span><br><span class="line">00010010 T _edata</span><br><span class="line">00010010 T __end__</span><br><span class="line">00010010 T _end</span><br><span class="line">00000000 t start</span><br><span class="line">0000000c t stop</span><br></pre></td></tr></table></figure>
+
+<p>请注意标签 <code>start</code> 和 <code>stop</code> 的地址分配。<code>start</code> 的地址被分配为 <code>0x0</code>，因为它是第一条指令的标签。<code>stop</code> 标签在 3 条指令之后。每条指令占用 4 字节，因此 <code>stop</code> 被分配的地址是 12（<code>0xC</code>）。</p>
+<p>使用不同的基地址进行链接将导致标签被分配到不同的地址集。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Note the address assignment for the labels `start` and `stop`. The address assigned</span></span><br><span class="line"><span class="comment"># for `start` is `0x0`. Since it is the label of the first instruction.</span></span><br><span class="line"><span class="comment"># The label `stop` is after 3 instructions. Each instructions is 4 bytes.</span></span><br><span class="line"><span class="comment"># Hence `stop` is assigned an address `12` (`0xC`).</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Linking with a different base address for the instructions will result in</span></span><br><span class="line"><span class="comment"># a different set of addresses being assigned to the labels.</span></span><br><span class="line"></span><br><span class="line">$ arm-linux-gnueabihf-ld -Ttext=0x20000000 -o add.elf add.o</span><br><span class="line">$ arm-linux-gnueabihf-nm add.elf</span><br><span class="line">... clip ...</span><br><span class="line">20000000 t start</span><br><span class="line">2000000c t stop</span><br></pre></td></tr></table></figure>
+<p><code>ld</code> 创建的输出文件格式称为 <code>ELF</code>。有多种文件格式可用于存储可执行代码。ELF 格式在有操作系统时运行良好，但由于我们将要在裸机上运行程序，因此需要将其转换为一种更简单的文件格式，称为 <code>binary</code> 格式。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">The output file created by `ld` is in a format called `ELF`. Various file formats are available</span><br><span class="line"> for storing executable code. The ELF format works fine when you have an OS around,</span><br><span class="line"> but since we are going to run the program on bare metal,</span><br><span class="line"> we will have to convert it to a simpler file format called the `binary` format.</span><br></pre></td></tr></table></figure>
+
+<p><code>binary</code> 格式的文件包含从特定内存地址开始的连续字节。该文件中不存储任何其他附加信息。<strong>这对于 Flash 烧录工具来说非常方便</strong>，因为编程时只需将文件中的每个字节复制到从指定基地址开始的连续地址中即可。</p>
+<blockquote>
+<p>有点像烧录固件时，提前将固件打包为的整包工具。</p>
+</blockquote>
+<p>GNU 工具链中的 <code>objcopy</code> 命令可用于在不同的目标文件格式之间进行转换。以下是该命令的一种常见用法：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># A file in `binary` format contains consecutive bytes from a specific memory address.</span></span><br><span class="line"><span class="comment"># No other additional information is stored in the file. This is convenient for Flash programming tools,</span></span><br><span class="line"><span class="comment"># since all that has to be done when programming is to copy each byte in the file,</span></span><br><span class="line"><span class="comment"># to consecutive address starting from a specified base address in memory.</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># The GNU toolchain’s `objcopy` command can be used to convert between different object file formats.</span></span><br><span class="line"><span class="comment"># A common usage of the command is given below.</span></span><br><span class="line"></span><br><span class="line">objcopy -O &lt;output-format&gt; &lt;in-file&gt; &lt;out-file&gt;</span><br></pre></td></tr></table></figure>
+
+<p>将<code>add.elf</code>转换为 <code>binary</code> 格式 可以使用以下命令。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ arm-linux-gnueabihf-objcopy -O binary add.elf add.bin</span><br></pre></td></tr></table></figure>
+
+<p>检查文件的大小。该文件正好是16个字节。因为有4条指令，每条指令占用4个字节。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">ls</span> -al add.bin</span><br><span class="line">-rw-r--r-- 1 vijaykumar vijaykumar 16 2008-10-03 23:56 add.bin</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-2-Executing-in-Qemu"><a href="#3-2-Executing-in-Qemu" class="headerlink" title="3.2. Executing in Qemu"></a>3.2. Executing in Qemu</h3><p>当 ARM 处理器复位时，它从地址 <code>0x0</code> 开始执行。在 connex 开发板上，16MB 的 Flash 存储器位于地址 <code>0x0</code>。Flash 开始处的指令将被执行。</p>
+<p>当 <code>qemu</code> 模拟 connex 开发板时，必须指定一个文件，该文件将被视为 Flash 存储器。Flash 文件格式非常简单。要从 Flash 中的地址 X 获取字节，<code>qemu</code> 从文件的偏移量 X 读取字节。实际上，这与二进制文件格式是相同的。</p>
+<p>为了在模拟的 Gumstix connex 开发板上测试程序，我们首先创建一个 16MB 的文件来表示 Flash。我们使用 <code>dd</code> 命令从 <code>/dev/zero</code> 复制 16MB 的零字节到文件 <code>flash.bin</code>。数据以 4K 块的形式复制。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">dd</span> <span class="keyword">if</span>=/dev/zero of=flash.bin bs=4096 count=4096</span><br></pre></td></tr></table></figure>
+
+<p>然后，可以使用以下命令将 <code>add.bin</code> 文件复制到 Flash 的开头：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">dd</span> <span class="keyword">if</span>=add.bin of=flash.bin bs=4096 conv=notrunc</span><br></pre></td></tr></table></figure>
+
+<p>这相当于将<code>bin</code>文件烧录到闪存上。</p>
+<p>在复位后，处理器将从地址 <code>0x0</code> 开始执行，程序中的指令将被执行。调用 <code>qemu</code> 的命令如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ qemu-system-arm -M connex -pflash flash.bin -nographic -serial /dev/null</span><br></pre></td></tr></table></figure>
+
+<p><code>-M connex</code> 选项指定要模拟的机器为 <code>connex</code>。<code>-pflash</code> 选项指定 <code>flash.bin</code> 文件表示 Flash 存储器。<code>-nographic</code> 表示不需要图形显示的模拟。<code>-serial /dev/null</code> 指定 connex 开发板的串口连接到 <code>/dev/null</code>，以便丢弃串口数据。</p>
+<p>系统执行指令后，会在 <code>stop: b stop</code> 指令处无限循环。要查看寄存器的内容，可以使用 <code>qemu</code> 的监视器接口。监视器接口是一个命令行界面，通过它可以控制模拟的系统并查看系统状态。当 <code>qemu</code> 以上述命令启动时，监视器接口将通过 <code>qemu</code> 的标准输入&#x2F;输出提供。</p>
+<p>要查看寄存器的内容，可以使用<code>info registers</code>监视器命令。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">$ qemu-system-arm -M connex -pflash flash.bin -nographic -serial /dev/null</span><br><span class="line">WARNING: Image format was not specified <span class="keyword">for</span> <span class="string">&#x27;flash.bin&#x27;</span> and probing guessed raw.</span><br><span class="line">         Automatically detecting the format is dangerous <span class="keyword">for</span> raw images, write operations on block 0 will be restricted.</span><br><span class="line">         Specify the <span class="string">&#x27;raw&#x27;</span> format explicitly to remove the restrictions.</span><br><span class="line">QEMU 6.2.0 monitor - <span class="built_in">type</span> <span class="string">&#x27;help&#x27;</span> <span class="keyword">for</span> more information</span><br><span class="line">(qemu) info registers</span><br><span class="line">R00=00000005 R01=00000004 R02=00000009 R03=00000000</span><br><span class="line">R04=00000000 R05=00000000 R06=00000000 R07=00000000</span><br><span class="line">R08=00000000 R09=00000000 R10=00000000 R11=00000000</span><br><span class="line">R12=00000000 R13=00000000 R14=00000000 R15=0000000c</span><br><span class="line">PSR=400001d3 -Z-- A svc32</span><br><span class="line">FPSCR: 00000000</span><br><span class="line">(qemu)</span><br></pre></td></tr></table></figure>
+
+<p>请注意寄存器 <code>R02</code> 的值。该寄存器包含加法的结果，应该与预期值 9 相符。</p>
+<h3 id="3-3-More-Monitor-Commands"><a href="#3-3-More-Monitor-Commands" class="headerlink" title="3.3. More Monitor Commands"></a>3.3. More Monitor Commands</h3><p>一些有用的<code>qemu</code>监控命令 列在下表中。</p>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>help</code></td>
+<td>List available commands</td>
+</tr>
+<tr>
+<td><code>quit</code></td>
+<td>Quits the emulator</td>
+</tr>
+<tr>
+<td><code>xp /fmt addr</code></td>
+<td>Dump 物理内存中 <code>addr</code> 处的内容</td>
+</tr>
+<tr>
+<td><code>system_reset</code></td>
+<td>Reset the system.</td>
+</tr>
+</tbody></table>
+<p><code>xp</code> 命令需要更多的解释。<code>/fmt</code> 作为参数指定内存内容的显示方式。<code>fmt</code> 的语法为 <code>&lt;count&gt;&lt;format&gt;&lt;size&gt;</code>。</p>
+<ul>
+<li><p><code>count</code>: 表示要显示的 <code>item</code> 数量，例如要显示 4 个字节可以写为 <code>4</code></p>
+</li>
+<li><p><code>format</code>: 指定显示格式。<code>x</code> 代表十六进制，<code>d</code>代表有符号十进制， <code>u</code>代表无符号十进制，<code>o</code>代表八进制，<code>c</code>代表 char和<code>i</code>用于asm指令。</p>
+</li>
+<li><p><code>size</code>: 表示每个 <code>item</code> 的大小，<code>b</code>表示8位，<code>h</code>表示 16位，<code>w</code>代表32位 <code>g</code>为64位。</p>
+</li>
+</ul>
+<p>这个 <code>xp</code> 命令使用 <code>i</code> 格式可以用于反汇编内存中存在的指令。如要反汇编位于 <code>0x0</code> 的指令，可以使用以下 <code>xp</code> 命令，<code>fmt</code> 指定为 <code>4iw</code>：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">(qemu) xp /4iw 0x0</span><br><span class="line">0x00000000:  mov        r0, <span class="comment">#5  ; 0x5</span></span><br><span class="line">0x00000004:  mov        r1, <span class="comment">#4  ; 0x4</span></span><br><span class="line">0x00000008:  add        r2, r1, r0</span><br><span class="line">0x0000000c:  b  0xc</span><br></pre></td></tr></table></figure>
+
+<p>在这个命令中：</p>
+<ul>
+<li><code>4</code> 指定要显示 4 个 <code>item</code>。</li>
+<li><code>i</code> 指定这些项目将以指令形式打印（是的，这个命令内置了反汇编功能！）。</li>
+<li><code>w</code> 指定每个项目的大小为 32 位。</li>
+</ul>
+<p>该命令的输出将显示从地址 <code>0x0</code> 开始的 4 条指令的反汇编结果。</p>
+<hr>
+<h2 id="4-More-Assembler-Directives"><a href="#4-More-Assembler-Directives" class="headerlink" title="4. More Assembler Directives"></a>4. More Assembler Directives</h2><p>在本节中，我们将描述一些常用的<strong>汇编指令</strong>，并使用两个示例程序进行说明。</p>
+<blockquote>
+<p>💡💡 <strong>汇编指令总是以 <code>.</code> 开头</strong>。</p>
+</blockquote>
+<ol>
+<li>一个计算数组总和的程序</li>
+<li>一个计算字符串长度的程序</li>
+</ol>
+<h3 id="4-1-Sum-an-Array"><a href="#4-1-Sum-an-Array" class="headerlink" title="4.1. Sum an Array"></a>4.1. Sum an Array</h3><p>以下代码对一个字节数组进行求和，并将结果存储在 <code>r3</code> 中。</p>
+<p><strong>Listing 2. Sum an Array</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">        .text</span><br><span class="line">entry:  b start                 @ Skip over the data</span><br><span class="line">arr:    .byte 10, 20, 25        @ Read-only array of bytes</span><br><span class="line">eoa:                            @ Address of end of array + 1</span><br><span class="line"></span><br><span class="line">        .align</span><br><span class="line">start:</span><br><span class="line">        ldr   r0, =eoa          @ r0 = &amp;eoa</span><br><span class="line">        ldr   r1, =arr          @ r1 = &amp;arr</span><br><span class="line">        mov   r3, #0            @ r3 = 0</span><br><span class="line">loop:   ldrb  r2, [r1], #1      @ r2 = *r1++</span><br><span class="line">        add   r3, r2, r3        @ r3 += r2</span><br><span class="line">        cmp   r1, r0            @ if (r1 != r2)</span><br><span class="line">        bne   loop              @    goto loop</span><br><span class="line">stop:   b stop</span><br></pre></td></tr></table></figure>
+
+<p>该代码引入了两个新的<strong>汇编指令</strong>——<code>.byte</code> 和 <code>.align</code>。以下是对这些汇编指令的描述。</p>
+<h4 id="4-1-1-byte-Directive"><a href="#4-1-1-byte-Directive" class="headerlink" title="4.1.1. .byte Directive"></a>4.1.1. <code>.byte</code> Directive</h4><p><code>.byte</code> 的字节大小参数<strong>在内存中被组装成连续的字节</strong>。还有类似的指令 <code>.2byte</code> 和 <code>.4byte</code> 分别用于存储 16 位值和 32 位值。一般的语法如下所示。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">The byte sized arguments of `.byte` are assembled into consecutive bytes in memory.</span><br><span class="line">There are similar directives `.2byte` and `.4byte` for storing 16 bit values and 32 bit values, respectively.</span><br><span class="line">The general syntax is given below.</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">.byte   exp1, exp2, ...</span><br><span class="line">.2byte  exp1, exp2, ...</span><br><span class="line">.4byte  exp1, exp2, ...</span><br></pre></td></tr></table></figure>
+
+<p>参数可以是简单的整数字面量，可以用二进制（以 <code>0b</code> 或 <code>0B</code> 为前缀）、八进制（以 <code>0</code> 为前缀）、十进制或十六进制（以 <code>0x</code> 或 <code>0X</code> 为前缀）表示。整数也可以用字符常量表示（字符用单引号括起来），在这种情况下将使用字符的 ASCII 值。</p>
+<p>参数还可以是<strong>由字面量和其他符号构成的 C 表达式</strong>。下面给出了示例。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">The arguments could be simple integer literal, represented as binary (prefixed by `0b` or `0B`),</span><br><span class="line">octal (prefixed by `0`), decimal or hexadecimal (prefixed by `0x` or `0X`).</span><br><span class="line">The integers could also be represented as character constants (character surrounded by single quotes),</span><br><span class="line">in which case the ASCII value of the character will be used.</span><br><span class="line"></span><br><span class="line">The arguments could also be C expressions constructed out of literals and other symbols. Examples are shown below.</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">pattern:  .byte 0b01010101, 0b00110011, 0b00001111</span><br><span class="line">npattern: .byte npattern - pattern</span><br><span class="line">halpha:   .byte &#x27;A&#x27;, &#x27;B&#x27;, &#x27;C&#x27;, &#x27;D&#x27;, &#x27;E&#x27;, &#x27;F&#x27;</span><br><span class="line">dummy:    .4byte 0xDEADBEEF</span><br><span class="line">nalpha:   .byte &#x27;Z&#x27; - &#x27;A&#x27; + 1</span><br></pre></td></tr></table></figure>
+
+<h4 id="4-1-2-align-Directive"><a href="#4-1-2-align-Directive" class="headerlink" title="4.1.2. .align Directive"></a>4.1.2. <code>.align</code> Directive</h4><p>ARM 要求<strong>指令</strong>必须位于 32 位对齐的内存位置。指令中的 4 个字节的第一个字节的地址应该是 4 的倍数。为了满足这一要求，可以使用 <code>.align</code> 指令插入填充字节，直到下一个字节地址为 4 的倍数。这仅在代码中插入数据字节或半字时需要。</p>
+<blockquote>
+<p>💡💡注意是 arm 指令，不是数据（或者说标签），也不是 <strong>汇编指令</strong>（不然 .align 本身就得先对齐才能使用了）。</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">ARM requires that the instructions be present in 32-bit aligned memory locations.</span><br><span class="line">The address of the first byte, of the 4 bytes in an instruction, should be a multiple of 4.</span><br><span class="line">To adhere to this, the `.align` directive can be used to insert padding bytes</span><br><span class="line">till the next byte address will be a multiple of 4.</span><br><span class="line">This is required only when data bytes or half words are inserted within code.</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-2-String-Length"><a href="#4-2-String-Length" class="headerlink" title="4.2. String Length"></a>4.2. String Length</h3><p>以下代码计算字符串的长度，并将长度存储在寄存器 <code>r1</code> 中。</p>
+<p><strong>Listing 3. String Length</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">        .text</span><br><span class="line">        b start</span><br><span class="line"></span><br><span class="line">str:    .asciz &quot;Hello World&quot;</span><br><span class="line"></span><br><span class="line">        .equ   nul, 0</span><br><span class="line"></span><br><span class="line">        .align</span><br><span class="line">start:  ldr   r0, =str          @ r0 = &amp;str</span><br><span class="line">        mov   r1, #0</span><br><span class="line"></span><br><span class="line">loop:   ldrb  r2, [r0], #1      @ r2 = *(r0++)</span><br><span class="line">        add   r1, r1, #1        @ r1 += 1</span><br><span class="line">        cmp   r2, #nul          @ if (r2 != nul)</span><br><span class="line">        bne   loop              @    goto loop</span><br><span class="line"></span><br><span class="line">        sub   r1, r1, #1        @ r1 -= 1</span><br><span class="line">stop:   b stop</span><br></pre></td></tr></table></figure>
+
+<p>该代码引入了两个新的汇编指令——<code>.asciz</code> 和 <code>.equ</code>。以下是对这些汇编指令的描述。</p>
+<h4 id="4-2-1-asciz-Directive"><a href="#4-2-1-asciz-Directive" class="headerlink" title="4.2.1. .asciz Directive"></a>4.2.1. <code>.asciz</code> Directive</h4><p><code>.asciz</code> 指令接受字符串字面量作为参数。<strong>字符串字面量是用双引号括起来的字符序列</strong>。这些字符串字面量被组装到连续的内存位置。汇编程序会自动在每个字符串后插入一个 <code>nul</code> 字符（<code>\0</code> 字符）。</p>
+<p><code>.ascii</code> 指令与 <code>.asciz</code> 相同，但<strong>汇编程序不会在每个字符串后插入 <code>nul</code> 字符</strong>。</p>
+<blockquote>
+<p>⛔⛔⛔ 注意二者区别。</p>
+</blockquote>
+<h4 id="4-2-2-equ-Directive"><a href="#4-2-2-equ-Directive" class="headerlink" title="4.2.2. .equ Directive"></a>4.2.2. <code>.equ</code> Directive</h4><p>汇编程序维护一个称为符号表的结构。符号表将标签名称映射到地址。<strong>每当汇编程序遇到标签定义时，它会在符号表中创建一个条目</strong>。每当汇编程序遇到标签引用时，它会用符号表中对应的地址替换该标签。</p>
+<p>💡💡<strong>使用汇编指令 <code>.equ</code>，也可以手动向符号表中插入条目，将名称映射到不一定是地址的值</strong>。每当汇编程序遇到这些名称时，它会用相应的值替换它们。这些名称和标签名称统称为<strong>符号名称</strong>。</p>
+<p>该指令的一般语法如下所示。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">The assembler maintains something called a symbol table. The symbol table maps label names to addresses.</span><br><span class="line">Whenever the assembler encounters a label definition, the assembler makes an entry in the symbol table.</span><br><span class="line">And whenever the assembler encounters a label reference, it replaces the label by the corresponding</span><br><span class="line">address from the symbol table.</span><br><span class="line"></span><br><span class="line">Using the assembler directive `.equ`, it is also possible to manually insert entries in the symbol table,</span><br><span class="line">to map names to values, which are not necessarily addresses. Whenever the assembler encounters these names,</span><br><span class="line">it replaces them by their corresponding values. These names and label names are together called symbol names.</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.equ name, expression</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>name</code> 是一个符号名称，其限制与标签名称相同。</li>
+<li><code>expression</code> 可以是简单的字面量，也可以是如 <code>.byte</code> 指令中所解释的表达式。</li>
+</ul>
+<blockquote>
+<p>与 <code>.byte</code> 指令不同，<code>.equ</code> 指令本身并不分配任何内存。它们只是创建符号表中的条目。</p>
+</blockquote>
+<h2 id="5-Using-RAM"><a href="#5-Using-RAM" class="headerlink" title="5. Using RAM"></a>5. Using RAM</h2><p>Flash 存储器中存储的前面的示例程序是一种 EEPROM。它是一种有用的二级存储，类似于硬盘，但在 Flash 中存储变量并不方便。变量应存储在 RAM 中，以便可以轻松修改。</p>
+<p>Connex 板具有 64 MB 的 RAM，从地址 <code>0xA0000000</code> 开始，可以在其中存储变量。Connex 板的内存映射可以如下图所示。</p>
+<p><strong>Figure 1. Memory Map</strong></p>
+<p><img src="/../images/GNUToolchain/flash-ram-mm.png" alt="Memory Map"></p>
+<p>需要进行必要的设置，以将变量放置在该地址。要理解需要做什么，就必须了解汇编器和链接器的角色。</p>
+<blockquote>
+<p>个人理解：汇编器将单个文件解释为机器指令。链接器将这些机器指令组合在一起，形成最终的可执行文件。</p>
+</blockquote>
+<h2 id="6-Linker"><a href="#6-Linker" class="headerlink" title="6. Linker"></a>6. Linker</h2><p>在编写多文件程序时，每个文件会单独汇编成目标文件。链接器将这些目标文件组合在一起，形成最终的可执行文件。</p>
+<p><strong>Figure 2. Role of the Linker</strong></p>
+<p><img src="/../images/GNUToolchain/linker.png" alt="Role of the Linker"></p>
+<p>在合并目标文件时，<strong>链接器</strong>执行以下操作：</p>
+<ol>
+<li>Symbol Resolution 符号解析</li>
+<li>Relocation 重定位</li>
+</ol>
+<p>在本节中，我们将详细介绍这些操作。</p>
+<h3 id="6-1-Symbol-Resolution"><a href="#6-1-Symbol-Resolution" class="headerlink" title="6.1. Symbol Resolution"></a>6.1. Symbol Resolution</h3><p>在单文件程序中，在生成目标文件时，汇编器将所有标签的引用替换为相应的地址。但在多文件程序中，如果存在对其他文件中定义的标签的引用，汇编器将这些引用标记为“<strong>未解决</strong>”。当这些目标文件被传递给链接器时，链接器从其他目标文件中确定这些引用的值，并使用正确的值修补代码。</p>
+<blockquote>
+<p>想想动态库的例子，板端运行程序时才去使用链接器进行链接，而汇编器仅在编译时使用。链接器也可以在编译时使用，静态链接 <code>-static</code>。</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">In a single file program, while producing the object file, all references to labels are replaced by</span><br><span class="line">their corresponding addresses by the assembler. But in a multi-file program, if there are any references</span><br><span class="line">to labels defined in another file, the assembler marks these references as &quot;unresolved&quot;.</span><br><span class="line">When these object files are passed to the linker, the linker determines the values for</span><br><span class="line">these references from the other object files, and patches the code with the correct values.</span><br></pre></td></tr></table></figure>
+
+<p>为了演示链接器执行的<strong>符号解析</strong>，数组求和示例被分为两个文件。这两个文件将被汇编，并检查它们的符号表，以显示未解决引用的存在。</p>
+<p>文件 <code>sum-sub.s</code> 包含 <code>sum</code> 子程序，而文件 <code>main.s</code> 使用所需的参数调用该子程序。文件的源代码如下所示。</p>
+<p><strong>Listing 4. <code>main.s</code> - Subroutine Invocation</strong> 子程序调用</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">        .text</span><br><span class="line">        b start                 @ Skip over the data</span><br><span class="line">arr:    .byte 10, 20, 25        @ Read-only array of bytes</span><br><span class="line">eoa:                            @ Address of end of array + 1</span><br><span class="line"></span><br><span class="line">        .align</span><br><span class="line">start:</span><br><span class="line">        ldr   r0, =arr          @ r0 = &amp;arr</span><br><span class="line">        ldr   r1, =eoa          @ r1 = &amp;eoa</span><br><span class="line"></span><br><span class="line">        bl    sum               @ Invoke the sum subroutine</span><br><span class="line"></span><br><span class="line">stop:   b stop</span><br></pre></td></tr></table></figure>
+
+<p>**Listing 5. <code>sum-sub.s</code> - Subroutine Definition **子程序定义</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">        @ Args</span><br><span class="line">        @ r0: Start address of array</span><br><span class="line">        @ r1: End address of array</span><br><span class="line">        @</span><br><span class="line">        @ Result</span><br><span class="line">        @ r3: Sum of Array</span><br><span class="line"></span><br><span class="line">        .global sum</span><br><span class="line"></span><br><span class="line">sum:    mov   r3, #0            @ r3 = 0</span><br><span class="line">loop:   ldrb  r2, [r0], #1      @ r2 = *r0++    ; Get array element</span><br><span class="line">        add   r3, r2, r3        @ r3 += r2      ; Calculate sum</span><br><span class="line">        cmp   r0, r1            @ if (r0 != r1) ; Check if hit end-of-array</span><br><span class="line">        bne   loop              @    goto loop  ; Loop</span><br><span class="line">        mov   pc, lr            @ pc = lr       ; Return when done</span><br></pre></td></tr></table></figure>
+
+<p>关于 <code>.global</code> 指令需要说明一下。在 C 语言中，所有在函数外部声明的变量对其他文件可见，直到明确声明为 <code>static</code>。<br><strong>但</strong>在汇编语言中，所有标签都是 <code>static</code>（即本地文件的），直到明确声明它们应该对其他文件可见，使用 <code>.global</code> 指令。</p>
+<p>这些文件被汇编，并使用 <code>nm</code> 命令查看符号表。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$ arm-linux-gnueabihf-as -o main.o main.s</span><br><span class="line">$ arm-linux-gnueabihf-as -o sum-sub.o sum-sub.s</span><br><span class="line">$ arm-linux-gnueabihf-nm main.o</span><br><span class="line">00000004 t arr</span><br><span class="line">00000007 t eoa <span class="comment"># 注意看这里并没有对齐，回顾上面 `.align` 指令</span></span><br><span class="line">00000008 t start</span><br><span class="line">00000018 t stop</span><br><span class="line">         U <span class="built_in">sum</span></span><br><span class="line">$ arm-linux-gnueabihf-nm sum-sub.o</span><br><span class="line">00000004 t loop</span><br><span class="line">00000000 T <span class="built_in">sum</span></span><br></pre></td></tr></table></figure>
+
+<p>关注第二列中的字母，它指定了符号类型。<code>t</code> 表示符号在文本段中定义。<code>u</code> 表示符号未定义。**:fire: 大写字母表示符号是** <code>.global</code>。</p>
+<p>显然，符号 <code>sum</code> 在 <code>sum-sub.o</code> 中定义，在 <code>main.o</code> 中尚未解析。当链接器被调用时，符号引用将被解析，并生成可执行文件。</p>
+<h3 id="6-2-Relocation"><a href="#6-2-Relocation" class="headerlink" title="6.2. Relocation"></a>6.2. Relocation</h3><p>Relocation is the process of changing addresses already assigned to labels. This will also involve patching up all label references to reflect the newly assigned address. Primarily, relocation is performed for the following two reasons:</p>
+<p>重定位是更改已分配给标签的地址的过程。这也涉及修补所有标签引用以反映新分配的地址。主要，重定位是出于以下两个原因：</p>
+<ol>
+<li>Section Merging 段合并</li>
+<li>Section Placement 段放置</li>
+</ol>
+<p>To understand the process of relocation, an understanding of the concept of sections is essential.</p>
+<p>要理解重定位的过程，必须理解段的概念。</p>
+<p>Code and data have different run time requirements. For example code can be placed in read-only memory, and data might require read-write memory. It would be convenient, if code and data is <strong>not</strong> interleaved. For this purpose, programs are divided into sections. Most programs have at least two sections, <code>.text</code> for code and <code>.data</code> for data. Assembler directives <code>.text</code> and <code>.data</code>, are used to switch back and forth between the two sections.</p>
+<p>代码和数据在运行时有不同的要求。例如，代码可以放置在只读内存中，而数据可能需要读写内存。如果代码和数据<strong>不</strong>交错放置，将会更方便。为此，程序被分为不同的段。大多数程序至少有两个段，<code>.text</code> 用于代码，<code>.data</code> 用于数据。汇编指令 <code>.text</code> 和 <code>.data</code> 用于在这两个段之间切换。</p>
+<p>It helps to imagine each section as a bucket. When the assembler hits a section directive, it puts the code&#x2F;data following the directive in the selected bucket. Thus the code&#x2F;data that belong to particular section appear in contiguous locations. The following figures show how the assembler re-arranges data into sections.</p>
+<p>想象每个段都是一个桶。当汇编器遇到段指令时，它会将段指令后面的代码&#x2F;数据放入所选的桶中。因此，属于特定段的代码&#x2F;数据会出现在连续的位置。以下图显示了汇编器如何将数据重新排列到段中。</p>
+<p><strong>Figure 3. Sections</strong></p>
+<p><img src="/../images/GNUToolchain/sections.png" alt="Sections"></p>
+<p>Now that we have an understanding of sections, let us look into the primary reasons for which relocation is performed.</p>
+<p>现在我们理解了段的概念，让我们看一下重定位的主要原因。</p>
+<h4 id="6-2-1-Section-Merging"><a href="#6-2-1-Section-Merging" class="headerlink" title="6.2.1. Section Merging"></a>6.2.1. Section Merging</h4><p>When dealing with multi-file programs, the sections with the same name (example <code>.text</code>) might appear, in each file. The linker is responsible for merging sections from the input files, into sections of the output file. By default, the sections, with the same name, from each file is placed contiguously and the label references are patched to reflect the new address.</p>
+<p>处理多文件程序时，每个文件中可能出现同名的段（例如 <code>.text</code>）。链接器负责将输入文件中的相同名称的段合并到输出文件的段中。默认情况下，来自每个文件的同名段被连续放置，标签引用也会修补以反映新地址。</p>
+<p>The effects of section merging can be seen by looking at the symbol table of the object files and the corresponding executable file. The multi-file sum of array program can be used to illustrate section merging. The symbol table of the object files <code>main.o</code> and <code>sum-sub.o</code> and the symbol table of the executable file <code>sum.elf</code> is shown below.</p>
+<p>可以通过查看目标文件的符号表以及可执行文件的符号表，看到段合并的效果。可以使用多文件的数组求和程序来说明段合并的过程。目标文件 <code>main.o</code> 和 <code>sum-sub.o</code> 的符号表以及可执行文件 <code>sum.elf</code> 的符号表如下所示。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">$ arm-linux-gnueabihf-nm main.o</span><br><span class="line">00000004 t arr</span><br><span class="line">00000007 t eoa</span><br><span class="line">00000008 t start</span><br><span class="line">00000018 t stop</span><br><span class="line">         U <span class="built_in">sum</span></span><br><span class="line">$ arm-linux-gnueabihf-nm sum-sub.o</span><br><span class="line">00000004 t loop ❶</span><br><span class="line">00000000 T <span class="built_in">sum</span></span><br><span class="line">$ arm-linux-gnueabihf-ld -Ttext=0x0 -o sum.elf main.o sum-sub.o</span><br><span class="line">$ arm-linux-gnueabihf-nm sum.elf</span><br><span class="line">...</span><br><span class="line">00000004 t arr</span><br><span class="line">00000007 t eoa</span><br><span class="line">00000008 t start</span><br><span class="line">00000018 t stop</span><br><span class="line">00000028 t loop ❶</span><br><span class="line">00000024 T <span class="built_in">sum</span></span><br></pre></td></tr></table></figure>
+
+<ol>
+<li><p>The <code>loop</code> symbol has address <code>0x4</code> in <code>sum-sub.o</code>, and <code>0x28</code> in <code>sum.elf</code>, since the <code>.text</code> section of <code>sum-sub.o</code> is placed right after the <code>.text</code> section of <code>main.o</code>.</p>
+<p>该<code>loop</code>符号的地址<code>0x4</code>在<code>sum-sub.o</code>，<code>0x28</code>在 <code>sum.elf</code>o的<code>.text</code>部分<code>sum-sub.o</code>右边 在main. o的<code>.text</code>部分<code>main.o</code>。</p>
+</li>
+</ol>
+<h4 id="6-2-2-Section-Placement"><a href="#6-2-2-Section-Placement" class="headerlink" title="6.2.2. Section Placement"></a>6.2.2. Section Placement</h4><p>当程序被汇编时，每个段被假定从地址 0 开始。因此，标签相对于段的起始位置分配值。当最终可执行文件创建时，该段被放置在某个地址 X。所有在该段内定义的标签的引用都将增加 X，以使它们指向新位置。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">When a program is assembled, each section is assumed to start from address 0. And thus labels are assigned values relative to start of the section. When the final executable is created, the section is placed at some address X. And all references to the labels defined within the section, are incremented by X, so that they point to the new location.</span><br></pre></td></tr></table></figure>
+
+<p>每个段在内存中特定位置的放置以及对段中标签的所有引用的修补，由链接器完成。</p>
+<p>The placement of each section at a particular location in memory and the patching of all references to the labels in the section, is done by the linker.</p>
+<p>可以通过查看目标文件的符号表以及可执行文件的符号表，看到段放置的效果。可以使用单文件的数组求和程序来说明段放置的过程。为了更清楚起见，我们将把 .text 段放置在地址 0x100。</p>
+<p>The effects of section placement can be seen by looking at the symbol table of the object file and the corresponding executable file. The single file sum of array program can be used to illustrate section placement. To make things clearer, we will place the <code>.text</code> section at address <code>0x100</code>.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">$ arm-linux-gnueabihf-as -o sum.o sum.s</span><br><span class="line">$ arm-linux-gnueabihf-nm -n sum.o</span><br><span class="line">00000000 t entry ❶</span><br><span class="line">00000004 t arr</span><br><span class="line">00000007 t eoa</span><br><span class="line">00000008 t start</span><br><span class="line">00000014 t loop</span><br><span class="line">00000024 t stop</span><br><span class="line">$ arm-linux-gnueabihf-ld -Ttext=0x100 -o sum.elf sum.o ❷</span><br><span class="line">$ arm-linux-gnueabihf-nm -n sum.elf</span><br><span class="line">00000100 t entry ❸</span><br><span class="line">00000104 t arr</span><br><span class="line">00000107 t eoa</span><br><span class="line">00000108 t start</span><br><span class="line">00000114 t loop</span><br><span class="line">00000124 t stop</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://www.bravegnu.org/gnu-eprog/linker.html#CO2-1">❶</a> | The address for labels are assigned starting from <code>0</code> within a section. 段内标签的地址从 0 开始分配。 |<br>| <a target="_blank" rel="noopener" href="https://www.bravegnu.org/gnu-eprog/linker.html#CO2-2">❷</a> | When the executable is created the linker is instructed to place the text section at address <code>0x100</code>. 当可执行文件创建时，链接器被指示将文本段放置在地址 0x100。 |<br>| <a target="_blank" rel="noopener" href="https://www.bravegnu.org/gnu-eprog/linker.html#CO2-3">❸</a> | The address for labels in the <code>.text</code> section are re-assigned starting from <code>0x100</code>, and all label references will be patched to reflect this. <code>.text</code> 段中的标签的地址被重新分配，起始地址为 0x100，所有标签引用将被修补以反映此更改。 |</p>
+<p>The process of section merging and placement is shown in the following figure.</p>
+<p>段合并和放置的过程如下图所示。</p>
+<p><strong>Figure 4. Section Merging and Placement</strong></p>
+<p><img src="/../images/GNUToolchain/relocation.png" alt="Section Merging and Placement"></p>
+<hr>
+<h2 id="7-Linker-Script-File"><a href="#7-Linker-Script-File" class="headerlink" title="7. Linker Script File"></a>7. Linker Script File</h2><p>As mentioned in the previous section, section merging and placement is done by the linker. The programmer can control how the sections are merged, and at what locations they are placed in memory through a linker script file. A very simple linker script file, is shown below.</p>
+<p>如上一节所述，节合并和放置是由链接器完成的。程序员可以通过链接器脚本文件控制部分的合并方式，以及它们在内存中的位置。一个非常简单的链接器脚本文件，如下所示。</p>
+<p><strong>Listing 6. Basic linker script</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">SECTIONS &#123; ❶</span><br><span class="line">        . = 0x00000000; ❷</span><br><span class="line">        .text : &#123; ❸</span><br><span class="line">                abc.o (.text);</span><br><span class="line">                def.o (.text);</span><br><span class="line">        &#125; ❹</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>The <code>SECTIONS</code> command is the most important linker command, it specifies how the sections are to be merged and at what location they are to be placed.<br>该<code>SECTIONS</code>命令是最重要的链接器 命令，它指定如何合并部分以及合并到什么位置 它们要放置的位置。</li>
+<li>Within the block following the <code>SECTIONS</code> command, the <code>.</code> (period) represents the location counter. The location is always initialised to <code>0x0</code>. It can be modified by assigning a new value to it. Setting the value to <code>0x0</code> at the beginning is superfluous.<br>在后面的块内 <code>SECTIONS</code>命令中，<code>.</code>（句点）表示位置计数器 位置总是初始化为<code>0x0</code>。 可以通过为其分配一个新值来修改它。设置 开头<code>0x0</code>的值是 多余的。</li>
+<li>This part of the script specifies that, the <code>.text</code> section from the input files <code>abc.o</code> and <code>def.o</code> should go to the <code>.text</code> section of the output file.<br>脚本的这一部分指定 输入中的<code>.text</code>部分 文件<code>abc.o</code>和<code>def.o</code>应该转到输出文件的<code>.text</code>部分。</li>
+</ol>
+<p>The linker script can be further simplified and generalised by using the wild card character <code>*</code> instead of individually specifying the file names.</p>
+<p>链接器脚本可以通过以下方式进一步简化和概括 使用通配符<code>*</code> 而不是单独指定文件名。</p>
+<p><strong>Listing 7. Wildcard in linker scripts</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">SECTIONS &#123;</span><br><span class="line">        . = 0x00000000;</span><br><span class="line">        .text : &#123; * (.text); &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>If the program contains both <code>.text</code> and <code>.data</code> sections, the <code>.data</code> section merging and location can be specified as shown below.</p>
+<p>如果程序同时包含<code>.text</code> 和<code>.data</code>部分，<code>.data</code>部分合并和位置可以是 指定如下所示。</p>
+<p><strong>Listing 8. Multiple sections in linker scripts</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">SECTIONS &#123;</span><br><span class="line">         . = 0x00000000;</span><br><span class="line">         .text : &#123; * (.text); &#125;</span><br><span class="line"></span><br><span class="line">         . = 0x00000400;</span><br><span class="line">         .data : &#123; * (.data); &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Here, the <code>.text</code> section is located at <code>0x0</code> and <code>.data</code> is located at <code>0x400</code>. Note that, if the location counter is not assigned a different value, the <code>.text</code> and <code>.data</code> sections will be located at adjacent memory locations.</p>
+<p>在这里，<code>.text</code>部分位于 at<code>0x0</code>和<code>.data</code>位于<code>0x400</code>。请注意，如果位置计数器不是 分配了不同的值，<code>.text</code> 和<code>.data</code>部分将位于 相邻的内存位置。</p>
+<h3 id="7-1-Linker-Script-Example"><a href="#7-1-Linker-Script-Example" class="headerlink" title="7.1. Linker Script Example"></a>7.1. Linker Script Example</h3><p>To demonstrate the use of linker scripts, we will use the linker script shown in <a target="_blank" rel="noopener" href="https://www.bravegnu.org/gnu-eprog/lds.html#linker1">Listing 8, “Multiple sections in linker scripts”</a> to control the placement of a program’s <code>.text</code> and <code>.data</code> section. We will use a slightly modified version of the sum of array program for this purpose. The code is shown below.</p>
+<p>为了演示链接器脚本的使用，我们将使用链接器 脚本如<a target="_blank" rel="noopener" href="https://www.bravegnu.org/gnu-eprog/lds.html#linker1">清单8所示，“链接器脚本中的多个部分”</a>来控制 程序<code>.text</code>和<code>.data</code> 部分。我们将使用总和的稍微修改的版本 用于此目的的数组程序。代码如下所示。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">        .data</span><br><span class="line">arr:    .byte 10, 20, 25        @ Read-only array of bytes</span><br><span class="line">eoa:                            @ Address of end of array + 1</span><br><span class="line"></span><br><span class="line">        .text</span><br><span class="line">start:</span><br><span class="line">        ldr   r0, =eoa          @ r0 = &amp;eoa</span><br><span class="line">        ldr   r1, =arr          @ r1 = &amp;arr</span><br><span class="line">        mov   r3, #0            @ r3 = 0</span><br><span class="line">loop:   ldrb  r2, [r1], #1      @ r2 = *r1++</span><br><span class="line">        add   r3, r2, r3        @ r3 += r2</span><br><span class="line">        cmp   r1, r0            @ if (r1 != r2)</span><br><span class="line">        bne   loop              @    goto loop</span><br><span class="line">stop:   b stop</span><br></pre></td></tr></table></figure>
+
+<p>The only change here is that the array is now in the <code>.data</code> section. Also note that the nasty branch instruction to skip over the data is also not required, since the linker script will place the <code>.text</code> section and <code>.data</code> section appropriately. As a result, statements can be placed in the program, in any convenient way, and the linker script will take care of placing the sections correctly in memory.</p>
+<p>这里唯一的变化是数组现在在 <code>.data</code>部分。还要注意 讨厌的分支指令跳过数据也不是 必需，因为链接器脚本将适当地放置<code>.text</code>部分和<code>.data</code>部分。结果， 语句可以以任何方便的方式放置在程序中，并且 链接器脚本将负责正确放置部分 在记忆中。</p>
+<p>When the program is linked, the linker script is passed as an input to the linker, as shown in the following command.</p>
+<p>链接程序时，链接器脚本作为输入传递给链接器，如以下命令所示。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ arm-linux-gnueabihf-as -o sum-data.o sum-data.s</span><br><span class="line">$ arm-linux-gnueabihf-ld -T sum-data.lds -o sum-data.elf sum-data.o</span><br></pre></td></tr></table></figure>
+
+<p>The option <code>-T sum-data.lds</code> specifies that <code>sum-data.lds</code> is to be used as the linker script. Dumping the symbol table, will provide an insight into how the sections are placed in memory.</p>
+<p>选项 <code>-T sum-data.lds</code> 指定 <code>sum-data.lds</code> 将被用作链接脚本。转储符号表可以让我们了解各个段是如何放置在内存中的。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ arm-linux-gnueabihf-nm -n sum-data.elf</span><br><span class="line">00000000 t start</span><br><span class="line">0000000c t loop</span><br><span class="line">0000001c t stop</span><br><span class="line">00000400 d arr</span><br><span class="line">00000403 d eoa</span><br></pre></td></tr></table></figure>
+
+<p>From the symbol table it is obvious that the <code>.text</code> is placed starting from address <code>0x0</code> and <code>.data</code> section is placed starting from address <code>0x400</code>.</p>
+<p>从符号表中可以明显看出<code>.text</code>是从地址<code>0x0</code>和<code>.data</code>部分开始放置的 从地址<code>0x400</code>开始放置。</p>
+<h2 id="8-Data-in-RAM-Example"><a href="#8-Data-in-RAM-Example" class="headerlink" title="8. Data in RAM, Example"></a>8. Data in RAM, Example</h2><p>Now that we know, how to write linker scripts, we will attempt to write a program, and place the <code>.data</code> section in RAM.</p>
+<p>The add program is modified to load two values from RAM, add them and store the result back to RAM. The two values and the space for result is placed in the <code>.data</code> section.</p>
+<p><strong>Listing 9. Add Data in RAM</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">        .data</span><br><span class="line">val1:   .4byte 10               @ First number</span><br><span class="line">val2:   .4byte 30               @ Second number</span><br><span class="line">result: .4byte 0                @ 4 byte space for result</span><br><span class="line"></span><br><span class="line">        .text</span><br><span class="line">        .align</span><br><span class="line">start:</span><br><span class="line">        ldr   r0, =val1         @ r0 = &amp;val1</span><br><span class="line">        ldr   r1, =val2         @ r1 = &amp;val2</span><br><span class="line"></span><br><span class="line">        ldr   r2, [r0]          @ r2 = *r0</span><br><span class="line">        ldr   r3, [r1]          @ r3 = *r1</span><br><span class="line"></span><br><span class="line">        add   r4, r2, r3        @ r4 = r2 + r3</span><br><span class="line"></span><br><span class="line">        ldr   r0, =result       @ r0 = &amp;result</span><br><span class="line">        str   r4, [r0]          @ *r0 = r4</span><br><span class="line"></span><br><span class="line">stop:   b stop</span><br></pre></td></tr></table></figure>
+
+<p>When the program is linked, the linker script shown below is used.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">SECTIONS &#123;</span><br><span class="line">        . = 0x00000000;</span><br><span class="line">        .text : &#123; * (.text); &#125;</span><br><span class="line"></span><br><span class="line">        . = 0xA0000000;</span><br><span class="line">        .data : &#123; * (.data); &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>The dump of the symbol table of <code>.elf</code> is shown below.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ arm-linux-gnueabihf-nm -n add-mem.elf</span><br><span class="line">00000000 t start</span><br><span class="line">0000001c t stop</span><br><span class="line">a0000000 d val1</span><br><span class="line">a0000001 d val2</span><br><span class="line">a0000002 d result</span><br></pre></td></tr></table></figure>
+
+<p>The linker script seems to have solved the problem of placing the <code>.data</code> section in RAM. But wait, the solution is not complete yet!</p>
+<h3 id="8-1-RAM-is-Volatile"><a href="#8-1-RAM-is-Volatile" class="headerlink" title="8.1. RAM is Volatile!"></a>8.1. RAM is Volatile!</h3><p>RAM is volatile memory, and hence it is not possible to directly make the data available in RAM, on power up.</p>
+<p>All code and data <strong>should</strong> be stored in Flash before power-up. On power-up, a startup code is supposed to copy the data from Flash to RAM, and then proceed with the execution of the program. So the program’s <code>.data</code> section has two addresses, a <strong>load address</strong> in Flash and a <strong>run-time address</strong> in RAM.</p>
+<blockquote>
+<p>💡TIP</p>
+<p>In <code>ld</code> parlance, the load address is called LMA (Load Memory Address), and the run-time address is called VMA (Virtual Memory Address.).</p>
+</blockquote>
+<p>The following two modifications have to be done, to make the program work correctly.</p>
+<ol>
+<li>The linker script has to be modified to specify both the load address and the run-time address, for the <code>.data</code> section.</li>
+<li>A small piece of code should copy the <code>.data</code> section from Flash (load address) to RAM (run-time address).</li>
+</ol>
+<h3 id="8-2-Specifying-Load-Address"><a href="#8-2-Specifying-Load-Address" class="headerlink" title="8.2. Specifying Load Address"></a>8.2. Specifying Load Address</h3><p>The run-time address is what that should be used for determining the address of labels. In the previous linker script, we have specified the run-time address for the <code>.data</code> section. The load address is not explicitly specified, and defaults to the run-time address. This is OK, with the previous examples, since the programs were executed directly from Flash. But, if data is to be placed in RAM during execution, the load address should correspond to Flash and the run-time address should correspond to RAM.</p>
+<p>A load address different from the run-time address can be specified using the <code>AT</code> keyword. The modified linker script is shown below.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">SECTIONS &#123;</span><br><span class="line">        . = 0x00000000;</span><br><span class="line">        .text : &#123; * (.text); &#125;</span><br><span class="line">        etext = .; ❶</span><br><span class="line"></span><br><span class="line">        . = 0xA0000000;</span><br><span class="line">        .data : AT (etext) &#123; * (.data); &#125; ❷</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th><a target="_blank" rel="noopener" href="https://www.bravegnu.org/gnu-eprog/data-in-ram.html#CO4-1">❶</a></th>
+<th>Symbols can be created on the fly within the <code>SECTIONS</code> command by assigning values to them. Here <code>etext</code> is assigned the value of the location counter at that position. <code>etext</code> contains the address of the next free location in Flash right after all the code. This will be used later on to specify where the <code>.data</code> section is to be placed in Flash. Note that <code>etext</code> itself will not be allocated any memory, it is just an entry in the symbol table.</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a target="_blank" rel="noopener" href="https://www.bravegnu.org/gnu-eprog/data-in-ram.html#CO4-2">❷</a></td>
+<td>The <code>AT</code> keyword specifies the load address of the <code>.data</code> section. An address or symbol (whose value is a valid address) could be passed as argument to <code>AT</code>. Here the load address of <code>.data</code> is specified as the location right after all the code in Flash.</td>
+</tr>
+</tbody></table>
+<h3 id="8-3-Copying-data-to-RAM"><a href="#8-3-Copying-data-to-RAM" class="headerlink" title="8.3. Copying .data to RAM"></a>8.3. Copying <code>.data</code> to RAM</h3><p>To copy the data from Flash to RAM, the following information is required.</p>
+<ol>
+<li>Address of data in Flash (<code>flash_sdata</code>)</li>
+<li>Address of data in RAM (<code>ram_sdata</code>)</li>
+<li>Size of the <code>.data</code> section. (<code>data_size</code>)</li>
+</ol>
+<p>With this information the data can be copied from Flash to RAM using the following code snippet.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">        ldr   r0, =flash_sdata</span><br><span class="line">        ldr   r1, =ram_sdata</span><br><span class="line">        ldr   r2, =data_size</span><br><span class="line"></span><br><span class="line">copy:</span><br><span class="line">        ldrb  r4, [r0], #1</span><br><span class="line">        strb  r4, [r1], #1</span><br><span class="line">        subs  r2, r2, #1</span><br><span class="line">        bne   copy</span><br></pre></td></tr></table></figure>
+
+<p>The linker script can be slightly modified to provide these information.</p>
+<p><strong>Listing 10. Linker Script with Section Copy Symbols</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">SECTIONS &#123;</span><br><span class="line">        . = 0x00000000;</span><br><span class="line">        .text : &#123;</span><br><span class="line">              * (.text);</span><br><span class="line">        &#125;</span><br><span class="line">        flash_sdata = .; ❶</span><br><span class="line"></span><br><span class="line">        . = 0xA0000000;</span><br><span class="line">        ram_sdata = .; ❷</span><br><span class="line">        .data : AT (flash_sdata) &#123;</span><br><span class="line">              * (.data);</span><br><span class="line">        &#125;;</span><br><span class="line">        ram_edata = .; ❸</span><br><span class="line">        data_size = ram_edata - ram_sdata; ❹</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th><a target="_blank" rel="noopener" href="https://www.bravegnu.org/gnu-eprog/data-in-ram.html#CO5-1">❶</a></th>
+<th>Start of data in Flash is right after all the code in Flash.</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a target="_blank" rel="noopener" href="https://www.bravegnu.org/gnu-eprog/data-in-ram.html#CO5-2">❷</a></td>
+<td>Start of data in RAM is at the base address of RAM.</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://www.bravegnu.org/gnu-eprog/data-in-ram.html#CO5-3">❸</a> <a target="_blank" rel="noopener" href="https://www.bravegnu.org/gnu-eprog/data-in-ram.html#CO5-4">❹</a></td>
+<td>Obtaining the size of data is not straight forward. The data size is calculated from the difference in the start of data in RAM and the end of data in RAM. Yes, simple expressions are allowed within the linker script.</td>
+</tr>
+</tbody></table>
+<p>The add program with data copied to RAM from Flash is listed below.</p>
+<p><strong>Listing 11. Add Data in RAM (with copy)</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">        .data</span><br><span class="line">val1:   .4byte 10               @ First number</span><br><span class="line">val2:   .4byte 30               @ Second number</span><br><span class="line">result: .space 4                @ 1 byte space for result</span><br><span class="line"></span><br><span class="line">        .text</span><br><span class="line"></span><br><span class="line">        ;; Copy data to RAM.</span><br><span class="line">start:</span><br><span class="line">        ldr   r0, =flash_sdata</span><br><span class="line">        ldr   r1, =ram_sdata</span><br><span class="line">        ldr   r2, =data_size</span><br><span class="line"></span><br><span class="line">copy:</span><br><span class="line">        ldrb  r4, [r0], #1</span><br><span class="line">        strb  r4, [r1], #1</span><br><span class="line">        subs  r2, r2, #1</span><br><span class="line">        bne   copy</span><br><span class="line"></span><br><span class="line">        ;; Add and store result.</span><br><span class="line">        ldr   r0, =val1         @ r0 = &amp;val1</span><br><span class="line">        ldr   r1, =val2         @ r1 = &amp;val2</span><br><span class="line"></span><br><span class="line">        ldr   r2, [r0]          @ r2 = *r0</span><br><span class="line">        ldr   r3, [r1]          @ r3 = *r1</span><br><span class="line"></span><br><span class="line">        add   r4, r2, r3        @ r4 = r2 + r3</span><br><span class="line"></span><br><span class="line">        ldr   r0, =result       @ r0 = &amp;result</span><br><span class="line">        str   r4, [r0]          @ *r0 = r4</span><br><span class="line"></span><br><span class="line">stop:   b stop</span><br></pre></td></tr></table></figure>
+
+<p>The program is assembled and linked using the linker script listed in <a target="_blank" rel="noopener" href="https://www.bravegnu.org/gnu-eprog/data-in-ram.html#linker2">Listing 10, “Linker Script with Section Copy Symbols”</a>. The program is executed and tested within Qemu.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">qemu-system-arm -M connex -pflash flash.bin -nographic -serial /dev/null</span><br><span class="line">(qemu) xp /4dw 0xA0000000</span><br><span class="line">a0000000:         10         30         40          0</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>Note:<br>In a real system with an SDRAM, the memory should not be accessed right-away. The memory controller will have to be initialised before performing a memory access. Our code works because the simulated memory does not require the memory controller to be initialised.</p>
+</blockquote>
+<h2 id="9-Exception-Handling"><a href="#9-Exception-Handling" class="headerlink" title="9. Exception Handling"></a>9. Exception Handling</h2><p>The examples given so far have a major bug. The first 8 words in the memory map are reserved for the exception vectors. When an exception occurs the control is transferred to one these 8 locations. The exceptions and their exception vector addresses are show in the following table.</p>
+<p><strong>Table 1. Exception Vector Addresses</strong></p>
+<table>
+<thead>
+<tr>
+<th>Exception</th>
+<th>Address</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Reset</td>
+<td>0x00</td>
+</tr>
+<tr>
+<td>Undefined Instruction</td>
+<td>0x04</td>
+</tr>
+<tr>
+<td>Software Interrupt (SWI)</td>
+<td>0x08</td>
+</tr>
+<tr>
+<td>Prefetch Abort</td>
+<td>0x0C</td>
+</tr>
+<tr>
+<td>Data Abort</td>
+<td>0x10</td>
+</tr>
+<tr>
+<td>Reserved, not used</td>
+<td>0x14</td>
+</tr>
+<tr>
+<td>IRQ</td>
+<td>0x18</td>
+</tr>
+<tr>
+<td>FIQ</td>
+<td>0x1C</td>
+</tr>
+</tbody></table>
+<p>These locations are supposed to contain a branch that will transfer control the appropriate exception handler. In the examples we have seen so far, we haven’t inserted branch instructions at the exception vector addresses. We got away without issues since these exceptions did not occur. All the above programs can be fixed, by linking them with the following assembly code.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">        .section &quot;vectors&quot;</span><br><span class="line">reset:  b     start</span><br><span class="line">undef:  b     undef</span><br><span class="line">swi:    b     swi</span><br><span class="line">pabt:   b     pabt</span><br><span class="line">dabt:   b     dabt</span><br><span class="line">        nop</span><br><span class="line">irq:    b     irq</span><br><span class="line">fiq:    b     fiq</span><br></pre></td></tr></table></figure>
+
+<p>Only the reset exception is vectored to a different address <code>start</code>. All other exceptions are vectored to the same address. So if any exception other that reset occurs, the processor will be spinning in the same location. The exception can then be identified by looking at the value of <code>pc</code> through a debugger (the monitor interface in our case).</p>
+<p>To ensure that these instruction are placed at the exception vector addresses, the linker script should look something like below.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">SECTIONS &#123;</span><br><span class="line">        . = 0x00000000;</span><br><span class="line">        .text : &#123;</span><br><span class="line">                * (vectors);</span><br><span class="line">                * (.text);</span><br><span class="line">                ...</span><br><span class="line">        &#125;</span><br><span class="line">        ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Notice how the <code>vectors</code> section is placed before all other code, ensuring that the <code>vectors</code> is located at address starting from 0x0.</p>
+<h2 id="10-C-Startup"><a href="#10-C-Startup" class="headerlink" title="10. C Startup"></a>10. C Startup</h2><p>It is not possible to directly execute C code, when the processor comes out of reset. Since, unlike assembly language, C programs need some basic pre-requisites to be satisfied. This section will describe the pre-requisites and how to meet the pre-requisites.</p>
+<p>We will take the example of C program that calculates the sum of an array as an example. And by the end of this section, we will be able to perform the necessary setup, transfer control to the C code and execute it.</p>
+<p><strong>Listing 12. Sum of Array in C</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">static int arr[] = &#123; 1, 10, 4, 5, 6, 7 &#125;;</span><br><span class="line">static int sum;</span><br><span class="line">static const int n = sizeof(arr) / sizeof(arr[0]);</span><br><span class="line"></span><br><span class="line">int main()</span><br><span class="line">&#123;</span><br><span class="line">        int i;</span><br><span class="line"></span><br><span class="line">        for (i = 0; i &lt; n; i++)</span><br><span class="line">                sum += arr[i];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Before transferring control to C code, the following have to be setup correctly.</p>
+<ol>
+<li>Stack</li>
+<li>Global variables<ol>
+<li>Initialized</li>
+<li>Uninitialized</li>
+</ol>
+</li>
+<li>Read-only data</li>
+</ol>
+<h3 id="10-1-Stack"><a href="#10-1-Stack" class="headerlink" title="10.1. Stack"></a>10.1. Stack</h3><p>C uses the stack for storing local (auto) variables, passing function arguments, storing return address, etc. So it is essential that the stack be setup correctly, before transferring control to C code.</p>
+<p>Stacks are highly flexible in the ARM architecture, since the implementation is completely left to the software. For people not familiar with the ARM architecture a overview is provided in <a target="_blank" rel="noopener" href="https://www.bravegnu.org/gnu-eprog/arm-stacks.html">Appendix C, <em>ARM Stacks</em></a>.</p>
+<p>To make sure that code generated by different compilers is interroperable, ARM has created the <a target="_blank" rel="noopener" href="http://infocenter.arm.com/help/topic/com.arm.doc.ihi0042a/IHI0042A_aapcs.pdf">ARM Architecture Procedure Call Standard (AAPCS)</a>. The register to be used as the stack pointer and the direction in which the stack grows is all dictated by the AAPCS. According to the AAPCS, <strong>register <code>r13</code></strong> is to be used as the stack pointer. Also the stack should be <strong>full-descending</strong>.</p>
+<p>One way of placing global variables and the stack is shown in the following diagram.</p>
+<p><strong>Figure 5. Stack Placement</strong></p>
+<p><img src="/../images/GNUToolchain/stack.png" alt="stack.png"></p>
+<p>So all that has to be done in the startup code is to point <code>r13</code> at the highest RAM address, so that the stack can grow downwards (towards lower addresses). For the <code>connex</code> board this can be acheived using the following ARM instruction.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ldr sp, =0xA4000000</span><br></pre></td></tr></table></figure>
+
+<p>Note that the the assembler provides an alias <code>sp</code> for the <code>r13</code> register.</p>
+<table>
+<thead>
+<tr>
+<th><img src="/../images/GNUToolchain/note.png" alt="[Note]"></th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>The address <code>0xA4000000</code> itself does not correspond to RAM. The RAM ends at <code>0xA3FFFFFF</code>. But that is OK, since the stack is <strong>full</strong>-descending, during the first push the stack pointer will be decremented first and the value will be stored.</td>
+<td></td>
+</tr>
+</tbody></table>
+<h3 id="10-2-Global-Variables"><a href="#10-2-Global-Variables" class="headerlink" title="10.2. Global Variables"></a>10.2. Global Variables</h3><p>When C code is compiled, the compiler places initialized global variables in the <code>.data</code> section. So just as with the assembly, the <code>.data</code> has to be copied from Flash to RAM.</p>
+<p>The C language guarantees that all uninitialized global variables will be initialized to zero. When C programs are compiled, a separate section called <code>.bss</code> is used for uninitialized variables. Since the value of these variables are all zeroes to start with, they do not have to be stored in Flash. Before transferring control to C code, the memory locations corresponding to these variables have to be initialized to zero.</p>
+<h3 id="10-3-Read-only-Data"><a href="#10-3-Read-only-Data" class="headerlink" title="10.3. Read-only Data"></a>10.3. Read-only Data</h3><p>GCC places global variables marked as <code>const</code> in a separate section, called <code>.rodata</code>. The <code>.rodata</code> is also used for storing string constants.</p>
+<p>Since contents of <code>.rodata</code> section will not be modified, they can be placed in Flash. The linker script has to modified to accomodate this.</p>
+<h3 id="10-4-Startup-Code"><a href="#10-4-Startup-Code" class="headerlink" title="10.4. Startup Code"></a>10.4. Startup Code</h3><p>Now that we know the pre-requisites we can create the linker script and the startup code. The linker script <a target="_blank" rel="noopener" href="https://www.bravegnu.org/gnu-eprog/data-in-ram.html#linker2">Listing 10, “Linker Script with Section Copy Symbols”</a> is modified to accomodate the following.</p>
+<ol>
+<li><code>.bss</code> section placement</li>
+<li><code>vectors</code> section placement</li>
+<li><code>.rodata</code> section placement</li>
+</ol>
+<p>The <code>.bss</code> is placed right after <code>.data</code> section in RAM. Symbols to locate the start of <code>.bss</code> and end of <code>.bss</code> are also created in the linker script. The <code>.rodata</code> is placed right after <code>.text</code> section in Flash. The following diagram shows the placement of the various sections.</p>
+<p><strong>Figure 6. Section Placement</strong></p>
+<p><img src="/../images/GNUToolchain/csections.png" alt="csections.png"></p>
+<p><strong>Listing 13. Linker Script for C code</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">SECTIONS &#123;</span><br><span class="line">        . = 0x00000000;</span><br><span class="line">        .text : &#123;</span><br><span class="line">              * (vectors);</span><br><span class="line">              * (.text);</span><br><span class="line">        &#125;</span><br><span class="line">        .rodata : &#123;</span><br><span class="line">              * (.rodata);</span><br><span class="line">        &#125;</span><br><span class="line">        flash_sdata = .;</span><br><span class="line"></span><br><span class="line">        . = 0xA0000000;</span><br><span class="line">        ram_sdata = .;</span><br><span class="line">        .data : AT (flash_sdata) &#123;</span><br><span class="line">              * (.data);</span><br><span class="line">        &#125;</span><br><span class="line">        ram_edata = .;</span><br><span class="line">        data_size = ram_edata - ram_sdata;</span><br><span class="line"></span><br><span class="line">        sbss = .;</span><br><span class="line">        .bss : &#123;</span><br><span class="line">             * (.bss);</span><br><span class="line">        &#125;</span><br><span class="line">        ebss = .;</span><br><span class="line">        bss_size = ebss - sbss;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>The startup code has the following parts</p>
+<ol>
+<li>exception vectors</li>
+<li>code to copy the <code>.data</code> from Flash to RAM</li>
+<li>code to zero out the <code>.bss</code></li>
+<li>code to setup the stack pointer</li>
+<li>branch to main</li>
+</ol>
+<p><strong>Listing 14. C Startup Assembly</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line">        .section &quot;vectors&quot;</span><br><span class="line">reset:  b     start</span><br><span class="line">undef:  b     undef</span><br><span class="line">swi:    b     swi</span><br><span class="line">pabt:   b     pabt</span><br><span class="line">dabt:   b     dabt</span><br><span class="line">        nop</span><br><span class="line">irq:    b     irq</span><br><span class="line">fiq:    b     fiq</span><br><span class="line"></span><br><span class="line">        .text</span><br><span class="line">start:</span><br><span class="line">        @@ Copy data to RAM.</span><br><span class="line">        ldr   r0, =flash_sdata</span><br><span class="line">        ldr   r1, =ram_sdata</span><br><span class="line">        ldr   r2, =data_size</span><br><span class="line"></span><br><span class="line">        @@ Handle data_size == 0</span><br><span class="line">        cmp   r2, #0</span><br><span class="line">        beq   init_bss</span><br><span class="line">copy:</span><br><span class="line">        ldrb   r4, [r0], #1</span><br><span class="line">        strb   r4, [r1], #1</span><br><span class="line">        subs   r2, r2, #1</span><br><span class="line">        bne    copy</span><br><span class="line"></span><br><span class="line">init_bss:</span><br><span class="line">        @@ Initialize .bss</span><br><span class="line">        ldr   r0, =sbss</span><br><span class="line">        ldr   r1, =ebss</span><br><span class="line">        ldr   r2, =bss_size</span><br><span class="line"></span><br><span class="line">        @@ Handle bss_size == 0</span><br><span class="line">        cmp   r2, #0</span><br><span class="line">        beq   init_stack</span><br><span class="line"></span><br><span class="line">        mov   r4, #0</span><br><span class="line">zero:</span><br><span class="line">        strb  r4, [r0], #1</span><br><span class="line">        subs  r2, r2, #1</span><br><span class="line">        bne   zero</span><br><span class="line"></span><br><span class="line">init_stack:</span><br><span class="line">        @@ Initialize the stack pointer</span><br><span class="line">        ldr   sp, =0xA4000000</span><br><span class="line"></span><br><span class="line">        bl    main</span><br><span class="line"></span><br><span class="line">stop:   b     stop</span><br></pre></td></tr></table></figure>
+
+<p>To compile the code, it is not necessary to invoke the assembler, compiler and linker individually. <code>gcc</code> is intelligent enough to do that for us.</p>
+<p>As promised before, we will compile and execute the C code shown in <a target="_blank" rel="noopener" href="https://www.bravegnu.org/gnu-eprog/c-startup.html#csum">Listing 12, “Sum of Array in C”</a>.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ arm-linux-gnueabihf-gcc -nostdlib -o csum.elf -T csum.lds csum.c startup.s</span><br></pre></td></tr></table></figure>
+
+<p>The <code>-nostdlib</code> option is used to specify that the standard C library should not be linked in. A little extra care has to be taken when the C library is linked in. This is discussed in <a target="_blank" rel="noopener" href="https://www.bravegnu.org/gnu-eprog/c-library.html">Section 11, “Using the C Library”</a>.</p>
+<p>A dump of the symbol table will give a better picture of how things have been placed in memory.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">$ arm-linux-gnueabihf-nm -n csum.elf</span><br><span class="line">00000000 t reset        ❶</span><br><span class="line">00000004 A bss_size</span><br><span class="line">00000004 t undef</span><br><span class="line">00000008 t swi</span><br><span class="line">0000000c t pabt</span><br><span class="line">00000010 t dabt</span><br><span class="line">00000018 A data_size</span><br><span class="line">00000018 t irq</span><br><span class="line">0000001c t fiq</span><br><span class="line">00000020 T main</span><br><span class="line">00000090 t start        ❷</span><br><span class="line">000000a0 t copy</span><br><span class="line">000000b0 t init_bss</span><br><span class="line">000000c4 t zero</span><br><span class="line">000000d0 t init_stack</span><br><span class="line">000000d8 t stop</span><br><span class="line">000000f4 r n            ❸</span><br><span class="line">000000f8 A flash_sdata</span><br><span class="line">a0000000 d arr          ❹</span><br><span class="line">a0000000 A ram_sdata</span><br><span class="line">a0000018 A ram_edata</span><br><span class="line">a0000018 A sbss</span><br><span class="line">a0000018 b sum          ❺</span><br><span class="line">a000001c A ebss</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th><a target="_blank" rel="noopener" href="https://www.bravegnu.org/gnu-eprog/c-startup.html#CO6-1">❶</a></th>
+<th><code>reset</code> and the rest of the exception vectors are placed starting from <code>0x0</code>.</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a target="_blank" rel="noopener" href="https://www.bravegnu.org/gnu-eprog/c-startup.html#CO6-2">❷</a></td>
+<td>The assembly code is placed right after the 8 exception vectors (<code>8 * 4 = 32 = 0x20</code>).</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://www.bravegnu.org/gnu-eprog/c-startup.html#CO6-3">❸</a></td>
+<td>The read-only data <code>n</code>, is placed in Flash after the code.</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://www.bravegnu.org/gnu-eprog/c-startup.html#CO6-4">❹</a></td>
+<td>The initialized data <code>arr</code>, an array of 6 integers, is placed at the start of RAM <code>0xA0000000</code>.</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://www.bravegnu.org/gnu-eprog/c-startup.html#CO6-5">❺</a></td>
+<td>The uninitialized data <code>sum</code> is placed after the array of 6 integers. (<code>6 * 4 = 24 = 0x18</code>)</td>
+</tr>
+</tbody></table>
+<p>To execute the program, convert the program to <code>.bin</code> format, execute in Qemu, and dump the <code>sum</code> variable located at <code>0xA0000018</code>.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ arm-linux-gnueabihf-objcopy -O binary csum.elf csum.bin</span><br><span class="line">$ dd if=csum.bin of=flash.bin bs=4096 conv=notrunc</span><br><span class="line">$ qemu-system-arm -M connex -pflash flash.bin -nographic -serial /dev/null</span><br><span class="line">(qemu) xp /6dw 0xa0000000</span><br><span class="line">a0000000:          1         10          4          5</span><br><span class="line">a0000010:          6          7</span><br><span class="line">(qemu) xp /1dw 0xa0000018</span><br><span class="line">a0000018:         33</span><br></pre></td></tr></table></figure>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://yo-gurts.github.io">(ง'̀-'́)ง</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://yo-gurts.github.io/2024/10/17/GNUToolchain/">https://yo-gurts.github.io/2024/10/17/GNUToolchain/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://yo-gurts.github.io" target="_blank">(╯°□°）╯︵ ┻━┻ </a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/arm/">arm</a></div><div class="post_share"><div class="social-share" data-image="https://s2.loli.net/2022/11/17/hF7KodYmE6iPWqg.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-full"><a href="/2024/10/09/Cvitek-%E7%BC%96%E8%AF%91%E6%B5%81%E7%A8%8B/" title="Cvitek-v4.2.0 编译流程"><img class="cover" src="https://s2.loli.net/2022/11/17/nuDZ3dsB6z4bfVJ.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Cvitek-v4.2.0 编译流程</div></div></a></div></nav><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://s2.loli.net/2024/09/17/3NdhvxIcPRVpufD.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">(ง'̀-'́)ง</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">44</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">51</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">10</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/yo-gurts"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/yo-gurts" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:yusong1117.u@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-Introduction"><span class="toc-number">1.</span> <span class="toc-text">1. Introduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-Setting-up-the-ARM-Lab"><span class="toc-number">2.</span> <span class="toc-text">2. Setting up the ARM Lab</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Qemu-ARM"><span class="toc-number">2.1.</span> <span class="toc-text">2.1. Qemu ARM</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Installing-Qemu-in-Debian"><span class="toc-number">2.2.</span> <span class="toc-text">2.2. Installing Qemu in Debian</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-Installing-GNU-Toolchain-for-ARM"><span class="toc-number">2.3.</span> <span class="toc-text">2.3. Installing GNU Toolchain for ARM</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Hello-ARM"><span class="toc-number">3.</span> <span class="toc-text">3. Hello ARM</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Building-the-Binary"><span class="toc-number">3.1.</span> <span class="toc-text">3.1. Building the Binary</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Executing-in-Qemu"><span class="toc-number">3.2.</span> <span class="toc-text">3.2. Executing in Qemu</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-More-Monitor-Commands"><span class="toc-number">3.3.</span> <span class="toc-text">3.3. More Monitor Commands</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-More-Assembler-Directives"><span class="toc-number">4.</span> <span class="toc-text">4. More Assembler Directives</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-Sum-an-Array"><span class="toc-number">4.1.</span> <span class="toc-text">4.1. Sum an Array</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-1-byte-Directive"><span class="toc-number">4.1.1.</span> <span class="toc-text">4.1.1. .byte Directive</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-2-align-Directive"><span class="toc-number">4.1.2.</span> <span class="toc-text">4.1.2. .align Directive</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-String-Length"><span class="toc-number">4.2.</span> <span class="toc-text">4.2. String Length</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#4-2-1-asciz-Directive"><span class="toc-number">4.2.1.</span> <span class="toc-text">4.2.1. .asciz Directive</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-2-2-equ-Directive"><span class="toc-number">4.2.2.</span> <span class="toc-text">4.2.2. .equ Directive</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Using-RAM"><span class="toc-number">5.</span> <span class="toc-text">5. Using RAM</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-Linker"><span class="toc-number">6.</span> <span class="toc-text">6. Linker</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-Symbol-Resolution"><span class="toc-number">6.1.</span> <span class="toc-text">6.1. Symbol Resolution</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-Relocation"><span class="toc-number">6.2.</span> <span class="toc-text">6.2. Relocation</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-1-Section-Merging"><span class="toc-number">6.2.1.</span> <span class="toc-text">6.2.1. Section Merging</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-2-Section-Placement"><span class="toc-number">6.2.2.</span> <span class="toc-text">6.2.2. Section Placement</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-Linker-Script-File"><span class="toc-number">7.</span> <span class="toc-text">7. Linker Script File</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-Linker-Script-Example"><span class="toc-number">7.1.</span> <span class="toc-text">7.1. Linker Script Example</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-Data-in-RAM-Example"><span class="toc-number">8.</span> <span class="toc-text">8. Data in RAM, Example</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-RAM-is-Volatile"><span class="toc-number">8.1.</span> <span class="toc-text">8.1. RAM is Volatile!</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-Specifying-Load-Address"><span class="toc-number">8.2.</span> <span class="toc-text">8.2. Specifying Load Address</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-3-Copying-data-to-RAM"><span class="toc-number">8.3.</span> <span class="toc-text">8.3. Copying .data to RAM</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-Exception-Handling"><span class="toc-number">9.</span> <span class="toc-text">9. Exception Handling</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-C-Startup"><span class="toc-number">10.</span> <span class="toc-text">10. C Startup</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#10-1-Stack"><span class="toc-number">10.1.</span> <span class="toc-text">10.1. Stack</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-2-Global-Variables"><span class="toc-number">10.2.</span> <span class="toc-text">10.2. Global Variables</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-3-Read-only-Data"><span class="toc-number">10.3.</span> <span class="toc-text">10.3. Read-only Data</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-4-Startup-Code"><span class="toc-number">10.4.</span> <span class="toc-text">10.4. Startup Code</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2024/10/17/GNUToolchain/" title="Embedded Programming with the GNU Toolchain"><img src="https://s2.loli.net/2022/11/17/hF7KodYmE6iPWqg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Embedded Programming with the GNU Toolchain"/></a><div class="content"><a class="title" href="/2024/10/17/GNUToolchain/" title="Embedded Programming with the GNU Toolchain">Embedded Programming with the GNU Toolchain</a><time datetime="2024-10-17T14:00:06.000Z" title="发表于 2024-10-17 22:00:06">2024-10-17</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/10/09/Cvitek-%E7%BC%96%E8%AF%91%E6%B5%81%E7%A8%8B/" title="Cvitek-v4.2.0 编译流程"><img src="https://s2.loli.net/2022/11/17/nuDZ3dsB6z4bfVJ.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Cvitek-v4.2.0 编译流程"/></a><div class="content"><a class="title" href="/2024/10/09/Cvitek-%E7%BC%96%E8%AF%91%E6%B5%81%E7%A8%8B/" title="Cvitek-v4.2.0 编译流程">Cvitek-v4.2.0 编译流程</a><time datetime="2024-10-09T14:25:10.000Z" title="发表于 2024-10-09 22:25:10">2024-10-09</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/10/06/Cvitek-SDK%E7%BC%96%E8%AF%91%E7%8E%AF%E5%A2%83/" title="Cvitek SDK 编译环境"><img src="https://s2.loli.net/2022/11/17/NGf2mpwasOYzVIA.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Cvitek SDK 编译环境"/></a><div class="content"><a class="title" href="/2024/10/06/Cvitek-SDK%E7%BC%96%E8%AF%91%E7%8E%AF%E5%A2%83/" title="Cvitek SDK 编译环境">Cvitek SDK 编译环境</a><time datetime="2024-10-06T06:02:04.000Z" title="发表于 2024-10-06 14:02:04">2024-10-06</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/09/24/Linux-sysfs/" title="Linux sysfs"><img src="https://s2.loli.net/2022/11/17/hF7KodYmE6iPWqg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Linux sysfs"/></a><div class="content"><a class="title" href="/2024/09/24/Linux-sysfs/" title="Linux sysfs">Linux sysfs</a><time datetime="2024-09-24T14:37:59.000Z" title="发表于 2024-09-24 22:37:59">2024-09-24</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/09/22/Linux-USBfunctionfs/" title="Linux USB functionfs"><img src="https://s2.loli.net/2022/11/17/9ZBEesyr14aJhPM.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Linux USB functionfs"/></a><div class="content"><a class="title" href="/2024/09/22/Linux-USBfunctionfs/" title="Linux USB functionfs">Linux USB functionfs</a><time datetime="2024-09-22T14:31:05.000Z" title="发表于 2024-09-22 22:31:05">2024-09-22</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2024 By (ง'̀-'́)ง</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.13.0"></script><script src="/js/main.js?v=4.13.0"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>if (!window.MathJax) {
+  window.MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      tags: 'ams'
+    },
+    chtml: {
+      scale: 1.1
+    },
+    options: {
+      renderActions: {
+        findScript: [10, doc => {
+          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+            const display = !!node.type.match(/; *mode=display/)
+            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+            const text = document.createTextNode('')
+            node.parentNode.replaceChild(text, node)
+            math.start = {node: text, delim: '', n: 0}
+            math.end = {node: text, delim: '', n: 0}
+            doc.math.push(math)
+          }
+        }, '']
+      }
+    }
+  }
+  
+  const script = document.createElement('script')
+  script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
+  script.id = 'MathJax-script'
+  script.async = true
+  document.head.appendChild(script)
+} else {
+  MathJax.startup.document.state(0)
+  MathJax.texReset()
+  MathJax.typesetPromise()
+}</script><script>(() => {
+  const initGitalk = () => {
+    const gitalk = new Gitalk(Object.assign({
+      clientID: 'b740056c42e9eadf273e',
+      clientSecret: 'e5f185fa9a6e27927f7a2672469435c68a288c95',
+      repo: 'Yo-gurts.github.io',
+      owner: 'yo-gurts',
+      admin: ['yo-gurts'],
+      id: '265f6cd0e163445b62f7b54dfd12559f',
+      updateCountCallback: commentCount
+    },null))
+
+    gitalk.render('gitalk-container')
+  }
+
+  const loadGitalk = async() => {
+    if (typeof Gitalk === 'function') initGitalk()
+    else {
+      await getCSS('https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.min.css')
+      await getScript('https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.min.js')
+      initGitalk()
+    }
+  }
+  
+  const commentCount = n => {
+    const isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+    if (isCommentCount) {
+      isCommentCount.textContent= n
+    }
+  }
+
+  if ('Gitalk' === 'Gitalk' || !false) {
+    if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+    else loadGitalk()
+  } else {
+    window.loadOtherComment = loadGitalk
+  }
+})()</script></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/canvas-fluttering-ribbon.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=4.13.0"></script></div></div></body></html>
