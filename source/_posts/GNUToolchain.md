@@ -6,8 +6,7 @@ updated: 2024-10-20 21:43:17
 tags:
   - arm
 categories: Assembler
-toc:
-  number: false
+toc_number: false
 keywords:
 description:
 ---
