@@ -2,10 +2,12 @@
 title: Embedded Programming with the GNU Toolchain
 top_img: transparent
 date: 2024-10-17 22:00:06
-updated: 2024-10-17 22:00:09
+updated: 2024-10-20 21:43:17
 tags:
   - arm
 categories: Assembler
+toc:
+  number: false
 keywords:
 description:
 ---
@@ -466,6 +468,8 @@ it replaces them by their corresponding values. These names and label names are 
 
 > 与 `.byte` 指令不同，`.equ` 指令本身并不分配任何内存。它们只是创建符号表中的条目。
 
+---
+
 ## 5. Using RAM
 
 Flash 存储器中存储的前面的示例程序是一种 EEPROM。它是一种有用的二级存储，类似于硬盘，但在 Flash 中存储变量并不方便。变量应存储在 RAM 中，以便可以轻松修改。
@@ -479,6 +483,8 @@ Connex 板具有 64 MB 的 RAM，从地址 `0xA0000000` 开始，可以在其中
 需要进行必要的设置，以将变量放置在该地址。要理解需要做什么，就必须了解汇编器和链接器的角色。
 
 > 个人理解：汇编器将单个文件解释为机器指令。链接器将这些机器指令组合在一起，形成最终的可执行文件。
+
+---
 
 ## 6. Linker
 
@@ -500,6 +506,11 @@ Connex 板具有 64 MB 的 RAM，从地址 `0xA0000000` 开始，可以在其中
 在单文件程序中，在生成目标文件时，汇编器将所有标签的引用替换为相应的地址。但在多文件程序中，如果存在对其他文件中定义的标签的引用，汇编器将这些引用标记为“**未解决**”。当这些目标文件被传递给链接器时，链接器从其他目标文件中确定这些引用的值，并使用正确的值修补代码。
 
 > 想想动态库的例子，板端运行程序时才去使用链接器进行链接，而汇编器仅在编译时使用。链接器也可以在编译时使用，静态链接 `-static`。
+>
+> 不过编译和运行时的链接器不同：
+>
+> - 链接器：工作于链接阶段，用`-l -L`指定动态库路径。
+> - 动态链接器：工作于程序运行阶段，工作时需要提供动态库所在目录位置，通过环境变量：`export LD_LIBRARY_PATH=/path`。
 
 ```
 In a single file program, while producing the object file, all references to labels are replaced by
@@ -525,7 +536,6 @@ eoa:                            @ Address of end of array + 1
 start:
         ldr   r0, =arr          @ r0 = &arr
         ldr   r1, =eoa          @ r1 = &eoa
-
         bl    sum               @ Invoke the sum subroutine
 
 stop:   b stop
@@ -576,42 +586,60 @@ $ arm-linux-gnueabihf-nm sum-sub.o
 
 ### 6.2. Relocation
 
-Relocation is the process of changing addresses already assigned to labels. This will also involve patching up all label references to reflect the newly assigned address. Primarily, relocation is performed for the following two reasons:
-
-重定位是更改已分配给标签的地址的过程。这也涉及修补所有标签引用以反映新分配的地址。主要，重定位是出于以下两个原因：
+**重定位是指更改已经分配给标签的地址的过程**。这还涉及修补所有标签引用，以反映新分配的地址。重定位主要出于以下两个原因进行：
 
 1. Section Merging 段合并
 2. Section Placement 段放置
 
-To understand the process of relocation, an understanding of the concept of sections is essential.
+要理解重定位的过程，必须先了解**节**`sections`的概念。
 
-要理解重定位的过程，必须理解段的概念。
+> 有时候容易将 `section` 误认为段。
 
-Code and data have different run time requirements. For example code can be placed in read-only memory, and data might require read-write memory. It would be convenient, if code and data is **not** interleaved. For this purpose, programs are divided into sections. Most programs have at least two sections, `.text` for code and `.data` for data. Assembler directives `.text` and `.data`, are used to switch back and forth between the two sections.
+代码和数据在运行时有不同的要求。例如，代码可以放置在只读内存中，而数据可能需要读写内存。**把代码和数据分开放置，将会更方便**。为此，程序被分为不同的节 `section`。大多数程序至少有两个 `section`，`.text` 用于代码，`.data` 用于数据。汇编指令 `.text` 和 `.data` 用于在这两个 `section` 之间切换。
 
-代码和数据在运行时有不同的要求。例如，代码可以放置在只读内存中，而数据可能需要读写内存。如果代码和数据**不**交错放置，将会更方便。为此，程序被分为不同的段。大多数程序至少有两个段，`.text` 用于代码，`.data` 用于数据。汇编指令 `.text` 和 `.data` 用于在这两个段之间切换。
+```plaintext
+Code and data have different run time requirements. For example code can be placed in
+read-only memory, and data might require read-write memory. It would be convenient,
+if code and data is **not** interleaved. For this purpose, programs are divided into sections.
+Most programs have at least two sections, `.text` for code and `.data` for data.
+Assembler directives `.text` and `.data`, are used to switch back and forth between the two sections.
+```
 
-It helps to imagine each section as a bucket. When the assembler hits a section directive, it puts the code/data following the directive in the selected bucket. Thus the code/data that belong to particular section appear in contiguous locations. The following figures show how the assembler re-arranges data into sections.
+想象每个 `section` 都是一个桶。当汇编器遇到 `section` 指令时，它会将 `section` 指令后面的代码/数据放入所选的桶中。因此，属于特定 `section` 的代码/数据会出现在连续的位置。以下图显示了汇编器如何将数据重新排列到段中。
 
-想象每个段都是一个桶。当汇编器遇到段指令时，它会将段指令后面的代码/数据放入所选的桶中。因此，属于特定段的代码/数据会出现在连续的位置。以下图显示了汇编器如何将数据重新排列到段中。
+```plaintext
+It helps to imagine each section as a bucket. When the assembler hits a section directive,
+it puts the code/data following the directive in the selected bucket.
+Thus the code/data that belong to particular section appear in contiguous locations.
+The following figures show how the assembler re-arranges data into sections.
+```
 
 **Figure 3. Sections**
 
 ![Sections](../images/GNUToolchain/sections.png)
 
-Now that we have an understanding of sections, let us look into the primary reasons for which relocation is performed.
-
-现在我们理解了段的概念，让我们看一下重定位的主要原因。
+现在我们理解了 `section` 的概念，让我们看一下重定位的主要原因。
 
 #### 6.2.1. Section Merging
 
-When dealing with multi-file programs, the sections with the same name (example `.text`) might appear, in each file. The linker is responsible for merging sections from the input files, into sections of the output file. By default, the sections, with the same name, from each file is placed contiguously and the label references are patched to reflect the new address.
+在处理多文件程序时，每个文件中可能会出现同名的节（例如 `.text`）。链接器负责将输入文件中的节合并到输出文件的节中。默认情况下，同名的节会连续放置，并且标签引用会被修补以反映新地址。
 
-处理多文件程序时，每个文件中可能出现同名的段（例如 `.text`）。链接器负责将输入文件中的相同名称的段合并到输出文件的段中。默认情况下，来自每个文件的同名段被连续放置，标签引用也会修补以反映新地址。
+```
+When dealing with multi-file programs, the sections with the same name (example `.text`)
+might appear, in each file. The linker is responsible for merging sections from
+the input files, into sections of the output file. By default, the sections,
+with the same name, from each file is placed contiguously and the label references
+are patched to reflect the new address.
+```
 
-The effects of section merging can be seen by looking at the symbol table of the object files and the corresponding executable file. The multi-file sum of array program can be used to illustrate section merging. The symbol table of the object files `main.o` and `sum-sub.o` and the symbol table of the executable file `sum.elf` is shown below.
+可以通过查看目标文件的符号表以及可执行文件的符号表，看到段合并的效果。可以使用多文件的[数组求和程序](#6.1.-Symbol-Resolution)来说明段合并的过程。目标文件 `main.o` 和 `sum-sub.o` 的符号表以及可执行文件 `sum.elf` 的符号表如下所示。
 
-可以通过查看目标文件的符号表以及可执行文件的符号表，看到段合并的效果。可以使用多文件的数组求和程序来说明段合并的过程。目标文件 `main.o` 和 `sum-sub.o` 的符号表以及可执行文件 `sum.elf` 的符号表如下所示。
+```
+The effects of section merging can be seen by looking at the symbol table of the object
+files and the corresponding executable file. The multi-file sum of array program can be
+used to illustrate section merging. The symbol table of the object files `main.o` and
+`sum-sub.o` and the symbol table of the executable file `sum.elf` is shown below.
+```
 
 ```bash
 $ arm-linux-gnueabihf-nm main.o
@@ -634,25 +662,94 @@ $ arm-linux-gnueabihf-nm sum.elf
 00000024 T sum
 ```
 
-1. The `loop` symbol has address `0x4` in `sum-sub.o`, and `0x28` in `sum.elf`, since the `.text` section of `sum-sub.o` is placed right after the `.text` section of `main.o`.
+在 `sum-sub.o` 中，`loop` 符号的地址为 `0x4`，而在 `sum.elf` 中则为 `0x28`，因为 `sum-sub.o` 的 `.text` 节被放置在 `main.o` 的 `.text` 节之后。
 
-   该`loop`符号的地址`0x4`在`sum-sub.o`，`0x28`在 `sum.elf`o的`.text`部分`sum-sub.o`右边 在main. o的`.text`部分`main.o`。
+```bash
+yogurt@s:GNUToolchain$ arm-linux-gnueabihf-ld main.o sum-sub.o -o main -Ttext=0x0
+$ arm-linux-gnueabihf-nm main.o sum-sub.o main
+
+main.o:
+00000004 t arr
+00000007 t eoa
+00000008 t start
+00000014 t stop
+         U sum
+
+sum-sub.o:
+00000004 t loop
+00000000 T sum
+
+main:
+00000004 t arr
+00000007 t eoa
+00000008 t start
+00000014 t stop
+00000020 T sum
+00000024 t loop # 0x24
+00010038 T __bss_end__
+00010038 T _bss_end__
+00010038 T __bss_start
+00010038 T __bss_start__
+00010038 T _edata
+00010038 T __end__
+00010038 T _end
+
+############## 对比链接顺序的差异
+yogurt@s:GNUToolchain$ arm-linux-gnueabihf-ld sum-sub.o main.o  -o main -Ttext=0x0
+arm-linux-gnueabihf-ld: warning: cannot find entry symbol _start; defaulting to 0000000000000000
+yogurt@s:GNUToolchain$ arm-linux-gnueabihf-nm main.o sum-sub.o main
+
+main.o:
+00000004 t arr
+00000007 t eoa
+00000008 t start
+00000014 t stop
+         U sum
+
+sum-sub.o:
+00000004 t loop
+00000000 T sum
+
+main:
+00000000 T sum
+00000004 t loop
+0000001c t arr
+0000001f t eoa
+00000020 t start
+0000002c t stop # 0x2c
+00010038 T __bss_end__
+00010038 T _bss_end__
+00010038 T __bss_start
+00010038 T __bss_start__
+00010038 T _edata
+00010038 T __end__
+00010038 T _end
+```
 
 #### 6.2.2. Section Placement
 
 当程序被汇编时，每个段被假定从地址 0 开始。因此，标签相对于段的起始位置分配值。当最终可执行文件创建时，该段被放置在某个地址 X。所有在该段内定义的标签的引用都将增加 X，以使它们指向新位置。
 
 ```
-When a program is assembled, each section is assumed to start from address 0. And thus labels are assigned values relative to start of the section. When the final executable is created, the section is placed at some address X. And all references to the labels defined within the section, are incremented by X, so that they point to the new location.
+When a program is assembled, each section is assumed to start from address 0.
+And thus labels are assigned values relative to start of the section. When the
+final executable is created, the section is placed at some address X.
+And all references to the labels defined within the section, are incremented by X,
+so that they point to the new location.
 ```
 
 每个段在内存中特定位置的放置以及对段中标签的所有引用的修补，由链接器完成。
 
-The placement of each section at a particular location in memory and the patching of all references to the labels in the section, is done by the linker.
+```
+The placement of each section at a particular location in memory and the patching
+of all references to the labels in the section, is done by the linker.
+```
 
-可以通过查看目标文件的符号表以及可执行文件的符号表，看到段放置的效果。可以使用单文件的数组求和程序来说明段放置的过程。为了更清楚起见，我们将把 .text 段放置在地址 0x100。
+可以通过查看目标文件的符号表以及可执行文件的符号表，看到段放置的效果。可以使用单文件的[数组求和程序](#4.1.-Sum-an-Array)来说明段放置的过程。为了更清楚起见，我们将把 `.text` 段放置在地址 `0x100`。
 
+```
 The effects of section placement can be seen by looking at the symbol table of the object file and the corresponding executable file. The single file sum of array program can be used to illustrate section placement. To make things clearer, we will place the `.text` section at address `0x100`.
+```
 
 ```bash
 $ arm-linux-gnueabihf-as -o sum.o sum.s
@@ -674,11 +771,11 @@ $ arm-linux-gnueabihf-nm -n sum.elf
 ...
 ```
 
-[❶](https://www.bravegnu.org/gnu-eprog/linker.html#CO2-1) | The address for labels are assigned starting from `0` within a section. 段内标签的地址从 0 开始分配。 |
-| [❷](https://www.bravegnu.org/gnu-eprog/linker.html#CO2-2) | When the executable is created the linker is instructed to place the text section at address `0x100`. 当可执行文件创建时，链接器被指示将文本段放置在地址 0x100。 |
-| [❸](https://www.bravegnu.org/gnu-eprog/linker.html#CO2-3) | The address for labels in the `.text` section are re-assigned starting from `0x100`, and all label references will be patched to reflect this. `.text` 段中的标签的地址被重新分配，起始地址为 0x100，所有标签引用将被修补以反映此更改。 |
+❶`section` 节内标签的地址从 0 开始分配。
 
-The process of section merging and placement is shown in the following figure.
+❷当可执行文件创建时，链接器被指示将文本段放置在地址 `0x100`。
+
+❸`.text` 段中的标签的地址被重新分配，起始地址为 `0x100`，所有标签引用将被修补以反映此更改。
 
 段合并和放置的过程如下图所示。
 
@@ -689,8 +786,6 @@ The process of section merging and placement is shown in the following figure.
 ---
 
 ## 7. Linker Script File
-
-As mentioned in the previous section, section merging and placement is done by the linker. The programmer can control how the sections are merged, and at what locations they are placed in memory through a linker script file. A very simple linker script file, is shown below.
 
 如上一节所述，节合并和放置是由链接器完成的。程序员可以通过链接器脚本文件控制部分的合并方式，以及它们在内存中的位置。一个非常简单的链接器脚本文件，如下所示。
 
@@ -706,14 +801,15 @@ SECTIONS { ❶
 }
 ```
 
-1. The `SECTIONS` command is the most important linker command, it specifies how the sections are to be merged and at what location they are to be placed.
-   该`SECTIONS`命令是最重要的链接器 命令，它指定如何合并部分以及合并到什么位置 它们要放置的位置。
-2. Within the block following the `SECTIONS` command, the `.` (period) represents the location counter. The location is always initialised to `0x0`. It can be modified by assigning a new value to it. Setting the value to `0x0` at the beginning is superfluous.
-   在后面的块内 `SECTIONS`命令中，`.`（句点）表示位置计数器 位置总是初始化为`0x0`。 可以通过为其分配一个新值来修改它。设置 开头`0x0`的值是 多余的。
-3. This part of the script specifies that, the `.text` section from the input files `abc.o` and `def.o` should go to the `.text` section of the output file.
-   脚本的这一部分指定 输入中的`.text`部分 文件`abc.o`和`def.o`应该转到输出文件的`.text`部分。
+1. 该`SECTIONS`命令是最重要的链接器 命令，它指定如何合并部分以及合并到什么位置 它们要放置的位置。
 
-The linker script can be further simplified and generalised by using the wild card character `*` instead of individually specifying the file names.
+   > The `SECTIONS` command is the most important linker command, it specifies how the sections are to be merged and at what location they are to be placed.
+2. 在后面的块内 `SECTIONS`命令中，`.`（句点）表示位置计数器 位置总是初始化为`0x0`。 可以通过为其分配一个新值来修改它。设置 开头`0x0`的值是多余的。
+
+   > Within the block following the `SECTIONS` command, the `.` (period) represents the location counter. The location is always initialised to `0x0`. It can be modified by assigning a new value to it. Setting the value to `0x0` at the beginning is superfluous.
+3. 脚本的这一部分指定 输入中的`.text`部分 文件`abc.o`和`def.o`应该转到输出文件的`.text`部分。
+
+   > This part of the script specifies that, the `.text` section from the input files `abc.o` and `def.o` should go to the `.text` section of the output file.
 
 链接器脚本可以通过以下方式进一步简化和概括 使用通配符`*` 而不是单独指定文件名。
 
@@ -725,8 +821,6 @@ SECTIONS {
         .text : { * (.text); }
 }
 ```
-
-If the program contains both `.text` and `.data` sections, the `.data` section merging and location can be specified as shown below.
 
 如果程序同时包含`.text` 和`.data`部分，`.data`部分合并和位置可以是 指定如下所示。
 
@@ -742,15 +836,19 @@ SECTIONS {
 }
 ```
 
-Here, the `.text` section is located at `0x0` and `.data` is located at `0x400`. Note that, if the location counter is not assigned a different value, the `.text` and `.data` sections will be located at adjacent memory locations.
+在这里，`.text`部分位于 at`0x0`和`.data`位于`0x400`。请注意，**如果位置计数器`.`没有手动分配值，`.text` 和`.data`部分将位于相邻的内存位置**。
 
-在这里，`.text`部分位于 at`0x0`和`.data`位于`0x400`。请注意，如果位置计数器不是 分配了不同的值，`.text` 和`.data`部分将位于 相邻的内存位置。
+```
+Here, the `.text` section is located at `0x0` and `.data` is located at `0x400`.
+Note that, if the location counter is not assigned a different value,
+the `.text` and `.data` sections will be located at adjacent memory locations.
+```
 
 ### 7.1. Linker Script Example
 
 To demonstrate the use of linker scripts, we will use the linker script shown in [Listing 8, “Multiple sections in linker scripts”](https://www.bravegnu.org/gnu-eprog/lds.html#linker1) to control the placement of a program’s `.text` and `.data` section. We will use a slightly modified version of the sum of array program for this purpose. The code is shown below.
 
-为了演示链接器脚本的使用，我们将使用链接器 脚本如[清单8所示，“链接器脚本中的多个部分”](https://www.bravegnu.org/gnu-eprog/lds.html#linker1)来控制 程序`.text`和`.data` 部分。我们将使用总和的稍微修改的版本 用于此目的的数组程序。代码如下所示。
+为了演示链接器脚本的使用，我们将使用[**Listing 8. Multiple sections in linker scripts**](https://www.bravegnu.org/gnu-eprog/lds.html#linker1)中的链接器脚本来控制的程序`.text`和`.data` 部分。我们将使用[sum of array](#4.1.-Sum-an-Array)的稍微修改的版本 用于此目的的数组程序。代码如下所示。
 
 ```asm
         .data
@@ -769,22 +867,18 @@ loop:   ldrb  r2, [r1], #1      @ r2 = *r1++
 stop:   b stop
 ```
 
-The only change here is that the array is now in the `.data` section. Also note that the nasty branch instruction to skip over the data is also not required, since the linker script will place the `.text` section and `.data` section appropriately. As a result, statements can be placed in the program, in any convenient way, and the linker script will take care of placing the sections correctly in memory.
+这里唯一的变化是数组现在位于 `.data` 段。还要注意，跳过数据的分支指令也不再需要了，因为链接脚本会适当地放置 `.text` 段和 `.data` 段。因此，语句可以以任何方便的方式放置在程序中，链接脚本将负责将各个段正确放置在内存中。
 
-这里唯一的变化是数组现在在 `.data`部分。还要注意 讨厌的分支指令跳过数据也不是 必需，因为链接器脚本将适当地放置`.text`部分和`.data`部分。结果， 语句可以以任何方便的方式放置在程序中，并且 链接器脚本将负责正确放置部分 在记忆中。
+> The only change here is that the array is now in the `.data` section. Also note that the nasty branch instruction to skip over the data is also not required, since the linker script will place the `.text` section and `.data` section appropriately. As a result, statements can be placed in the program, in any convenient way, and the linker script will take care of placing the sections correctly in memory.
 
-When the program is linked, the linker script is passed as an input to the linker, as shown in the following command.
-
-链接程序时，链接器脚本作为输入传递给链接器，如以下命令所示。
+链接程序时，链接器脚本作为输入参数传递给链接器，如以下命令所示。
 
 ```bash
 $ arm-linux-gnueabihf-as -o sum-data.o sum-data.s
 $ arm-linux-gnueabihf-ld -T sum-data.lds -o sum-data.elf sum-data.o
 ```
 
-The option `-T sum-data.lds` specifies that `sum-data.lds` is to be used as the linker script. Dumping the symbol table, will provide an insight into how the sections are placed in memory.
-
-选项 `-T sum-data.lds` 指定 `sum-data.lds` 将被用作链接脚本。转储符号表可以让我们了解各个段是如何放置在内存中的。
+选项 `-T sum-data.lds` 指定使用 `sum-data.lds` 作为链接脚本。Dump 符号表将有助于了解各个段是如何放置在内存中的。
 
 ```bash
 $ arm-linux-gnueabihf-nm -n sum-data.elf
@@ -795,15 +889,13 @@ $ arm-linux-gnueabihf-nm -n sum-data.elf
 00000403 d eoa
 ```
 
-From the symbol table it is obvious that the `.text` is placed starting from address `0x0` and `.data` section is placed starting from address `0x400`.
-
-从符号表中可以明显看出`.text`是从地址`0x0`和`.data`部分开始放置的 从地址`0x400`开始放置。
+从符号表中可以明显看出，`.text` 段从地址 `0x0` 开始放置，`.data` 段从地址 `0x400` 开始放置。
 
 ## 8. Data in RAM, Example
 
-Now that we know, how to write linker scripts, we will attempt to write a program, and place the `.data` section in RAM.
+现在我们已经了解了如何编写链接脚本，我们将尝试编写一个程序，并将 `.data` 段放置在 RAM 中。
 
-The add program is modified to load two values from RAM, add them and store the result back to RAM. The two values and the space for result is placed in the `.data` section.
+加法程序经过修改，将从 RAM 中加载两个值，将它们相加并将结果存储回 RAM。这两个值以及存放结果的空间被放置在 `.data` 段中。
 
 **Listing 9. Add Data in RAM**
 
@@ -830,7 +922,7 @@ start:
 stop:   b stop
 ```
 
-When the program is linked, the linker script shown below is used.
+当程序被链接时，使用如下所示的链接脚本：
 
 ```asm
 SECTIONS {
@@ -842,7 +934,7 @@ SECTIONS {
 }
 ```
 
-The dump of the symbol table of `.elf` is shown below.
+`.elf` 文件的符号表如下所示。
 
 ```asm
 $ arm-linux-gnueabihf-nm -n add-mem.elf
@@ -853,30 +945,34 @@ a0000001 d val2
 a0000002 d result
 ```
 
-The linker script seems to have solved the problem of placing the `.data` section in RAM. But wait, the solution is not complete yet!
+链接脚本似乎已经解决了将 `.data` 段放置在 RAM 中的问题。但等等，解决方案还没有完全完成！
+
+> 问：为什么说这里是将 `.data` 放置在了 RAM？
+>
+> 答：看上面 [5. Using RAM](#5.-Using-RAM) 的介绍，这里用的 qemu 模拟的平台 Connex 板，具有 64 MB 的 RAM，从地址 `0xA0000000` 开始。
 
 ### 8.1. RAM is Volatile!
 
-RAM is volatile memory, and hence it is not possible to directly make the data available in RAM, on power up.
+RAM 是易失性存储器，因此在上电时无法直接使数据在 RAM 中可用。
 
-All code and data **should** be stored in Flash before power-up. On power-up, a startup code is supposed to copy the data from Flash to RAM, and then proceed with the execution of the program. So the program’s `.data` section has two addresses, a **load address** in Flash and a **run-time address** in RAM.
+所有代码和数据在上电前**必须**存储在 Flash 中。上电后，启动代码会将数据从 Flash 复制到 RAM，然后继续执行程序。因此，程序的 `.data` 段有两个地址，一个是 Flash 中的**加载地址**，另一个是 RAM 中的**运行时地址**。
 
 > 💡TIP
 >
-> In `ld` parlance, the load address is called LMA (Load Memory Address), and the run-time address is called VMA (Virtual Memory Address.).
+> 在 `ld` 的术语中，加载地址称为 LMA（**加载内存地址**，Load Memory Address），**运行时地址**称为 VMA（虚拟内存地址，Virtual Memory Address）。
 
-The following two modifications have to be done, to make the program work correctly.
+要使程序正常运行，需要进行以下两项修改：
 
-1. The linker script has to be modified to specify both the load address and the run-time address, for the `.data` section.
-2. A small piece of code should copy the `.data` section from Flash (load address) to RAM (run-time address).
+1. 必须修改链接脚本，为 `.data` 段指定加载地址和运行时地址。
+2. 需要一小段代码将 `.data` 段从 Flash（加载地址）复制到 RAM（运行时地址）。
 
 ### 8.2. Specifying Load Address
 
-The run-time address is what that should be used for determining the address of labels. In the previous linker script, we have specified the run-time address for the `.data` section. The load address is not explicitly specified, and defaults to the run-time address. This is OK, with the previous examples, since the programs were executed directly from Flash. But, if data is to be placed in RAM during execution, the load address should correspond to Flash and the run-time address should correspond to RAM.
+运行时地址应用于确定标签的地址。在之前的链接脚本中，我们为 `.data` 段指定了运行时地址。**加载地址没有明确指定，默认情况下与运行时地址相同**。在之前的示例中这是可以的，因为程序是直接从 Flash 中执行的。但如果在执行过程中需要将数据放入 RAM，加载地址应对应 Flash，而运行时地址应对应 RAM。
 
-A load address different from the run-time address can be specified using the `AT` keyword. The modified linker script is shown below.
+可以使用 `AT` 关键字指定不同于运行时地址的**加载地址**。修改后的链接脚本如下所示。
 
-```
+```asm
 SECTIONS {
         . = 0x00000000;
         .text : { * (.text); }
@@ -887,37 +983,39 @@ SECTIONS {
 }
 ```
 
-| [❶](https://www.bravegnu.org/gnu-eprog/data-in-ram.html#CO4-1) | Symbols can be created on the fly within the `SECTIONS` command by assigning values to them. Here `etext` is assigned the value of the location counter at that position. `etext` contains the address of the next free location in Flash right after all the code. This will be used later on to specify where the `.data` section is to be placed in Flash. Note that `etext` itself will not be allocated any memory, it is just an entry in the symbol table. |
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
-| [❷](https://www.bravegnu.org/gnu-eprog/data-in-ram.html#CO4-2) | The `AT` keyword specifies the load address of the `.data` section. An address or symbol (whose value is a valid address) could be passed as argument to `AT`. Here the load address of `.data` is specified as the location right after all the code in Flash. |
+1. 可以通过在 `SECTIONS` 命令中动态创建符号，并给它们赋值。这里，`etext` 被赋予当前位置计数器的值，`etext` 包含了代码段结束后在 Flash 中的下一个空闲位置的地址。稍后将使用这个符号来指定 `.data` 段在 Flash 中的放置位置。请注意，`etext` 本身不会分配任何内存，它只是符号表中的一个条目。
+
+   > **AT 指定的是加载地址**。这里 `. = 0xA0000000;` 后面紧跟 `.data` 就表示了 `.data` 的运行地址是 `0xA0000000`
+
+2. `AT` 关键字用于指定 `.data` 段的**加载地址**。可以将一个地址或符号（其值为有效地址）作为 `AT` 的参数传递。这里，`.data` 段的加载地址被指定为 Flash 中所有代码结束后的位置。
 
 ### 8.3. Copying `.data` to RAM
 
-To copy the data from Flash to RAM, the following information is required.
+要将数据从 Flash 复制到 RAM，需要以下信息：
 
-1. Address of data in Flash (`flash_sdata`)
-2. Address of data in RAM (`ram_sdata`)
-3. Size of the `.data` section. (`data_size`)
+1. Flash 中数据的地址 (`flash_sdata`)
+2. RAM 中数据的地址 (`ram_sdata`)
+3. `.data` 段的大小 (`data_size`)
 
-With this information the data can be copied from Flash to RAM using the following code snippet.
+有了这些信息，可以使用以下代码片段将数据从 Flash 复制到 RAM。
 
-```
+```asm
         ldr   r0, =flash_sdata
         ldr   r1, =ram_sdata
         ldr   r2, =data_size
 
 copy:
-        ldrb  r4, [r0], #1
-        strb  r4, [r1], #1
-        subs  r2, r2, #1
-        bne   copy
+        ldrb  r4, [r0], #1      @ r4 = *(r0++);
+        strb  r4, [r1], #1      @ *(r1++) = r4;
+        subs  r2, r2, #1        @ r2 -= 1; if r2 > 0
+        bne   copy              @    goto copy;
 ```
 
-The linker script can be slightly modified to provide these information.
+链接脚本可以稍作修改，以提供这些信息。
 
 **Listing 10. Linker Script with Section Copy Symbols**
 
-```
+```asm
 SECTIONS {
         . = 0x00000000;
         .text : {
@@ -935,12 +1033,13 @@ SECTIONS {
 }
 ```
 
-| [❶](https://www.bravegnu.org/gnu-eprog/data-in-ram.html#CO5-1) | Start of data in Flash is right after all the code in Flash. |
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
-| [❷](https://www.bravegnu.org/gnu-eprog/data-in-ram.html#CO5-2) | Start of data in RAM is at the base address of RAM.          |
-| [❸](https://www.bravegnu.org/gnu-eprog/data-in-ram.html#CO5-3) [❹](https://www.bravegnu.org/gnu-eprog/data-in-ram.html#CO5-4) | Obtaining the size of data is not straight forward. The data size is calculated from the difference in the start of data in RAM and the end of data in RAM. Yes, simple expressions are allowed within the linker script. |
+地址信息通过在链接脚本中，创建符号，这些符号也会记录在符号表中，因此程序可以拿到地址信息。
 
-The add program with data copied to RAM from Flash is listed below.
+1. `.data` 节在 Flash 中的起始位置是在所有 `.text` 节内容之后。
+2. 记录 RAM 中 `data` 的起始位置。
+3. 获取数据大小并不是直接的。数据大小是通过 RAM 中数据起始位置和数据结束位置之间的差值来计算的。是的，**链接脚本中允许使用简单的表达式**。
+
+将数据从 Flash 复制到 RAM 的加法程序如下所示。
 
 **Listing 11. Add Data in RAM (with copy)**
 
@@ -959,10 +1058,10 @@ start:
         ldr   r2, =data_size
 
 copy:
-        ldrb  r4, [r0], #1
-        strb  r4, [r1], #1
-        subs  r2, r2, #1
-        bne   copy
+        ldrb  r4, [r0], #1      @ r4 = *(r0++);
+        strb  r4, [r1], #1      @ *(r1++) = r4;
+        subs  r2, r2, #1        @ r2 -= 1; if r2 > 0
+        bne   copy              @    goto copy;
 
         ;; Add and store result.
         ldr   r0, =val1         @ r0 = &val1
@@ -979,7 +1078,7 @@ copy:
 stop:   b stop
 ```
 
-The program is assembled and linked using the linker script listed in [Listing 10, “Linker Script with Section Copy Symbols”](https://www.bravegnu.org/gnu-eprog/data-in-ram.html#linker2). The program is executed and tested within Qemu.
+该程序使用在 [Listing 10, “Linker Script with Section Copy Symbols”](https://www.bravegnu.org/gnu-eprog/data-in-ram.html#linker2) 中列出的链接脚本进行了汇编和链接。程序在 Qemu 中执行和测试。
 
 ```bash
 qemu-system-arm -M connex -pflash flash.bin -nographic -serial /dev/null
@@ -988,11 +1087,12 @@ a0000000:         10         30         40          0
 ```
 
 > Note:
-> In a real system with an SDRAM, the memory should not be accessed right-away. The memory controller will have to be initialised before performing a memory access. Our code works because the simulated memory does not require the memory controller to be initialised.
+>
+> 在实际系统中，使用 SDRAM 时，内存不应立即访问。必须在执行内存访问之前初始化内存控制器。我们的代码之所以能正常工作，是因为模拟内存不需要初始化内存控制器。
 
 ## 9. Exception Handling
 
-The examples given so far have a major bug. The first 8 words in the memory map are reserved for the exception vectors. When an exception occurs the control is transferred to one these 8 locations. The exceptions and their exception vector addresses are show in the following table.
+到目前为止给出的示例存在一个主要缺陷。**内存映射中的前 8 个字`word`是为异常向量`exception vector`保留的**。当发生异常时，控制权会转移到这 8 个位置中的一个。异常及其异常向量地址如下表所示。
 
 **Table 1. Exception Vector Addresses**
 
@@ -1007,7 +1107,11 @@ The examples given so far have a major bug. The first 8 words in the memory map 
 | IRQ                      | 0x18    |
 | FIQ                      | 0x1C    |
 
-These locations are supposed to contain a branch that will transfer control the appropriate exception handler. In the examples we have seen so far, we haven’t inserted branch instructions at the exception vector addresses. We got away without issues since these exceptions did not occur. All the above programs can be fixed, by linking them with the following assembly code.
+这些位置应该包含一个分支，用于转移控制到适当的异常处理程序。在我们迄今为止看到的例子中，我们没有在异常向量地址插入分支指令。由于这些异常并未发生，我们没有遇到问题。所有上述程序都可以通过将它们与以下汇编代码链接来修复。
+
+> 就是需要在这些位置，增加跳转指令，跳转到对应的错误处理代码位置。
+>
+> These locations are supposed to contain a branch that will transfer control the appropriate exception handler. In the examples we have seen so far, we haven’t inserted branch instructions at the exception vector addresses. We got away without issues since these exceptions did not occur. All the above programs can be fixed, by linking them with the following assembly code.
 
 ```asm
         .section "vectors"
@@ -1021,15 +1125,15 @@ irq:    b     irq
 fiq:    b     fiq
 ```
 
-Only the reset exception is vectored to a different address `start`. All other exceptions are vectored to the same address. So if any exception other that reset occurs, the processor will be spinning in the same location. The exception can then be identified by looking at the value of `pc` through a debugger (the monitor interface in our case).
+只有复位异常被向量到不同的地址 `start`。所有其他异常都被向量到相同的地址。**因此，如果发生复位以外的任何异常，处理器将会在同一位置循环**。然后，**可以通过调试器（在我们这个例子中是监视器接口）查看 `pc` 的值来识别该异常**。
 
-To ensure that these instruction are placed at the exception vector addresses, the linker script should look something like below.
+为了确保这些指令被放置在异常向量地址，链接器脚本应该如下所示。
 
 ```asm
 SECTIONS {
         . = 0x00000000;
         .text : {
-                * (vectors);
+                * (vectors); @ 上面声明的 section
                 * (.text);
                 ...
         }
@@ -1037,15 +1141,13 @@ SECTIONS {
 }
 ```
 
-Notice how the `vectors` section is placed before all other code, ensuring that the `vectors` is located at address starting from 0x0.
+注意到 `vectors` 部分被放置在所有其他代码之前，确保 `vectors` 位于从 0x0 开始的地址。
 
 ## 10. C Startup
 
-It is not possible to directly execute C code, when the processor comes out of reset. Since, unlike assembly language, C programs need some basic pre-requisites to be satisfied. This section will describe the pre-requisites and how to meet the pre-requisites.
+在处理器复位后，无法直接执行 C 代码，因为与汇编语言不同，C 程序需要满足一些基本的前提条件。本节将描述这些前提条件以及如何满足它们。
 
-We will take the example of C program that calculates the sum of an array as an example. And by the end of this section, we will be able to perform the necessary setup, transfer control to the C code and execute it.
-
-
+我们将以计算数组和的 C 程序为例。在本节结束时，我们将能够进行必要的设置，将控制权转移到 C 代码并执行它。
 
 **Listing 12. Sum of Array in C**
 
@@ -1063,65 +1165,61 @@ int main()
 }
 ```
 
-Before transferring control to C code, the following have to be setup correctly.
+在将控制权转移到 C 代码之前，必须正确设置以下内容：
 
-1. Stack
-2. Global variables
-   1. Initialized
-   2. Uninitialized
-3. Read-only data
+1. 栈
+2. 全局变量
+   1. 已初始化的
+   2. 未初始化的
+3. 只读数据
 
 ### 10.1. Stack
 
-C uses the stack for storing local (auto) variables, passing function arguments, storing return address, etc. So it is essential that the stack be setup correctly, before transferring control to C code.
+C 使用栈来存储局部（自动）变量、传递函数参数、存储返回地址等。因此，在将控制权转移到 C 代码之前，确保栈正确设置至关重要。
 
-Stacks are highly flexible in the ARM architecture, since the implementation is completely left to the software. For people not familiar with the ARM architecture a overview is provided in [Appendix C, *ARM Stacks*](https://www.bravegnu.org/gnu-eprog/arm-stacks.html).
+在 ARM 架构中，栈非常灵活，因为其实现完全依赖于软件。对于不熟悉 ARM 架构的人，附录 C 中提供了概述 [*ARM Stacks*](https://www.bravegnu.org/gnu-eprog/arm-stacks.html)。
 
-To make sure that code generated by different compilers is interroperable, ARM has created the [ARM Architecture Procedure Call Standard (AAPCS)](http://infocenter.arm.com/help/topic/com.arm.doc.ihi0042a/IHI0042A_aapcs.pdf). The register to be used as the stack pointer and the direction in which the stack grows is all dictated by the AAPCS. According to the AAPCS, **register `r13`** is to be used as the stack pointer. Also the stack should be **full-descending**.
+为了确保不同编译器生成的代码能够互操作，ARM 制定了 [ARM 架构过程调用标准 (AAPCS)](http://infocenter.arm.com/help/topic/com.arm.doc.ihi0042a/IHI0042A_aapcs.pdf)。要使用的栈指针寄存器以及栈的增长方向均由 AAPCS 规定。根据 AAPCS，**寄存器 `r13`** 应用作栈指针。同时，栈应为 **全递减**（full-descending）。
 
-One way of placing global variables and the stack is shown in the following diagram.
-
-
+以下图示展示了全局变量和栈的放置方式。
 
 **Figure 5. Stack Placement**
 
 ![stack.png](../images/GNUToolchain/stack.png)
 
-So all that has to be done in the startup code is to point `r13` at the highest RAM address, so that the stack can grow downwards (towards lower addresses). For the `connex` board this can be acheived using the following ARM instruction.
+因此，**在启动代码中需要做的就是将 `r13` 指向最高的 RAM 地址**，以便栈可以向下增长（朝向较低的地址）。对于 `connex` 板，可以使用以下 ARM 指令来实现这一点。
 
-```
+```asm
         ldr sp, =0xA4000000
 ```
 
-Note that the the assembler provides an alias `sp` for the `r13` register.
+请注意，汇编器为 `r13` 寄存器提供了一个别名 `sp`。（Stack pointer ?）
 
-| ![[Note]](../images/GNUToolchain/note.png)                   | Note |
-| ------------------------------------------------------------ | ---- |
-| The address `0xA4000000` itself does not correspond to RAM. The RAM ends at `0xA3FFFFFF`. But that is OK, since the stack is **full**-descending, during the first push the stack pointer will be decremented first and the value will be stored. |      |
+> Note
+>
+> 地址 `0xA4000000` 本身并不对应于 RAM。RAM 的结束地址是 `0xA3FFFFFF`。但这没关系，因为栈是 **全递减**（full-descending）的，在第一次压栈时，栈指针会先被递减，然后存储值。
 
 ### 10.2. Global Variables
 
-When C code is compiled, the compiler places initialized global variables in the `.data` section. So just as with the assembly, the `.data` has to be copied from Flash to RAM.
+当 C 代码被编译时，编译器将已初始化的全局变量放置在 `.data` 段中。因此，像汇编一样，`.data` 段必须从 Flash 复制到 RAM。
 
-The C language guarantees that all uninitialized global variables will be initialized to zero. When C programs are compiled, a separate section called `.bss` is used for uninitialized variables. Since the value of these variables are all zeroes to start with, they do not have to be stored in Flash. Before transferring control to C code, the memory locations corresponding to these variables have to be initialized to zero.
+C 语言保证**所有未初始化的全局变量将被初始化为零**。当 C 程序被编译时，**未初始化变量使用一个称为 `.bss` 的单独段**。由于这些变量的初始值都是零，因此不必将它们存储在 Flash 中。在将控制权转移到 C 代码之前，必须将对应于这些变量的内存位置初始化为零。
 
 ### 10.3. Read-only Data
 
-GCC places global variables marked as `const` in a separate section, called `.rodata`. The `.rodata` is also used for storing string constants.
+GCC 将标记为 `const` 的全局变量放置在一个称为 `.rodata` 的单独段中。`.rodata` 也用于存储字符串常量。
 
-Since contents of `.rodata` section will not be modified, they can be placed in Flash. The linker script has to modified to accomodate this.
+由于 `.rodata` 段的内容不会被修改，因此可以将其放置在 Flash 中。链接器脚本必须进行修改以适应这一点。
 
 ### 10.4. Startup Code
 
-Now that we know the pre-requisites we can create the linker script and the startup code. The linker script [Listing 10, “Linker Script with Section Copy Symbols”](https://www.bravegnu.org/gnu-eprog/data-in-ram.html#linker2) is modified to accomodate the following.
+现在我们知道了前提条件，可以创建链接器脚本和启动代码。链接器脚本 [Listing 10, “Linker Script with Section Copy Symbols”](https://www.bravegnu.org/gnu-eprog/data-in-ram.html#linker2) 被修改以适应以下内容：
 
-1. `.bss` section placement
-2. `vectors` section placement
-3. `.rodata` section placement
+1. `.bss` 段的放置
+2. `vectors` 段的放置
+3. `.rodata` 段的放置
 
-The `.bss` is placed right after `.data` section in RAM. Symbols to locate the start of `.bss` and end of `.bss` are also created in the linker script. The `.rodata` is placed right after `.text` section in Flash. The following diagram shows the placement of the various sections.
-
-
+`.bss` 被放置在 RAM 中的 `.data` 段之后。链接器脚本中还创建了用于定位 `.bss` 的开始和结束符号。`.rodata` 被放置在 Flash 中的 `.text` 段之后。以下图示显示了各个段的放置位置。
 
 **Figure 6. Section Placement**
 
@@ -1131,17 +1229,17 @@ The `.bss` is placed right after `.data` section in RAM. Symbols to locate the s
 
 **Listing 13. Linker Script for C code**
 
-```
+```asm
 SECTIONS {
         . = 0x00000000;
         .text : {
-              * (vectors);
+              * (vectors); # 异常向量
               * (.text);
         }
-        .rodata : {
+        .rodata : { # 只读数据
               * (.rodata);
         }
-        flash_sdata = .;
+        flash_sdata = .; # 记录 .data 的加载地址（flash偏移）
 
         . = 0xA0000000;
         ram_sdata = .;
@@ -1151,7 +1249,7 @@ SECTIONS {
         ram_edata = .;
         data_size = ram_edata - ram_sdata;
 
-        sbss = .;
+        sbss = .; # data 之后，是 .bss 的起始地址，.bss 没有指定加载地址，因为就不存储在flash中
         .bss : {
              * (.bss);
         }
@@ -1168,11 +1266,9 @@ The startup code has the following parts
 4. code to setup the stack pointer
 5. branch to main
 
-
-
 **Listing 14. C Startup Assembly**
 
-```
+```asm
         .section "vectors"
 reset:  b     start
 undef:  b     undef
@@ -1190,9 +1286,9 @@ start:
         ldr   r1, =ram_sdata
         ldr   r2, =data_size
 
-        @@ Handle data_size == 0
+        @@ Handle data_size == 0 @ data 大小为0，就不需要继续初始化，直接跳转到后面处理
         cmp   r2, #0
-        beq   init_bss
+        beq   init_bss      @ 注意 beq, bne 都是跳转指令，为真的条件不同 if == , if !=
 copy:
         ldrb   r4, [r0], #1
         strb   r4, [r1], #1
@@ -1205,7 +1301,7 @@ init_bss:
         ldr   r1, =ebss
         ldr   r2, =bss_size
 
-        @@ Handle bss_size == 0
+        @@ Handle bss_size == 0  @ bss 大小为0，就不需要继续初始化，直接跳转到后面处理
         cmp   r2, #0
         beq   init_stack
 
@@ -1224,17 +1320,17 @@ init_stack:
 stop:   b     stop
 ```
 
-To compile the code, it is not necessary to invoke the assembler, compiler and linker individually. `gcc` is intelligent enough to do that for us.
+要编译代码，不必单独调用汇编器、编译器和链接器。`gcc` 足够智能，可以为我们完成这些工作。
 
-As promised before, we will compile and execute the C code shown in [Listing 12, “Sum of Array in C”](https://www.bravegnu.org/gnu-eprog/c-startup.html#csum).
+如之前所承诺的，我们将编译并执行 [Listing 12, “Sum of Array in C”](https://www.bravegnu.org/gnu-eprog/c-startup.html#csum) 中显示的 C 代码。
 
 ```
 $ arm-linux-gnueabihf-gcc -nostdlib -o csum.elf -T csum.lds csum.c startup.s
 ```
 
-The `-nostdlib` option is used to specify that the standard C library should not be linked in. A little extra care has to be taken when the C library is linked in. This is discussed in [Section 11, “Using the C Library”](https://www.bravegnu.org/gnu-eprog/c-library.html).
+`-nostdlib` 选项用于指定不链接标准 C 库。当链接 C 库时需要额外小心。有关此内容的讨论，请参见 [Section 11, “Using the C Library”](https://www.bravegnu.org/gnu-eprog/c-library.html)。
 
-A dump of the symbol table will give a better picture of how things have been placed in memory.
+符号表的 dump 将更清楚地展示各个部分在内存中的放置情况。
 
 ```
 $ arm-linux-gnueabihf-nm -n csum.elf
@@ -1271,7 +1367,7 @@ a000001c A ebss
 | [❹](https://www.bravegnu.org/gnu-eprog/c-startup.html#CO6-4) | The initialized data `arr`, an array of 6 integers, is placed at the start of RAM `0xA0000000`. |
 | [❺](https://www.bravegnu.org/gnu-eprog/c-startup.html#CO6-5) | The uninitialized data `sum` is placed after the array of 6 integers. (`6 * 4 = 24 = 0x18`) |
 
-To execute the program, convert the program to `.bin` format, execute in Qemu, and dump the `sum` variable located at `0xA0000018`.
+要执行程序，请将程序转换为 `.bin` 格式，在 Qemu 中执行，然后查看位于 `0xA0000018` 的 `sum` 变量。
 
 ```
 $ arm-linux-gnueabihf-objcopy -O binary csum.elf csum.bin
