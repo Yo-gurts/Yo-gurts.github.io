@@ -1,13 +1,121 @@
-<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Linux系统编程-静态库动态库 | (╯°□°）╯︵ ┻━┻ </title><meta name="author" content="(ง'̀-'́)ง"><meta name="copyright" content="(ง'̀-'́)ง"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Linux 下制件静态库和动态库的方法、流程"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://yo-gurts.github.io/2022/04/24/Linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B-%E9%9D%99%E6%80%81%E5%BA%93%E5%8A%A8%E6%80%81%E5%BA%93/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.13.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Linux系统编程-静态库动态库 | (╯°□°）╯︵ ┻━┻ </title><meta name="author" content="(ง'̀-'́)ง"><meta name="copyright" content="(ง'̀-'́)ง"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Linux 下制件静态库和动态库的方法、流程">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux系统编程-静态库动态库">
+<meta property="og:url" content="https://yo-gurts.github.io/2022/04/24/Linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B-%E9%9D%99%E6%80%81%E5%BA%93%E5%8A%A8%E6%80%81%E5%BA%93/index.html">
+<meta property="og:site_name" content="(╯°□°）╯︵ ┻━┻ ">
+<meta property="og:description" content="Linux 下制件静态库和动态库的方法、流程">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2022/11/17/hF7KodYmE6iPWqg.png">
+<meta property="article:published_time" content="2022-04-24T06:40:35.000Z">
+<meta property="article:modified_time" content="2022-05-03T11:40:35.000Z">
+<meta property="article:author" content="(ง&#39;̀-&#39;́)ง">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="Makefile">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://s2.loli.net/2022/11/17/hF7KodYmE6iPWqg.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://yo-gurts.github.io/2022/04/24/Linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B-%E9%9D%99%E6%80%81%E5%BA%93%E5%8A%A8%E6%80%81%E5%BA%93/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        if (name && globalFn[key][name]) return
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          const hour = new Date().getHours()
+          const isNight = hour <= 6 || hour >= 18
+          if (theme === undefined) isNight ? activateDarkMode() : activateLightMode()
+          else theme === 'light' ? activateLightMode() : activateDarkMode()
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
   root: '/',
   algolia: undefined,
-  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  localSearch: {"path":"/search.xml","preload":true,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
   translate: undefined,
   noticeOutdate: undefined,
-  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":600},
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":600,"highlightFullpage":false,"highlightMacStyle":false},
   copy: {
     success: '复制成功',
-    error: '复制错误',
+    error: '复制失败',
     noSupport: '浏览器不支持'
   },
   relativeDate: {
@@ -23,20 +131,20 @@
     month: '个月前'
   },
   copyright: undefined,
-  lightbox: 'fancybox',
+  lightbox: 'null',
   Snackbar: undefined,
   infinitegrid: {
-    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid/dist/infinitegrid.min.js',
     buttonText: '加载更多'
   },
   isPhotoFigcaption: false,
   islazyload: false,
-  isAnchor: false,
+  isAnchor: true,
   percent: {
     toc: true,
-    rightside: false,
+    rightside: true,
   },
-  autoDarkmode: true
+  autoDarkmode: false
 }</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
   title: 'Linux系统编程-静态库动态库',
   isPost: true,
@@ -44,122 +152,28 @@
   isHighlightShrink: false,
   isToc: true,
   postUpdate: '2022-05-03 19:40:35'
-}</script><script>(win=>{
-      win.saveToLocal = {
-        set: (key, value, ttl) => {
-          if (ttl === 0) return
-          const now = Date.now()
-          const expiry = now + ttl * 86400000
-          const item = {
-            value,
-            expiry
-          }
-          localStorage.setItem(key, JSON.stringify(item))
-        },
-      
-        get: key => {
-          const itemStr = localStorage.getItem(key)
-      
-          if (!itemStr) {
-            return undefined
-          }
-          const item = JSON.parse(itemStr)
-          const now = Date.now()
-      
-          if (now > item.expiry) {
-            localStorage.removeItem(key)
-            return undefined
-          }
-          return item.value
-        }
-      }
-    
-      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
-        const script = document.createElement('script')
-        script.src = url
-        script.async = true
-        script.onerror = reject
-        script.onload = script.onreadystatechange = function() {
-          const loadState = this.readyState
-          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
-          script.onload = script.onreadystatechange = null
-          resolve()
-        }
+}</script><meta name="generator" content="Hexo 6.1.0"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><script>(()=>{
+  const $loadingBox = document.getElementById('loading-box')
+  const $body = document.body
+  const preloader = {
+    endLoading: () => {
+      $body.style.overflow = ''
+      $loadingBox.classList.add('loaded')
+    },
+    initLoading: () => {
+      $body.style.overflow = 'hidden'
+      $loadingBox.classList.remove('loaded')
+    }
+  }
 
-        Object.keys(attr).forEach(key => {
-          script.setAttribute(key, attr[key])
-        })
+  preloader.initLoading()
+  window.addEventListener('load', preloader.endLoading)
 
-        document.head.appendChild(script)
-      })
-    
-      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
-        const link = document.createElement('link')
-        link.rel = 'stylesheet'
-        link.href = url
-        if (id) link.id = id
-        link.onerror = reject
-        link.onload = link.onreadystatechange = function() {
-          const loadState = this.readyState
-          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
-          link.onload = link.onreadystatechange = null
-          resolve()
-        }
-        document.head.appendChild(link)
-      })
-    
-      win.activateDarkMode = () => {
-        document.documentElement.setAttribute('data-theme', 'dark')
-        if (document.querySelector('meta[name="theme-color"]') !== null) {
-          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
-        }
-      }
-      win.activateLightMode = () => {
-        document.documentElement.setAttribute('data-theme', 'light')
-        if (document.querySelector('meta[name="theme-color"]') !== null) {
-          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
-        }
-      }
-      const t = saveToLocal.get('theme')
-    
-          const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
-          const isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
-          const isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
-          const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
-
-          if (t === undefined) {
-            if (isLightMode) activateLightMode()
-            else if (isDarkMode) activateDarkMode()
-            else if (isNotSpecified || hasNoSupport) {
-              const now = new Date()
-              const hour = now.getHours()
-              const isNight = hour <= 6 || hour >= 18
-              isNight ? activateDarkMode() : activateLightMode()
-            }
-            window.matchMedia('(prefers-color-scheme: dark)').addListener(e => {
-              if (saveToLocal.get('theme') === undefined) {
-                e.matches ? activateDarkMode() : activateLightMode()
-              }
-            })
-          } else if (t === 'light') activateLightMode()
-          else activateDarkMode()
-        
-      const asideStatus = saveToLocal.get('aside-status')
-      if (asideStatus !== undefined) {
-        if (asideStatus === 'hide') {
-          document.documentElement.classList.add('hide-aside')
-        } else {
-          document.documentElement.classList.remove('hide-aside')
-        }
-      }
-    
-      const detectApple = () => {
-        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
-          document.documentElement.classList.add('apple')
-        }
-      }
-      detectApple()
-    })(window)</script><meta name="google-site-verification" content="MP347_Nl-SqfnOi3FZSI69WSb8J_rk_jEsa3jL4ODCI" /><meta name="generator" content="Hexo 6.1.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://s2.loli.net/2024/09/17/3NdhvxIcPRVpufD.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">44</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">51</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">10</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background: transparent"><nav id="nav"><span id="blog-info"><a href="/" title="(╯°□°）╯︵ ┻━┻ "><span class="site-name">(╯°□°）╯︵ ┻━┻ </span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Linux系统编程-静态库动态库</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2022-04-24T06:40:35.000Z" title="发表于 2022-04-24 14:40:35">2022-04-24</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-05-03T11:40:35.000Z" title="更新于 2022-05-03 19:40:35">2022-05-03</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Linux/">Linux</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">4k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>15分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Linux系统编程-静态库动态库"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/2022/04/24/Linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B-%E9%9D%99%E6%80%81%E5%BA%93%E5%8A%A8%E6%80%81%E5%BA%93/#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>静态库文件名格式为：<code>lib&#123;name&#125;.a</code>，只有 {name} 部分可自定义。</p>
+  if (false) {
+    btf.addGlobalFn('pjaxSend', preloader.initLoading, 'preloader_init')
+    btf.addGlobalFn('pjaxComplete', preloader.endLoading, 'preloader_end')
+  }
+})()</script><div id="web_bg" style="background-image: url(https://s2.loli.net/2022/11/17/EzYwrT7nPiIH6qA.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://s2.loli.net/2024/09/17/3NdhvxIcPRVpufD.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">44</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">51</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">10</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background: transparent;"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">(╯°□°）╯︵ ┻━┻ </span></a><a class="nav-page-title" href="/"><span class="site-name">Linux系统编程-静态库动态库</span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Linux系统编程-静态库动态库</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2022-04-24T06:40:35.000Z" title="发表于 2022-04-24 14:40:35">2022-04-24</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-05-03T11:40:35.000Z" title="更新于 2022-05-03 19:40:35">2022-05-03</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Linux/">Linux</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">4k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>15分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">评论数:</span><a href="/2022/04/24/Linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B-%E9%9D%99%E6%80%81%E5%BA%93%E5%8A%A8%E6%80%81%E5%BA%93/#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>静态库文件名格式为：<code>lib&#123;name&#125;.a</code>，只有 {name} 部分可自定义。</p>
 <p>动态库文件名格式为：<code>lib&#123;name&#125;.so</code>，只有 {name} 部分可自定义。</p>
 <p>静态库和动态库的区别：</p>
 <ul>
@@ -320,42 +334,50 @@
 <h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><blockquote>
 <p><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1KE411q7ee">bilibili黑马程序员-Linux系统编程</a><br>参考笔记：<a target="_blank" rel="noopener" href="https://github.com/ABottomCoder/Linux-system-programming">https://github.com/ABottomCoder/Linux-system-programming</a><br><a target="_blank" rel="noopener" href="https://www.cnblogs.com/wangkangluo1/archive/2011/07/20/2111248.html">Valgrind使用说明</a></p>
 </blockquote>
-</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://yo-gurts.github.io">(ง'̀-'́)ง</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://yo-gurts.github.io/2022/04/24/Linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B-%E9%9D%99%E6%80%81%E5%BA%93%E5%8A%A8%E6%80%81%E5%BA%93/">https://yo-gurts.github.io/2022/04/24/Linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B-%E9%9D%99%E6%80%81%E5%BA%93%E5%8A%A8%E6%80%81%E5%BA%93/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://yo-gurts.github.io" target="_blank">(╯°□°）╯︵ ┻━┻ </a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Linux/">Linux</a><a class="post-meta__tags" href="/tags/Makefile/">Makefile</a></div><div class="post_share"><div class="social-share" data-image="https://s2.loli.net/2022/11/17/nuDZ3dsB6z4bfVJ.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2022/04/23/ProgramBasic_STL/" title="STL容器"><img class="cover" src="https://s2.loli.net/2022/11/17/UeWP8jCq6dJZSGD.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">STL容器</div></div></a></div><div class="next-post pull-right"><a href="/2022/04/24/Linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B-%E6%96%87%E4%BB%B6/" title="Linux系统编程-文件"><img class="cover" src="https://s2.loli.net/2022/11/17/BeiQmkw4Ya1gvPx.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Linux系统编程-文件</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2022/09/19/Cpp%E4%B8%89%E6%96%B9%E5%BA%93/" title="C++三方库"><img class="cover" src="https://s2.loli.net/2022/11/17/UeWP8jCq6dJZSGD.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-09-19</div><div class="title">C++三方库</div></div></a></div><div><a href="/2024/10/06/Cvitek-SDK%E7%BC%96%E8%AF%91%E7%8E%AF%E5%A2%83/" title="Cvitek SDK 编译环境"><img class="cover" src="https://s2.loli.net/2022/11/17/UeWP8jCq6dJZSGD.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-10-06</div><div class="title">Cvitek SDK 编译环境</div></div></a></div><div><a href="/2023/11/16/Cvitek-buildroot/" title="buildroot 打包 rootfs"><img class="cover" src="https://s2.loli.net/2022/11/17/BeiQmkw4Ya1gvPx.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-11-16</div><div class="title">buildroot 打包 rootfs</div></div></a></div><div><a href="/2024/09/11/Cvitek-reboot/" title="Cvitek-busybox init&#x2F;reboot&#x2F;poweroff"><img class="cover" src="https://s2.loli.net/2022/11/17/Zm4kDRxypb5ez3q.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-09-11</div><div class="title">Cvitek-busybox init&#x2F;reboot&#x2F;poweroff</div></div></a></div><div><a href="/2024/10/09/Cvitek-%E7%BC%96%E8%AF%91%E6%B5%81%E7%A8%8B/" title="Cvitek-v4.2.0 编译流程"><img class="cover" src="https://s2.loli.net/2022/11/17/jypq1GDmIVfl8WM.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-10-09</div><div class="title">Cvitek-v4.2.0 编译流程</div></div></a></div><div><a href="/2024/09/22/Linux-USBfunctionfs/" title="Linux USB functionfs"><img class="cover" src="https://s2.loli.net/2022/11/17/9ZBEesyr14aJhPM.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-09-22</div><div class="title">Linux USB functionfs</div></div></a></div></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://s2.loli.net/2024/09/17/3NdhvxIcPRVpufD.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">(ง'̀-'́)ง</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">44</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">51</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">10</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/yo-gurts"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/yo-gurts" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:yusong1117.u@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#gcc-%E7%BC%96%E8%AF%91%E6%B5%81%E7%A8%8B"><span class="toc-number">1.</span> <span class="toc-text">gcc 编译流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%99%E6%80%81%E5%BA%93"><span class="toc-number">2.</span> <span class="toc-text">静态库</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8A%A8%E6%80%81%E5%BA%93"><span class="toc-number">3.</span> <span class="toc-text">动态库</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Makefile"><span class="toc-number">4.</span> <span class="toc-text">Makefile</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Example"><span class="toc-number">4.1.</span> <span class="toc-text">Example</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%B8%E5%85%B3%E5%B7%A5%E5%85%B7"><span class="toc-number">5.</span> <span class="toc-text">相关工具</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#objdump-%E6%9F%A5%E7%9C%8B%E6%B1%87%E7%BC%96"><span class="toc-number">5.1.</span> <span class="toc-text">objdump 查看汇编</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ldd-%E4%BE%9D%E8%B5%96%E5%8A%A8%E6%80%81%E5%BA%93"><span class="toc-number">5.2.</span> <span class="toc-text">ldd 依赖动态库</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#strace-%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8"><span class="toc-number">5.3.</span> <span class="toc-text">strace 系统调用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Valgrind-%E5%86%85%E5%AD%98%E6%B3%84%E9%9C%B2"><span class="toc-number">5.4.</span> <span class="toc-text">Valgrind 内存泄露</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="toc-number">6.</span> <span class="toc-text">参考资料</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2024/10/17/GNUToolchain/" title="Embedded Programming with the GNU Toolchain"><img src="https://s2.loli.net/2022/11/17/NGf2mpwasOYzVIA.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Embedded Programming with the GNU Toolchain"/></a><div class="content"><a class="title" href="/2024/10/17/GNUToolchain/" title="Embedded Programming with the GNU Toolchain">Embedded Programming with the GNU Toolchain</a><time datetime="2024-10-17T14:00:06.000Z" title="发表于 2024-10-17 22:00:06">2024-10-17</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/10/09/Cvitek-%E7%BC%96%E8%AF%91%E6%B5%81%E7%A8%8B/" title="Cvitek-v4.2.0 编译流程"><img src="https://s2.loli.net/2022/11/17/jypq1GDmIVfl8WM.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Cvitek-v4.2.0 编译流程"/></a><div class="content"><a class="title" href="/2024/10/09/Cvitek-%E7%BC%96%E8%AF%91%E6%B5%81%E7%A8%8B/" title="Cvitek-v4.2.0 编译流程">Cvitek-v4.2.0 编译流程</a><time datetime="2024-10-09T14:25:10.000Z" title="发表于 2024-10-09 22:25:10">2024-10-09</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/10/06/Cvitek-SDK%E7%BC%96%E8%AF%91%E7%8E%AF%E5%A2%83/" title="Cvitek SDK 编译环境"><img src="https://s2.loli.net/2022/11/17/UeWP8jCq6dJZSGD.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Cvitek SDK 编译环境"/></a><div class="content"><a class="title" href="/2024/10/06/Cvitek-SDK%E7%BC%96%E8%AF%91%E7%8E%AF%E5%A2%83/" title="Cvitek SDK 编译环境">Cvitek SDK 编译环境</a><time datetime="2024-10-06T06:02:04.000Z" title="发表于 2024-10-06 14:02:04">2024-10-06</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/09/24/Linux-sysfs/" title="Linux sysfs"><img src="https://s2.loli.net/2022/11/17/9ZBEesyr14aJhPM.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Linux sysfs"/></a><div class="content"><a class="title" href="/2024/09/24/Linux-sysfs/" title="Linux sysfs">Linux sysfs</a><time datetime="2024-09-24T14:37:59.000Z" title="发表于 2024-09-24 22:37:59">2024-09-24</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/09/22/Linux-USBfunctionfs/" title="Linux USB functionfs"><img src="https://s2.loli.net/2022/11/17/9ZBEesyr14aJhPM.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Linux USB functionfs"/></a><div class="content"><a class="title" href="/2024/09/22/Linux-USBfunctionfs/" title="Linux USB functionfs">Linux USB functionfs</a><time datetime="2024-09-22T14:31:05.000Z" title="发表于 2024-09-22 22:31:05">2024-09-22</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2024 By (ง'̀-'́)ง</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.13.0"></script><script src="/js/main.js?v=4.13.0"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>if (!window.MathJax) {
-  window.MathJax = {
-    tex: {
-      inlineMath: [['$', '$'], ['\\(', '\\)']],
-      tags: 'ams'
-    },
-    chtml: {
-      scale: 1.1
-    },
-    options: {
-      renderActions: {
-        findScript: [10, doc => {
-          for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
-            const display = !!node.type.match(/; *mode=display/)
-            const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
-            const text = document.createTextNode('')
-            node.parentNode.replaceChild(text, node)
-            math.start = {node: text, delim: '', n: 0}
-            math.end = {node: text, delim: '', n: 0}
-            doc.math.push(math)
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://yo-gurts.github.io">(ง'̀-'́)ง</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://yo-gurts.github.io/2022/04/24/Linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B-%E9%9D%99%E6%80%81%E5%BA%93%E5%8A%A8%E6%80%81%E5%BA%93/">https://yo-gurts.github.io/2022/04/24/Linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B-%E9%9D%99%E6%80%81%E5%BA%93%E5%8A%A8%E6%80%81%E5%BA%93/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://yo-gurts.github.io" target="_blank">(╯°□°）╯︵ ┻━┻ </a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Linux/">Linux</a><a class="post-meta__tags" href="/tags/Makefile/">Makefile</a></div><div class="post-share"><div class="social-share" data-image="https://s2.loli.net/2022/11/17/hF7KodYmE6iPWqg.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2022/04/23/ProgramBasic_STL/" title="STL容器"><img class="cover" src="https://s2.loli.net/2022/11/17/hF7KodYmE6iPWqg.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">STL容器</div></div><div class="info-2"><div class="info-item-1">线程安全：  这里列出的C++ 标准库中的容器都不是线程安全的！多个线程读时不需要加锁，但有一个线程写时，所有读写线程都需要加锁！  效率说明：  emplace_back() 是c11新加的，功能与 push_back() 一样，但效率更高，推荐优先使用  序列式容器 序列式容器 hackingcpp  Array 固定大小的数组，必须在建立时就指明其大小。  .front()：返回第一元素的引用，你可以使用这些操作函数更改元素内容 .back()：返回最末元素的引用，c.back() = 10  Vector Vector 是一个 dynamic array。 大小可变，但内存重新分配很耗时间。 在Vector尾部附加元素或移除元素都很快速，但是在Vector的中段或起始段安插元素就比较费时  .front()：返回第一元素的引用 (不检查是否存在第一元素) .back()：返回最末元素的引用 (不检查是否存在最末元素)，c.back() = 10 .push_back(elem)：尾部附加元素 .pop_back()：移除最后一个元素 .insert(pos,...</div></div></div></a><a class="pagination-related" href="/2022/04/24/Linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B-%E6%96%87%E4%BB%B6/" title="Linux系统编程-文件"><img class="cover" src="https://s2.loli.net/2022/11/17/nuDZ3dsB6z4bfVJ.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Linux系统编程-文件</div></div><div class="info-2"><div class="info-item-1">应用程序的系统调用过程：应用程序-&gt;库函数-&gt;系统调用-&gt;驱动-&gt;硬件（磁盘、网卡等） 内核态和用户态现代处理器架构一般允许 CPU 至少在两种不同状态下运行，即：用户态和核心态（有时也称之为监管态 supervisor mode）。执行硬件指令可使 CPU 在两种状态间来回切换。与之对应，可将虚拟内存区域划分（标记）为用户空间部分或内核空间部分。在用户态下运行时，CPU 只能访问被标记为用户空间的内存，试图访问属于内核空间的内存会引发硬件异常。当运行于核心态时，CPU 既能访问用户空间内存，也能访问内核空间内存。 仅当处理器在核心态运行时，才能执行某些特定操作。这样的例子包括：执行宕机（halt）指令去关闭系统，访问内存管理硬件，以及设备 I&#x2F;O...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2022/09/19/Cpp%E4%B8%89%E6%96%B9%E5%BA%93/" title="C++三方库"><img class="cover" src="https://s2.loli.net/2022/11/17/9ZBEesyr14aJhPM.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2022-09-19</div><div class="info-item-2">C++三方库</div></div><div class="info-2"><div class="info-item-1">fmt格式化字符串，好像已经纳入C++20标准库，使用很方便！而且说是比printf还快~ 12345678910git clone --depth=1 https://github.com/fmtlib/fmt.gitcd fmt/mkdir buildcd buildcmake ..make -jsudo make install# g++ test.cpp -o debug -lfmt   github 仓库，README中文档也较详细、使用简单 官方文档、有代码示例  fmtlog基于fmt的日志库，可以很方便的以fmt的方式格式化日志输出。 12345678git clone https://github.com/MengRao/fmtlog.gitcd fmtloggit submodule initgit submodule update./build.sh# g++ test.cpp -o debug -lfmt -lfmtlog-static #...</div></div></div></a><a class="pagination-related" href="/2024/10/06/Cvitek-SDK%E7%BC%96%E8%AF%91%E7%8E%AF%E5%A2%83/" title="Cvitek SDK 编译环境"><img class="cover" src="https://s2.loli.net/2022/11/17/nuDZ3dsB6z4bfVJ.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-10-06</div><div class="info-item-2">Cvitek SDK 编译环境</div></div><div class="info-2"><div class="info-item-1">SDK 下载利用 sophpi 中的脚本下载 SDK 到当前目录。 1git clone -b sg200x-evb git@github.com:sophgo/sophpi.git  sophpi 中的脚本是将需要的仓库拉取到当前目录，为了区分，专门新建 v4.1.x 目录： 123mkdir v4.1.x &amp;&amp; cd v4.1.x../sophpi/scripts/repo_clone.sh --gitclone ../sophpi/scripts/subtree.xml  如需使用双系统快启分支，则： 123mkdir v4.2.x &amp;&amp; cd v4.2.x../sophpi/scripts/repo_clone.sh --gitclone ../sophpi/scripts/subtree_cv18xx-v4.2.x.xml   🙃可能遇到的问题：  没有权限拉取仓库。sophpi 的脚本中是用的 git clone ssh@xxx 走的 ssh，需要配置好 ssh key，否则会报错。可以替换 xml 中的...</div></div></div></a><a class="pagination-related" href="/2023/11/16/Cvitek-buildroot/" title="buildroot 打包 rootfs"><img class="cover" src="https://s2.loli.net/2022/11/17/UeWP8jCq6dJZSGD.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2023-11-16</div><div class="info-item-2">buildroot 打包 rootfs</div></div><div class="info-2"><div class="info-item-1">Cvitek buildroot 打包 rootfs 流程介绍 基于 https://github.com/sophgo/cvi_mmf_sdk&#x2F;tree&#x2F;v4.1.0 的实现。  概述在 cvi_mmf_sdk 中，支持两种生成 rootfs 的方式：  基于 ramdisk 目录下的文件系统。 基于 buildroot 打包生成文件系统。  前者仅保留了常用的一些工具，因此生成的文件系统较小，不过新增工具比较麻烦。后者方便用户自己控制需要打包哪些工具。 默认使用第一种方式来生成文件系统，可通过在板子的配置文件中加上 CONFIG_BUILDROOT_FS=y （如 cv1812cp_sophpi_duo_sd_defconfig#L30 中的例子），以启用 buildroot 来生成文件系统。 rootfs 打包流程说明在 source cvisetup.sh 之后，就可以使用 pack_rootfs 命令来打包文件系统了。它本质上是定义在 common_functions.sh 中的一个 shell 函数，在设置必要的环境变量后，通过 make...</div></div></div></a><a class="pagination-related" href="/2024/09/11/Cvitek-reboot/" title="Cvitek-busybox init&#x2F;reboot&#x2F;poweroff"><img class="cover" src="https://s2.loli.net/2022/11/17/HCU2TbOi7a1nqLl.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-09-11</div><div class="info-item-2">Cvitek-busybox init&#x2F;reboot&#x2F;poweroff</div></div><div class="info-2"><div class="info-item-1">reboot&#x2F;poweroffboards/default/dts/cv181x/cv181x_base.dtsi 中定义了 restart-controller 设备。 1234restart: restart-controller &#123;	compatible = &quot;cvitek,restart&quot;;	reg = &lt;0x0 0x05025000 0x0 0x2000&gt;;&#125;;  drivers/power/reset/cvi-reboot.c 中实现了对应的一个平台驱动： 123456789101112static const struct of_device_id cvi_reboot_of_match[] = &#123;	&#123; .compatible = &quot;cvitek,restart&quot; &#125;,	&#123;&#125;&#125;;static struct platform_driver cvi_reboot_driver = &#123;	.probe =...</div></div></div></a><a class="pagination-related" href="/2024/10/09/Cvitek-%E7%BC%96%E8%AF%91%E6%B5%81%E7%A8%8B/" title="Cvitek-v4.2.0 编译流程"><img class="cover" src="https://s2.loli.net/2022/11/17/HCU2TbOi7a1nqLl.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-10-09</div><div class="info-item-2">Cvitek-v4.2.0 编译流程</div></div><div class="info-2"><div class="info-item-1">编译流程说明1234567891011121314151617181920212223242526272829303132333435363738394041424344# 1. source build/envsetup_soc.sh（设置环境变量）yogurt@s:v4.2.x$ source build/envsetup_soc.sh  -------------------------------------------------------------------------------------------------------    Usage:    (1) menuconfig - Use menu to configure your board.        ex: $ menuconfig    (2) defconfig $CHIP_ARCH - List EVB boards($BOARD) by CHIP_ARCH.       ** cv181x ** -&gt; [&#x27;cv181x&#x27;,...</div></div></div></a><a class="pagination-related" href="/2024/09/22/Linux-USBconfigfs/" title="Linux USB gadget_configfs"><img class="cover" src="https://s2.loli.net/2022/11/17/UeWP8jCq6dJZSGD.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-09-22</div><div class="info-item-2">Linux USB gadget_configfs</div></div><div class="info-2"><div class="info-item-1">Linux USB gadget 通过 configfs 配置  先阅读 Linux configfs，再看此内容  usb 只有在作为从设备时，才会用到 configfs 去配置功能。 更新日期：2013年4月25日 概述USB Linux Gadget 是一种设备，它具有一个 UDC（USB 设备控制器），并且可以连接到 USB 主机，通过添加功能扩展主机，如串行端口或大容量存储功能。 123A USB Linux Gadget is a device which has a UDC (USB Device Controller)and can be connected to a USB Host to extend it with additional functionslike a serial port or a mass storage capability.  从主机的角度来看，一个 Gadget 是一组配置的集合，每个配置包含若干接口，而从 Gadget 的角度看，这些接口被称为功能（function），每个功能代表一个如串行连接或 SCSI...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://s2.loli.net/2024/09/17/3NdhvxIcPRVpufD.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">(ง'̀-'́)ง</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">44</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">51</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">10</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/yo-gurts"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/yo-gurts" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:yusong1117.u@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#gcc-%E7%BC%96%E8%AF%91%E6%B5%81%E7%A8%8B"><span class="toc-number">1.</span> <span class="toc-text">gcc 编译流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%99%E6%80%81%E5%BA%93"><span class="toc-number">2.</span> <span class="toc-text">静态库</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8A%A8%E6%80%81%E5%BA%93"><span class="toc-number">3.</span> <span class="toc-text">动态库</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Makefile"><span class="toc-number">4.</span> <span class="toc-text">Makefile</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Example"><span class="toc-number">4.1.</span> <span class="toc-text">Example</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%B8%E5%85%B3%E5%B7%A5%E5%85%B7"><span class="toc-number">5.</span> <span class="toc-text">相关工具</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#objdump-%E6%9F%A5%E7%9C%8B%E6%B1%87%E7%BC%96"><span class="toc-number">5.1.</span> <span class="toc-text">objdump 查看汇编</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ldd-%E4%BE%9D%E8%B5%96%E5%8A%A8%E6%80%81%E5%BA%93"><span class="toc-number">5.2.</span> <span class="toc-text">ldd 依赖动态库</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#strace-%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8"><span class="toc-number">5.3.</span> <span class="toc-text">strace 系统调用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Valgrind-%E5%86%85%E5%AD%98%E6%B3%84%E9%9C%B2"><span class="toc-number">5.4.</span> <span class="toc-text">Valgrind 内存泄露</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="toc-number">6.</span> <span class="toc-text">参考资料</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2024/10/17/GNUToolchain/" title="Embedded Programming with the GNU Toolchain"><img src="https://s2.loli.net/2022/11/17/NGf2mpwasOYzVIA.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Embedded Programming with the GNU Toolchain"/></a><div class="content"><a class="title" href="/2024/10/17/GNUToolchain/" title="Embedded Programming with the GNU Toolchain">Embedded Programming with the GNU Toolchain</a><time datetime="2024-10-17T14:00:06.000Z" title="发表于 2024-10-17 22:00:06">2024-10-17</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/10/09/Cvitek-%E7%BC%96%E8%AF%91%E6%B5%81%E7%A8%8B/" title="Cvitek-v4.2.0 编译流程"><img src="https://s2.loli.net/2022/11/17/HCU2TbOi7a1nqLl.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Cvitek-v4.2.0 编译流程"/></a><div class="content"><a class="title" href="/2024/10/09/Cvitek-%E7%BC%96%E8%AF%91%E6%B5%81%E7%A8%8B/" title="Cvitek-v4.2.0 编译流程">Cvitek-v4.2.0 编译流程</a><time datetime="2024-10-09T14:25:10.000Z" title="发表于 2024-10-09 22:25:10">2024-10-09</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/10/06/Cvitek-SDK%E7%BC%96%E8%AF%91%E7%8E%AF%E5%A2%83/" title="Cvitek SDK 编译环境"><img src="https://s2.loli.net/2022/11/17/nuDZ3dsB6z4bfVJ.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Cvitek SDK 编译环境"/></a><div class="content"><a class="title" href="/2024/10/06/Cvitek-SDK%E7%BC%96%E8%AF%91%E7%8E%AF%E5%A2%83/" title="Cvitek SDK 编译环境">Cvitek SDK 编译环境</a><time datetime="2024-10-06T06:02:04.000Z" title="发表于 2024-10-06 14:02:04">2024-10-06</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/09/24/Linux-sysfs/" title="Linux sysfs"><img src="https://s2.loli.net/2022/11/17/NGf2mpwasOYzVIA.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Linux sysfs"/></a><div class="content"><a class="title" href="/2024/09/24/Linux-sysfs/" title="Linux sysfs">Linux sysfs</a><time datetime="2024-09-24T14:37:59.000Z" title="发表于 2024-09-24 22:37:59">2024-09-24</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/09/22/Linux-USBfunctionfs/" title="Linux USB functionfs"><img src="https://s2.loli.net/2022/11/17/jypq1GDmIVfl8WM.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Linux USB functionfs"/></a><div class="content"><a class="title" href="/2024/09/22/Linux-USBfunctionfs/" title="Linux USB functionfs">Linux USB functionfs</a><time datetime="2024-09-22T14:31:05.000Z" title="发表于 2024-09-22 22:31:05">2024-09-22</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent;"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2024 By (ง'̀-'́)ง</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
           }
-        }, '']
+        }
       }
+      
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax/es5/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
     }
   }
-  
-  const script = document.createElement('script')
-  script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.min.js'
-  script.id = 'MathJax-script'
-  script.async = true
-  document.head.appendChild(script)
-} else {
-  MathJax.startup.document.state(0)
-  MathJax.texReset()
-  MathJax.typesetPromise()
-}</script><script>(() => {
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script><script>(() => {
   const initGitalk = () => {
     const gitalk = new Gitalk(Object.assign({
       clientID: 'b740056c42e9eadf273e',
@@ -373,8 +395,8 @@
   const loadGitalk = async() => {
     if (typeof Gitalk === 'function') initGitalk()
     else {
-      await getCSS('https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.min.css')
-      await getScript('https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.min.js')
+      await btf.getCSS('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css')
+      await btf.getScript('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js')
       initGitalk()
     }
   }
@@ -392,4 +414,4 @@
   } else {
     window.loadOtherComment = loadGitalk
   }
-})()</script></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/canvas-fluttering-ribbon.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=4.13.0"></script></div></div></body></html>
+})()</script></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div></body></html>
