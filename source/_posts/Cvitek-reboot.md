@@ -1,5 +1,5 @@
 ---
-title: Cvitek-busybox init/reboot/poweroff
+title: Busybox init/reboot/poweroff
 date: 2024-09-11 17:57:02
 updated: 2024-09-11 17:57:02
 tags:
@@ -611,3 +611,191 @@ static int cvi_restart_handler(struct notifier_block *this,
 ```
 
 算了，不管了，这里看起来就是最后的一步了。
+
+## reboot mode
+
+作用：`reboot args` 通过后续的参数，可从不同的分区启动。
+
+原理：`reboot` 之前先写一个 `rtc` 域的寄存器，设置 `flag`，启动时 `fsbl/uboot` 等基于该 `flag` 的值进行不同的操作。
+
+在 `cv181x/cv180x` 上可测试，正常 `reboot` 后，读取该寄存器的值仍然是之前设定的值。
+
+```bash
+#!/bin/sh
+
+# enable rtc，不 enable 的话 rtc 仍然会掉电。
+devmem 0x050250ac 32 0x2
+
+# write flag
+devmem 0x05026ff0 32 0x1
+
+reboot
+```
+
+**如何改？**
+
+1. `Linux` 中已有相关驱动，只需通过设备树指定 `rtc` 寄存器，以及需要用的 `flag` 的值。
+2. `reboot` 命令是 `busybox` 中的命令，`busybox` 正常是不带参数的，需要加一笔 `patch` 支持参数。
+3. `fsbl、uboot` 基于寄存器值更改逻辑。
+
+### 设备树
+
+```c
+    pmugrf: syscon@0x05026ff0 {
+        compatible = "syscon", "simple-mfd";
+        reg = <0x0 0x05026ff0 0x0 0x4>; // 寄存器地址为 0x05026ff0
+        #address-cells = <1>;
+        #size-cells = <1>;
+        reboot-mode {
+            compatible = "syscon-reboot-mode";
+            offset = <0x0>;
+            // 支持四个参数 reboot normal/recovery/loader/charge
+            // BOOT_NORMAL 就是要写到寄存器的值
+            mode-normal = <BOOT_NORMAL>;
+            mode-recovery = <BOOT_RECOVERY>;
+            mode-loader = <BOOT_BL_DOWNLOAD>;
+            mode-charge = <BOOT_CHARGING>;
+            status = "okay";
+        };
+    };
+```
+
+这里用到的 `BOOT_CHARGING` 等宏是在
+
+- `u-boot-2021.10/arch/arm/dts/include/dt-bindings/soc/cvitek,boot-mode.h`
+
+ 中定义的，需要添加该文件。该文件是给设备树用的。
+
+uboot 中还需要基于该寄存器判断启动 recovery、还是 normal。所以在
+
+- `u-boot-2021.10/include/cvi_boot_mode.h`
+
+中也有记录这几个宏。该文件是给uboot代码中用的。
+
+kernel-dts 的时候也会重新编译dts，需要在
+
+- `linux_5.10/scripts/dtc/include-prefixes/dt-bindings/soc/cvitek,boot-mode.h`
+- `linux_5.10/include/dt-bindings/soc/cvitek,boot-mode.h`
+
+中添加该文件。
+
+```c
+#ifndef __CVITEK_BOOT_MODE_H
+#define __CVITEK_BOOT_MODE_H
+
+// RTC register
+// if change this register address, be careful
+// this Header file used by fsbl & u-boot & kernel & (build dts)
+#define BOOT_MODE_REGISTER 0x05026ff0
+
+/*high 24 bits is tag, low 8 bits is type*/
+#define REBOOT_FLAG        0x5242C300
+
+/* normal boot */
+#define BOOT_NORMAL        (REBOOT_FLAG + 0)
+/* enter bootloader rockusb mode */
+#define BOOT_BL_DOWNLOAD    (REBOOT_FLAG + 1)
+/* enter recovery */
+#define BOOT_RECOVERY        (REBOOT_FLAG + 3)
+ /* enter fastboot mode */
+#define BOOT_FASTBOOT        (REBOOT_FLAG + 5)
+
+#define BOOT_CHARGING       (REBOOT_FLAG + 11)
+
+#endif
+```
+
+### Kernel 配置
+
+```
+# reboot loader/recovery...
+CONFIG_SYSCON_REBOOT_MODE=y
+CONFIG_MFD_SYSCON=y
+```
+
+### busybox patch
+
+[PATCH] **halt-Support-rebooting-with-arg**
+
+```c
+
+---
+ init/halt.c | 48 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 48 insertions(+)
+
+diff --git a/init/halt.c b/init/halt.c
+index fe3cb9e..a514091 100644
+--- a/init/halt.c
++++ b/init/halt.c
+@@ -93,6 +93,8 @@
+
+ #include "libbb.h"
+ #include "reboot.h"
++#include <linux/reboot.h>
++#include <sys/syscall.h>
+
+ #if ENABLE_FEATURE_WTMP
+ #include <sys/utsname.h>
+@@ -119,6 +121,48 @@ static void write_wtmp(void)
+ #define write_wtmp() ((void)0)
+ #endif
+
++static volatile int caught_sigterm = FALSE;
++static void signal_handler(int sig)
++{
++        bb_error_msg("Caught signal %d", sig);
++
++        if (sig == SIGTERM)
++                caught_sigterm = TRUE;
++}
++
++static int reboot_with_arg(const char *arg)
++{
++        struct sigaction sa;
++        int pid;
++
++        /* Fork new thread to handle reboot */
++        if ((pid = fork()))
++                return pid < 0 ? pid : 0;
++
++        /* Handle signal and reboot in child thread */
++        sigemptyset(&sa.sa_mask);
++        sa.sa_flags = 0;
++        sa.sa_handler = signal_handler;
++        sigaction_set(SIGTERM, &sa);
++
++        bb_error_msg("Waiting for SIGTERM");
++
++        /* The init will send SIGTERM to us after SHUTDOWN actions */
++        while (!caught_sigterm)
++                usleep(50000);
++
++        bb_error_msg("Ready to reboot");
++
++        /* Wait 200ms for other processes to exit */
++        usleep(200000);
++        sync();
++
++        bb_error_msg("Rebooting with arg(%s)", arg);
++        return syscall(__NR_reboot, LINUX_REBOOT_MAGIC1,
++                        LINUX_REBOOT_MAGIC2,
++                        LINUX_REBOOT_CMD_RESTART2, arg);
++}
++
+ #if ENABLE_FEATURE_WAIT_FOR_INIT
+ /* In Linux, "poweroff" may be spawned even before init.
+  * For example, with ACPI:
+@@ -239,6 +283,10 @@ int halt_main(int argc UNUSED_PARAM, char **argv)
+ 						CONFIG_TELINIT_PATH);
+ 			}
+ 		}
++
++		/* Handle rebooting with arg */
++		if (signals[which] == SIGTERM && argc > 1 && argv[1][0] != '-')
++			rc = reboot_with_arg(argv[1]);
+ 	} else {
+ 		rc = reboot(magic[which]);
+ 	}
+--
+2.17.1
+```

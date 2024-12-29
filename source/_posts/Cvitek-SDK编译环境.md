@@ -133,5 +133,5 @@ sudo apt install -y pkg-config build-essential ninja-build automake autoconf lib
 > v4.2.x 在 v4.1.x 的基础上，增加了小核 alios 的编译环境配置。
 
 ```bash
-pip install yoctools -i https://pypi.tuna.tsinghua.edu.cn/simple/
+pip install yoctools lz4 -i https://pypi.tuna.tsinghua.edu.cn/simple/
 ```
